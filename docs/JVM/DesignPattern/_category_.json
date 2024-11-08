@@ -1,0 +1,8 @@
+{
+  "label": "设计模式",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "设计模式是软件开发中解决常见问题的可复用解决方案,它提供了一套经过验证的最佳实践和编程范式."
+  }
+}

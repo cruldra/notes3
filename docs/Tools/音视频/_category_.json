@@ -1,0 +1,8 @@
+{
+  "label": "音视频",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "和音视频有关的工具"
+  }
+}
