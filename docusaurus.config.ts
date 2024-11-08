@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-    title: 'My Site',
+    title: 'Cruldra',
     tagline: 'Dinosaurs are cool',
     favicon: 'img/favicon.ico',
 
@@ -66,9 +66,23 @@ const config: Config = {
 
     themeConfig: {
         // Replace with your project's social card
+        //顶部公告条
+        /*announcementBar: {
+            id: 'support_us',
+            content:
+                '吃了嘛您那今天',
+            backgroundColor: '#fafbfc',
+            textColor: '#091E42',
+            isCloseable: false,
+        },*/
+        colorMode: {
+            defaultMode: 'dark',
+            disableSwitch: true,
+            respectPrefersColorScheme: false,
+        },
         image: 'img/docusaurus-social-card.jpg',
         navbar: {
-            title: 'My Site',
+            title: 'Cruldra',
             logo: {
                 alt: 'My Site Logo',
                 src: 'img/logo.svg',
@@ -85,7 +99,7 @@ const config: Config = {
                     sidebarId: 'jvmEcosystem',
                     position: 'left',
                     label: 'JVM',
-                },{
+                }, {
                     type: 'docSidebar',
                     sidebarId: 'frontEnd',
                     position: 'left',
