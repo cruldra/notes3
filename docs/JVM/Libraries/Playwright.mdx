@@ -1,0 +1,138 @@
+---
+sidebar_position: 1
+---
+
+[Playwright](https://playwright.dev/)是一个用于自动化浏览器的库,类似`Selenium`,支持`Chrome`、`Firefox`、`Safari`和
+`Microsoft Edge`等主流浏览器.
+
+## 安装
+
+```xml
+<dependency>
+    <groupId>com.microsoft.playwright</groupId>
+    <artifactId>playwright</artifactId>
+    <version>1.47.0</version>
+</dependency>
+```
+
+## 通过`CDP`连接浏览器
+
+[Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)是`Chrome`浏览器提供的一套调试协议.
+
+```kotlin
+@Test
+fun test1() {
+    val cdpPort = 9222
+    val executable = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    //1.准备用户数据目录
+    val customerDataDir = "D:\\ProgramData\\Chrome129".toFile()
+    //2.检查cdp端口是否可用
+    isPortAvailable(cdpPort).raiseIfNotTrue(
+        "[${cdpPort}]端口被占用",
+        Codes.PORT_IS_OCCUPIED_CODE
+    )
+    //3.启动chrome
+    async {
+        stringBuilder(executable) {
+            //appendWithSpace("--window-size=${chromeProperties.windowWidth},${chromeProperties.windowHeight}")
+            //appendWithSpace("""--user-agent="${chromeProperties.userAgent}" """)
+            appendWithSpace("--remote-debugging-port=${cdpPort}")
+            appendWithSpace("--user-data-dir=${customerDataDir.absolutePath}")
+            appendWithSpace("--no-default-browser-check")
+        }.toString().asCommandLine().exec()
+    }
+    retry(30) {
+        isPortAvailable(cdpPort).raiseIfTrue("CDP端口未打开", 129062)
+    }
+    val cdpUrl = "http://localhost:${cdpPort}"
+    //4.使用playwright完成采集
+    return playwright {
+        chromeOverCDP(cdpUrl) {
+            page(
+                "https://www.browserscan.net/zh",
+                listOf(AntiCrawlerDetectionPlugin())
+            ) {
+
+                sleep(1000)
+            }
+        }
+    }
+}
+```
+
+## 反机器人检测
+
+通过`CDP`连接到浏览器打开[指纹测试页面](https://www.browserscan.net/zh)可以看到页面被检测为`机器人`访问
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.45ofnsun6.webp)
+
+需要在页面加载之前运行以下脚本:
+
+```kotlin
+fun <R> Browser.page(
+    url: String,
+    plugins: List<Plugin> = emptyList(),
+    block: Page.() -> R
+): R {
+    val page = contexts().first().newPage()
+    val preventCdpCheckScript = """ (() => {
+            const originalError = Error;
+            function CustomError(...args) {
+                const error = new originalError(...args);
+                Object.defineProperty(error, 'stack', {
+                    get: () => '',
+                    configurable: false
+                });
+                return error;
+            }
+            CustomError.prototype = originalError.prototype;
+            window.Error = CustomError;
+
+            const observer = new MutationObserver(() => {
+                if (window.Error !== CustomError) {
+                    window.Error = CustomError;
+                }
+            });
+            observer.observe(document, { childList: true, subtree: true });
+        })();"""
+    return page.use {
+        plugins.onEach { plugin ->
+            plugin.apply(page)
+        }
+        page.evaluate(preventCdpCheckScript)
+        page.onLoad {
+            it.evaluate(preventCdpCheckScript)
+        }
+        page.navigate(url)
+        block(page)
+    }
+}
+```
+
+### 参考
+
+* [DedInc/pystealth: Python module for preventing detection of CDP in Selenium, Puppeteer, and Playwright.](https://github.com/DedInc/pystealth)
+* [ultrafunkamsterdam/nodriver: Successor of Undetected-Chromedriver. Providing a blazing fast framework for web automation, webscraping, bots and any other creative ideas which are normally hindered by annoying anti bot systems like Captcha / CloudFlare / Imperva / hCaptcha](https://github.com/ultrafunkamsterdam/nodriver)
+
+## 查找页面上的元素
+
+### 查找多个元素
+
+```kotlin
+val elements = page.querySelectorAll("div.card-body")
+```
+
+### 查找单个元素
+
+```kotlin
+val element = page.querySelector("div.card-body")
+```
+
+### 查找包含特定文本的元素
+
+```kotlin
+val locator = getByText("已经到底了，没有更多内容了")
+```
+import {Alert} from "antd";
+
+<Alert message="Success Text" type="success" />

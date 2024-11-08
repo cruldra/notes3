@@ -103,8 +103,7 @@ export default function LuxCommandBuilder() {
         if (values.youkuCcode && values.youkuCcode !== defaultValues.youkuCcode) parts.push(`--youku-ccode "${values.youkuCcode}"`);
         if (values.youkuCkey) parts.push(`--youku-ckey "${values.youkuCkey}"`);
         if (values.youkuPassword) parts.push(`--youku-password "${values.youkuPassword}"`);
-
-        parts.push(`"${values.url}"`);
+        parts.push(values.url);
         return parts.join(' ');
     };
     const onFinish = (values: LuxFormValues) => {
