@@ -85,6 +85,11 @@ const config: Config = {
                     sidebarId: 'jvmEcosystem',
                     position: 'left',
                     label: 'JVM',
+                },{
+                    type: 'docSidebar',
+                    sidebarId: 'frontEnd',
+                    position: 'left',
+                    label: '前端',
                 }, {
                     type: 'docSidebar',
                     sidebarId: 'tools',

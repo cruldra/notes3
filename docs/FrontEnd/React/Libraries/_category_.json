@@ -1,0 +1,8 @@
+{
+  "label": "常用库",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "平时开发过程中经常用到的React第三方库"
+  }
+}
