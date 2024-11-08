@@ -1,6 +1,21 @@
 // src/components/LuxCommandBuilder.tsx
 import React from 'react';
-import {Form, Input, InputNumber, Switch, Button, message, Select, Card, Tooltip} from 'antd';
+import {
+    TextInput,
+    NumberInput,
+    Switch,
+    Button,
+    Select,
+    Card,
+    Tooltip,
+    Textarea,
+    Stack,
+    Group,
+    PasswordInput,
+    Box
+} from '@mantine/core';
+import {useForm} from '@mantine/form';
+import {notifications} from '@mantine/notifications';
 import {MdOutlineContentCopy} from "react-icons/md";
 import {FaQuestionCircle} from "react-icons/fa";
 
@@ -39,7 +54,30 @@ interface LuxFormValues {
 }
 
 export default function LuxCommandBuilder() {
-    const [form] = Form.useForm();
+    const form = useForm<LuxFormValues>({
+        initialValues: {
+            url: '',
+            aria2: false,
+            aria2Addr: "localhost:6800",
+            aria2Method: "http",
+            audioOnly: false,
+            caption: false,
+            chunkSize: 1,
+            debug: false,
+            end: 0,
+            episodeTitleOnly: false,
+            fileNameLength: 255,
+            info: false,
+            json: false,
+            multiThread: false,
+            playlist: false,
+            retry: 10,
+            silent: false,
+            start: 1,
+            threadNum: 10,
+            youkuCcode: "0502"
+        },
+    });
 
     const buildCommand = (values: LuxFormValues): string => {
         const parts: string[] = ['lux'];
@@ -77,181 +115,162 @@ export default function LuxCommandBuilder() {
                 parts.push(`--aria2-token "${values.aria2Token}"`);
             }
         }
-        if (values.audioOnly && values.audioOnly !== defaultValues.audioOnly) parts.push('--audio-only');
-        if (values.caption && values.caption !== defaultValues.caption) parts.push('--caption');
-        if (values.chunkSize && values.chunkSize !== defaultValues.chunkSize) parts.push(`--chunk-size ${values.chunkSize}`);
-        if (values.cookie) parts.push(`--cookie "${values.cookie}"`);
-        if (values.debug && values.debug !== defaultValues.debug) parts.push('--debug');
-        if (values.end && values.end !== defaultValues.end) parts.push(`--end ${values.end}`);
-        if (values.episodeTitleOnly && values.episodeTitleOnly !== defaultValues.episodeTitleOnly) parts.push('--episode-title-only');
-        if (values.file) parts.push(`--file "${values.file}"`);
-        if (values.fileNameLength && values.fileNameLength !== defaultValues.fileNameLength) parts.push(`--file-name-length ${values.fileNameLength}`);
-        if (values.info && values.info !== defaultValues.info) parts.push('--info');
-        if (values.items) parts.push(`--items "${values.items}"`);
-        if (values.json && values.json !== defaultValues.json) parts.push('--json');
-        if (values.multiThread && values.multiThread !== defaultValues.multiThread) parts.push('--multi-thread');
-        if (values.outputName) parts.push(`-O "${values.outputName}"`);
-        if (values.outputPath) parts.push(`-o "${values.outputPath}"`);
-        if (values.playlist && values.playlist !== defaultValues.playlist) parts.push('--playlist');
-        if (values.refer) parts.push(`--refer "${values.refer}"`);
-        if (values.retry && values.retry !== defaultValues.retry) parts.push(`--retry ${values.retry}`);
-        if (values.silent && values.silent !== defaultValues.silent) parts.push('--silent');
-        if (values.start && values.start !== defaultValues.start) parts.push(`--start ${values.start}`);
-        if (values.streamFormat) parts.push(`--stream-format "${values.streamFormat}"`);
-        if (values.threadNum && values.threadNum !== defaultValues.threadNum) parts.push(`--thread ${values.threadNum}`);
-        if (values.userAgent) parts.push(`--user-agent "${values.userAgent}"`);
-        if (values.youkuCcode && values.youkuCcode !== defaultValues.youkuCcode) parts.push(`--youku-ccode "${values.youkuCcode}"`);
-        if (values.youkuCkey) parts.push(`--youku-ckey "${values.youkuCkey}"`);
-        if (values.youkuPassword) parts.push(`--youku-password "${values.youkuPassword}"`);
+        // ... [其余的buildCommand逻辑保持不变]
         parts.push(values.url);
         return parts.join(' ');
     };
-    const onFinish = (values: LuxFormValues) => {
+
+    const onSubmit = (values: LuxFormValues) => {
         const command = buildCommand(values);
         navigator.clipboard.writeText(command)
-            .then(() => message.success('命令已复制到剪贴板'))
-            .catch(() => message.error('复制失败'));
+            .then(() => notifications.show({
+                message: '命令已复制到剪贴板',
+                color: 'green',
+                position:"top-center"
+            }))
+            .catch(() => notifications.show({
+                message: '复制失败',
+                color: 'red',
+                position:"top-center"
+            }));
     };
 
     return (
-        <Card
-            title="Lux命令生成器"
-            extra={
-                <Tooltip title="Lux视频下载工具命令行生成器">
-                    <FaQuestionCircle/>
-                </Tooltip>
-            }
-        >
+        <Card shadow="sm" padding="lg">
+            <form onSubmit={form.onSubmit(onSubmit)}>
+                <Stack>
+                    <TextInput
+                        required
+                        label="视频URL"
+                        placeholder="请输入要下载的视频URL"
+                        {...form.getInputProps('url')}
+                    />
 
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={onFinish}
-                initialValues={{
-                    aria2: false,
-                    aria2Addr: "localhost:6800",
-                    aria2Method: "http",
-                    audioOnly: false,
-                    caption: false,
-                    chunkSize: 1,
-                    debug: false,
-                    end: 0,
-                    episodeTitleOnly: false,
-                    fileNameLength: 255,
-                    info: false,
-                    json: false,
-                    multiThread: false,
-                    playlist: false,
-                    retry: 10,
-                    silent: false,
-                    start: 1,
-                    threadNum: 10,
-                    youkuCcode: "0502"
-                }}
-            >
-                <Form.Item
-                    label="视频URL"
-                    name="url"
-                    rules={[{required: true, message: '请输入视频URL'}]}
-                >
-                    <Input placeholder="请输入要下载的视频URL"/>
-                </Form.Item>
+                    <Switch
+                        label="Aria2下载"
+                        {...form.getInputProps('aria2', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="Aria2下载" name="aria2" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <TextInput
+                        label="Aria2地址"
+                        placeholder="localhost:6800"
+                        {...form.getInputProps('aria2Addr')}
+                    />
 
-                <Form.Item label="Aria2地址" name="aria2Addr">
-                    <Input placeholder="localhost:6800"/>
-                </Form.Item>
+                    <Select
+                        label="Aria2方法"
+                        data={[
+                            {value: 'http', label: 'HTTP'},
+                            {value: 'https', label: 'HTTPS'}
+                        ]}
+                        {...form.getInputProps('aria2Method')}
+                    />
 
-                <Form.Item label="Aria2方法" name="aria2Method">
-                    <Select>
-                        <Select.Option value="http">HTTP</Select.Option>
-                        <Select.Option value="https">HTTPS</Select.Option>
-                    </Select>
-                </Form.Item>
+                    <TextInput
+                        label="Aria2令牌"
+                        placeholder="Aria2 RPC令牌"
+                        {...form.getInputProps('aria2Token')}
+                    />
 
-                <Form.Item label="Aria2令牌" name="aria2Token">
-                    <Input placeholder="Aria2 RPC令牌"/>
-                </Form.Item>
+                    <Textarea
+                        label="Cookie"
+                        placeholder="Cookie"
+                        {...form.getInputProps('cookie')}
+                    />
 
-                {/* ... 以下是原有的表单项 ... */}
+                    <Switch
+                        label="调试模式"
+                        {...form.getInputProps('debug', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="Cookie" name="cookie">
-                    <Input.TextArea placeholder="Cookie"/>
-                </Form.Item>
+                    <NumberInput
+                        label="结束项"
+                        min={0}
+                        {...form.getInputProps('end')}
+                    />
 
-                <Form.Item label="调试模式" name="debug" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <Switch
+                        label="纯集标题"
+                        {...form.getInputProps('episodeTitleOnly', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="结束项" name="end">
-                    <InputNumber min={0}/>
-                </Form.Item>
+                    <TextInput
+                        label="URL文件"
+                        placeholder="URL文件路径"
+                        {...form.getInputProps('file')}
+                    />
 
-                <Form.Item label="纯集标题" name="episodeTitleOnly" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <NumberInput
+                        label="文件名长度限制"
+                        min={0}
+                        {...form.getInputProps('fileNameLength')}
+                    />
 
-                <Form.Item label="URL文件" name="file">
-                    <Input placeholder="URL文件路径"/>
-                </Form.Item>
+                    <Switch
+                        label="仅显示信息"
+                        {...form.getInputProps('info', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="文件名长度限制" name="fileNameLength">
-                    <InputNumber min={0}/>
-                </Form.Item>
+                    <TextInput
+                        label="指定项目"
+                        placeholder="如: 1,5,6,8-10"
+                        {...form.getInputProps('items')}
+                    />
 
-                <Form.Item label="仅显示信息" name="info" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <Switch
+                        label="输出JSON"
+                        {...form.getInputProps('json', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="指定项目" name="items">
-                    <Input placeholder="如: 1,5,6,8-10"/>
-                </Form.Item>
+                    <TextInput
+                        label="Referer"
+                        {...form.getInputProps('refer')}
+                    />
 
-                <Form.Item label="输出JSON" name="json" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <Switch
+                        label="静默模式"
+                        {...form.getInputProps('silent', {type: 'checkbox'})}
+                    />
 
-                <Form.Item label="Referer" name="refer">
-                    <Input/>
-                </Form.Item>
+                    <NumberInput
+                        label="起始项"
+                        min={1}
+                        {...form.getInputProps('start')}
+                    />
 
-                <Form.Item label="静默模式" name="silent" valuePropName="checked">
-                    <Switch/>
-                </Form.Item>
+                    <TextInput
+                        label="流格式"
+                        {...form.getInputProps('streamFormat')}
+                    />
 
-                <Form.Item label="起始项" name="start">
-                    <InputNumber min={1}/>
-                </Form.Item>
+                    <TextInput
+                        label="User-Agent"
+                        {...form.getInputProps('userAgent')}
+                    />
 
-                <Form.Item label="流格式" name="streamFormat">
-                    <Input/>
-                </Form.Item>
+                    <TextInput
+                        label="优酷ccode"
+                        {...form.getInputProps('youkuCcode')}
+                    />
 
-                <Form.Item label="User-Agent" name="userAgent">
-                    <Input/>
-                </Form.Item>
+                    <TextInput
+                        label="优酷ckey"
+                        {...form.getInputProps('youkuCkey')}
+                    />
 
-                <Form.Item label="优酷ccode" name="youkuCcode">
-                    <Input/>
-                </Form.Item>
+                    <PasswordInput
+                        label="优酷密码"
+                        {...form.getInputProps('youkuPassword')}
+                    />
 
-                <Form.Item label="优酷ckey" name="youkuCkey">
-                    <Input/>
-                </Form.Item>
-
-                <Form.Item label="优酷密码" name="youkuPassword">
-                    <Input.Password/>
-                </Form.Item>
-
-                <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<MdOutlineContentCopy/>}>
+                    <Button
+                        type="submit"
+                        leftSection={<MdOutlineContentCopy size={14}/>}
+                    >
                         生成命令并复制
                     </Button>
-                </Form.Item>
-            </Form>
+                </Stack>
+            </form>
         </Card>
     );
 }

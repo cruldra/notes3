@@ -1,13 +1,20 @@
 import React from 'react';
-import {ConfigProvider, theme} from "antd";
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import {createTheme, MantineProvider} from '@mantine/core';
+import {Notifications} from "@mantine/notifications";
+
 
 // Default implementation, that you can customize
 export default function Root({children}) {
-    return <ConfigProvider
-        theme={{
-            algorithm: theme.darkAlgorithm,
-        }}
-    >
+
+
+    const theme = createTheme({
+        /** Your theme override here */
+
+    });
+    return  <MantineProvider defaultColorScheme="auto" theme={theme}>
+        <Notifications />
         {children}
-    </ConfigProvider>;
+    </MantineProvider>;
 }

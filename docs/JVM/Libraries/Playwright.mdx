@@ -133,6 +133,10 @@ val element = page.querySelector("div.card-body")
 ```kotlin
 val locator = getByText("已经到底了，没有更多内容了")
 ```
-import {Alert} from "antd";
+import {Info} from '@site/src/components/Alerts';
 
-<Alert message="Success Text" type="success" />
+<Info>
+
+    `getByText`返回的是一个[Locator](https://playwright.dev/docs/api/class-locator)对象,关于它和[ElementHandle](https://playwright.dev/docs/api/class-elementhandle)的区别可以参考[这里](https://poe.com/s/55GY7CXenvqwevo7RscG)
+</Info>
+

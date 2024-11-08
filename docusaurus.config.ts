@@ -59,6 +59,7 @@ const config: Config = {
                 },
                 theme: {
                     customCss: './src/css/custom.css',
+                    // customCss: 'node_modules/@mantine/core/styles.css',
                 },
             } satisfies Preset.Options,
         ],
@@ -76,9 +77,9 @@ const config: Config = {
             isCloseable: false,
         },*/
         colorMode: {
-            defaultMode: 'dark',
+            defaultMode: 'light',
             disableSwitch: true,
-            respectPrefersColorScheme: false,
+            respectPrefersColorScheme: true,
         },
         image: 'img/docusaurus-social-card.jpg',
         navbar: {
