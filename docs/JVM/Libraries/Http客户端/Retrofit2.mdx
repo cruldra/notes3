@@ -1,0 +1,125 @@
+---
+sidebar_position: 1
+---
+
+## 简介
+
+[retrofit](https://github.com/square/retrofit)用于实现类型安全声明式`HTTP`客户端,它将`RESTful`请求转换为`Java`接口,并使用
+`OkHttp`库发送网络请求.
+
+
+## 安装
+
+```xml
+<dependency>
+    <groupId>com.github.mrmike</groupId>
+    <artifactId>ok2curl</artifactId>
+    <version>0.8.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
+<dependency>
+    <groupId>com.squareup.okhttp3</groupId>
+    <artifactId>okhttp</artifactId>
+    <version>4.12.0</version>
+</dependency>
+<dependency>
+    <groupId>com.squareup.retrofit2</groupId>
+    <artifactId>retrofit</artifactId>
+    <version>2.11.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+## 端点声明
+
+```kotlin
+interface RetrofitExample {
+
+
+    @POST("/v2/video/generate")
+    fun createAvatarVideo(
+        @Body body: CreateAvatarVideoPayloads
+    ): Call<HeygenApiReturns<CreateAvatarVideoData>>
+
+
+    @GET("/v1/video_status.get")
+    fun retrieveVideo(@Query("video_id") videoId: String): Call<HeygenApiReturns<RetrieveVideoData>>
+
+    @GET("/v1/{path}")
+    fun testPath(@Path("path") path: String): Call<HeygenApiReturns<RetrieveVideoData>>
+
+    @POST("audio/transcriptions")
+    @Multipart
+    fun speechToText(
+        @Part file: MultipartBody.Part,
+        @Part("model") model: RequestBody,
+        @Part("language") language: RequestBody? = null,
+        @Part("prompt") prompt: RequestBody? = null,
+        @Part("response_format") responseFormat: RequestBody? = null,
+        @Part("temperature") temperature: RequestBody? = null,
+        @Part("timestamp_granularities") timestampGranularities: List<String>? = null,
+    ): Call<String>
+}
+
+```
+
+
+## 使用
+
+```kotlin
+fun videoEndpoints(apiKey: String, block: HeygenVideoEndpoints.() -> Unit) = retrofit {
+    baseUrl("https://api.heygen.com/")
+    client(createHttpClient {
+        addInterceptorBefore(CurlInterceptor::class.java, HeaderInterceptor(apiKey))
+        addInterceptor(ExceptionInterceptor())
+        autoDetectProxy()
+    })
+}.create(HeygenVideoEndpoints::class.java).block()
+
+
+videoEndpoints("MDc0ODc0M2M5Y2ViNDE0MjlhZjA3NmE5OTgxYzc3OGMtMTcyNzM1MjAwMg==") {
+    retrieveVideo("8725603dc8e240be830bfd2592ac8a67").execute().body().print()
+}
+```
+
+## 拦截器
+
+### 公共请求头
+
+有些接口需要公共请求头,比如`Authorization`
+
+
+```kotlin
+class HeaderInterceptor(private val apiKey: String) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val originalRequest = chain.request()
+        val requestBuilder = originalRequest.newBuilder()
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("X-Api-Key", apiKey)
+        val request = requestBuilder.build()
+        return chain.proceed(request)
+    }
+}
+```
+
+
+### 异常处理
+
+```kotlin
+class ExceptionInterceptor : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request()
+        val response = chain.proceed(request)
+        response.raiseForStatus {
+            0 to (this.body?.string() ?: "heygen error")
+        }
+        return response
+    }
+}
+```

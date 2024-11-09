@@ -1,0 +1,8 @@
+{
+  "label": "Http客户端",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Http客户端用于发送Http请求"
+  }
+}
