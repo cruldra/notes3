@@ -1,0 +1,8 @@
+{
+  "label": "内网穿透",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "内网穿透指通过代理将NAT或防火墙后面的本地服务器暴露给互联网"
+  }
+}

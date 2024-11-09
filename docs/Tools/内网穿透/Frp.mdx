@@ -1,0 +1,186 @@
+---
+sidebar_position: 1
+---
+
+[Frp](https://github.com/fatedier/frp)是`Ngrok`的开源替代方案,用于将内网服务暴露到公网.
+
+
+## 流行的内网穿透工具
+
+比较流行的内网穿透工具有:
+
+- [**ngrok**](https://ngrok.com/) - 使用简单,但免费用户仅支持一个端口转发
+- [**frp**](https://github.com/fatedier/frp) - 开源免费,需要自行部署,稍显麻烦
+- [**Sereo**](https://serveo.net/) - 不需要安装客户端,直接使用命令行即可,但是它使用的`serveo.net`域名在大陆无法访问
+
+## 应用场景
+
+一个典型的应用场景是对接支付回调,支付网关需要回调我们的接口
+
+我们可以把本地服务部署到拥有独立ip的公网服务器上去,但是对接测试阶段服务还不完善,随时需要调整,这样就会导致改动一行代码都要重新部署,非常麻烦.
+
+这时候就可以用内网穿透工具来把本地服务暴露到外网,让支付网关可以直接回调到我们本地开发环境创建的服务上.
+
+
+## 原理
+
+**内网穿透**是一种网络技术,通过在公网服务器部署中转服务,结合`TCP/UDP`转发、`HTTP隧道`、`P2P`等多种协议和技术,实现外网访问内网服务的目的
+
+实现内网穿透的几种常用手段:
+
+- TCP/UDP 端口转发
+- HTTP/HTTPS 隧道
+- P2P 穿透 - 使用`STUN`/`TURN`等协议实现点对点连接
+- 反向连接 - 内网客户端主动连接公网服务器并建立持久连接,公网服务器通过这个连接转发请求
+
+下面这张图展示了使用`frp`实现内网穿透的工作流程:
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240113/frp%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.5aromnx55000.svg)
+
+
+1. **客户端(Client)** - 即需要访问你的内网服务的对象,比如说在支付回调场景中,`客户端`指的就是`支付网关`,它通过公网连接到`FRP`服务器(FRPServer).
+2. **FRP服务器** - 用于接收客户端的请求,然后转发到你本地的`frp客户端`.需要部署在拥有独立ip的公网服务器上
+3. **FRP客户端** - 用于接收`FRP服务器`转发过来的请求,然后转发到你本地的服务上.需要部署在你本地的电脑上
+4. **内网服务** - 即你本地的服务,比如说在支付回调场景中,`内网服务`指的就是你本地的`支付回调端点`
+
+
+## 使用`Docker`部署
+
+### 准备工作
+
+先准备一个域名解析到你的公网服务器上,然后使用`nginx`或者`caddy`这类的反向代理服务器把域名指向`frp`服务端的`http`端口
+
+这里以`caddy`为例:
+
+```nginx
+frp.cruldra.cn {
+	tls cruldra@gmail.com
+	reverse_proxy 172.17.0.1:8007 {
+		header_up X-Forwarded-For {remote_host}
+	}
+}
+
+```
+
+### 在公网服务器上配置`frp`服务端
+
+1. 创建`Dockerfile`
+
+```dockerfile
+FROM amd64/alpine:3.10
+LABEL maintainer="snowdream <hzxvvs@google.com>"
+ENV FRP_VERSION 0.53.2
+RUN cd /root \
+    &&  wget --no-check-certificate -c https://github.com/fatedier/frp/releases/download/v${FRP_VERSION}/frp_${FRP_VERSION}_linux_amd64.tar.gz \
+    &&  tar zxvf frp_${FRP_VERSION}_linux_amd64.tar.gz  \
+    &&  cd frp_${FRP_VERSION}_linux_amd64/ \
+    &&  cp frps /usr/bin/ \
+    &&  cd /root \
+    &&  rm frp_${FRP_VERSION}_linux_amd64.tar.gz \
+    &&  rm -rf frp_${FRP_VERSION}_linux_amd64/
+ENTRYPOINT /usr/bin/frps -c /etc/frp/frps.ini
+```
+
+2. 构建出镜像
+
+```bash
+docker build -t dongjak/frp:latest .
+```
+
+3. 创建服务器配置文件`frps.ini`
+
+```ini
+[common]
+#通讯端口，用于和客户端内网穿透传输数据的端口，可自定义
+bind_port = 7000
+#http监听端口，注意可能和服务器上其他服务用的80冲突，比如centos有些默认有Apache，默认80，可自定义
+vhost_http_port = 8007
+#https监听端口，默认443，可自定义
+vhost_https_port = 4437
+#通过浏览器查看 frp 的状态以及代理统计信息展示(端口、用户名、密码)，可自定义
+dashboard_port = 7500
+dashboard_user = dongjak
+dashboard_pwd = 123394
+#通讯令牌(客户端需和此处一致)
+token = frp123
+# frp日志配置
+log_file = /var/log/frps.log
+log_level = info
+log_max_days = 3
+```
+
+4. 运行`frp`服务端
+
+```bash
+docker run  --rm --network host --name frp \
+-v /app/frp/frps.ini:/etc/frp/frps.ini \
+-v /app/frp/frps.log:/var/log/frps.log \
+dongjak/frp:latest
+```
+
+打开`frps.log`文件看到出现类似下面的输出表示`frp`服务端启动成功:
+
+```text
+2024/01/13 16:57:09 [I] [root.go:104] frps uses config file: /etc/frp/frps.ini
+2024/01/13 16:57:09 [I] [service.go:225] frps tcp listen on 0.0.0.0:7000
+2024/01/13 16:57:09 [I] [service.go:292] http service listen on 0.0.0.0:8007
+2024/01/13 16:57:09 [I] [service.go:306] https service listen on 0.0.0.0:4437
+2024/01/13 16:57:09 [I] [root.go:113] frps started successfully
+2024/01/13 16:57:09 [I] [service.go:338] dashboard listen on 0.0.0.0:7500
+```
+
+5. 下载`frp`客户端
+
+在[这里](https://github.com/fatedier/frp/releases/tag/v0.53.2)下载`windows`版本的`frp`发行包,需要和`frp`服务端版本一致
+
+下载完解压后如图:
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240114/image.5a58fqdrk940.png)
+
+这里面`frps`是`frp`服务端,`frpc`是`frp`客户端,`frps`可以删掉
+
+6. 创建客户端配置文件`frpc.ini`
+
+```ini
+[common]
+#填写服务器公网IP地址
+server_addr = 公网服务器地址
+#通讯端口，和服务端保持一致（如果是第三方云服务器需在厂商安全组策略中开放该端口）
+server_port = 7000
+#通讯令牌，和服务端保持一致
+token = frp123
+
+[web]
+type = http
+local_port = 8084
+custom_domains = frp.cruldra.cn
+
+[web2]
+type = http
+local_port = 8083
+custom_domains = frp2.cruldra.cn
+```
+
+7. 运行客户端
+
+```powershell
+.\frpc.exe -c .\frpc.ini
+```
+
+看到如下输出表示成功:
+
+```text
+WARNING: ini format is deprecated and the support will be removed in the future, please use yaml/json/toml format instead!
+2024/01/14 01:03:27 [I] [root.go:141] start frpc service for config file [.\frpc.ini]
+2024/01/14 01:03:27 [I] [service.go:287] try to connect to server...
+2024/01/14 01:03:27 [I] [service.go:279] [2104d01f397972e8] login to server success, get run id [2104d01f397972e8]
+2024/01/14 01:03:27 [I] [proxy_manager.go:173] [2104d01f397972e8] proxy added: [web]
+2024/01/14 01:03:27 [I] [control.go:169] [2104d01f397972e8] [web] start proxy success
+2024/01/14 01:03:39 [E] [proxy.go:204] [2104d01f397972e8] [web] connect to local service [127.0.0.1:8084] error: dial tcp 127.0.0.1:8084: connectex: No connection could be made because the target machine actively refused it.
+```
+
+8. 测试
+
+运行本地服务,然后使用域名访问即可:
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240114/image.1jbg8uo7ja1s.png)
