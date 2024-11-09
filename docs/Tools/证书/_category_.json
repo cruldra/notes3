@@ -1,0 +1,8 @@
+{
+  "label": "证书",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "和ssl证书相关的工具"
+  }
+}
