@@ -1,0 +1,161 @@
+---
+sidebar_position: 1
+---
+
+[CSS选择器](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_selectors)用来在页面上查找符合条件的元素,或者决定样式规则的生效范围.
+
+## 标签选择器
+
+`标签选择器`是最简单的选择器,它直接给定元素的标签名,然后匹配所有该类型的元素.
+
+**示例**
+```html
+<div>
+    <p>
+        <span>1</span>
+        <span>2</span>
+    </p>
+</div>
+```
+
+1. 找到所有`div`元素
+
+```css
+div
+```
+
+2. 找到所有`span`元素
+
+```css
+span
+```
+
+## 类选择器
+
+选择包含特定样式的元素
+
+**示例**
+
+```html
+<div class="class1">
+    <p class="class1 class2">
+        <span>1</span>
+        <span>2</span>
+    </p>
+</div>
+```
+
+1. 找到所有`class`属性值包含`class1`的元素
+
+```css
+.class1
+```
+
+2. 也可以组合标签选择器
+
+```css
+div.class1
+```
+
+## 属性选择器
+
+选择包含特定属性的元素
+
+**示例**
+
+```html
+<a href="https://www.bilibili.com/video"> B站</a>
+<a href="https://www.douyin.com/video"> 抖音</a>
+<form action="https://www.baidu.com" method="get">
+    <input type="text" name="wd" value="hello">
+    <input type="submit" value="提交">
+</form>
+```
+
+1. 属性值等于指定值
+
+```css
+input[type="submit"]
+```
+
+2. 属性值以指定值开头
+
+类似于`Java`中的`startsWith`
+
+```css
+[href^="//www.bilibili.com/video"]
+```
+
+## 关系选择器
+
+### \:has()
+
+用于选择包含特定元素的父元素
+
+**示例**
+
+```html
+<!-- 示例HTML结构 -->
+<div class="card">
+    <svg class="icon">
+        <path d="M12..."/>
+    </svg>
+    <span>文本1</span>
+</div>
+<div class="card">
+    <svg class="icon">
+        <path d="M24..."/>
+    </svg>
+    <span>文本2</span>
+</div>
+```
+
+1. 选择包含`icon`元素的父元素
+
+```css
+.card:has(svg.icon)
+```
+
+2. 选择包含特定path的svg
+
+```css
+svg.icon:has(path[d="M24..."])
+```
+
+## 兄弟选择器
+
+**示例**
+
+```html
+<!-- 示例HTML结构 -->
+<div class="container">
+    <svg class="icon"></svg>
+    <p>段落1</p>
+    <span>文本1</span>
+    <p>段落2</p>
+    <span>文本2</span>
+</div>
+```
+
+### \:next-sibling
+### \:previous-sibling
+
+### ~
+
+`~`选择器用于选择指定元素之后的所有同级元素
+
+1. 选择`icon`元素之后的所有同级`span`元素
+
+```css
+svg ~ span  /* 匹配 "文本1" 和 "文本2" */
+```
+
+### +
+
+`+`选择器用于选择指定元素之后的第一个同级元素
+
+1. 选择`icon`元素之后的第一个同级`span`元素
+
+```css
+svg + span  /* 匹配 "文本1" */
+```

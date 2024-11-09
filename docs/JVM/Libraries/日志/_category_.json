@@ -1,0 +1,8 @@
+{
+  "label": "日志",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "和日志有关的第三方库"
+  }
+}
