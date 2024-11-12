@@ -1,0 +1,48 @@
+---
+sidebar_position: 1
+---
+
+
+[生成器模式](https://refactoringguru.cn/design-patterns/builder)是一种[创建型设计模式](https://refactoringguru.cn/design-patterns/creational-patterns),用于逐步创建复杂对象
+
+
+## 示例
+
+```kotlin
+/**
+ * 提示词模板
+ */
+@Entity
+@Table(name = "SZR_PROMPT")
+open class SzrPrompt : BaseModel() {
+    /**
+     * 使用的模型
+     */
+    @NotNull
+    @Lob
+    @Column(name = "MODEL_NAME", nullable = false)
+    open var modelName: String? = null
+
+    /**
+     * 模板内容
+     */
+    @NotNull
+    @Lob
+    @Column(name = "CONTENT", nullable = false)
+    open var content: String? = null
+
+
+    class Builder {
+        private val instance = SzrPrompt()
+        fun id(id: Long? = null) = apply { instance.id = id }
+        fun modelName(modelName: String? = null) = apply { instance.modelName = modelName }
+        fun content(content: String? = null) = apply { instance.content = content }
+        fun build() = instance
+    }
+
+    companion object {
+        @JvmStatic
+        fun builder() = Builder()
+    }
+}
+```

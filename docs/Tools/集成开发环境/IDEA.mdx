@@ -1,0 +1,33 @@
+---
+sidebar_position: 1
+---
+
+## 修改配置及缓存目录
+
+`Jetbrains`系列`IDE`的默认目录:
+
+| 目录类型 | 目录位置 |
+| --- | --- |
+| 配置目录 | `C:\Users\xxx\AppData\Roaming\JetBrains` |
+| 缓存目录 | `C:\Users\xxx\AppData\Local\JetBrains` |
+
+要修改这些目录,可以修改`IDE`的配置文件`idea.properties`:
+
+```properties
+#配置目录
+idea.config.path=D:/ProgramData/WebStorm/config
+
+#缓存目录
+idea.system.path=D:/ProgramData/WebStorm/system
+
+#下面这两个配置取消注释即可
+idea.plugins.path=${idea.config.path}/plugins
+idea.log.path=${idea.system.path}/log
+```
+
+
+import {Info} from '@site/src/components/Alerts';
+
+<Info>
+    更多详情参考[这里](https://blog.csdn.net/qq_15769939/article/details/112649686)
+</Info>

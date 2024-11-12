@@ -1,0 +1,8 @@
+{
+  "label": "IoC",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "IoC(控制反转)是一种设计思想,将对象的创建和依赖关系的管理交给容器来处理,实现松耦合"
+  }
+}
