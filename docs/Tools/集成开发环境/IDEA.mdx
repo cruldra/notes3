@@ -11,7 +11,7 @@ sidebar_position: 1
 | 配置目录 | `C:\Users\xxx\AppData\Roaming\JetBrains` |
 | 缓存目录 | `C:\Users\xxx\AppData\Local\JetBrains` |
 
-要修改这些目录,可以修改`IDE`的配置文件`idea.properties`:
+可以通过修改`$IDE/bin`目录下的的配置文件`idea.properties`来修改配置及缓存目录:
 
 ```properties
 #配置目录
@@ -26,8 +26,20 @@ idea.log.path=${idea.system.path}/log
 ```
 
 
+
 import {Info} from '@site/src/components/Alerts';
 
 <Info>
     更多详情参考[这里](https://blog.csdn.net/qq_15769939/article/details/112649686)
 </Info>
+
+
+## 破解
+
+在安装目录下找到`$product.exe.vmoptions`,然后写入:
+
+```properties
+--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED
+-javaagent:D:\Sources\ja-netfilter-V2023\ja-netfilter.jar=jetbrains
+```

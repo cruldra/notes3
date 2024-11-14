@@ -1,0 +1,8 @@
+{
+  "label": "ORM",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "ORM(对象关系映射)是一种将数据库表与面向对象编程语言中的对象建立映射关系的技术."
+  }
+}
