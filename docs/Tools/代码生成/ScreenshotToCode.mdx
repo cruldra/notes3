@@ -1,0 +1,45 @@
+---
+sidebar_position: 1
+---
+
+
+[screenshot-to-code](https://github.com/abi/screenshot-to-code)是一个开源项目,用于屏幕截图转换为代码.
+
+## 支持的语言
+
+* HTML + Tailwind
+* HTML + CSS
+* React + Tailwind
+* Vue + Tailwind
+* Bootstrap
+* Ionic + Tailwind
+* SVG
+
+## 支持的AI模型
+
+* Claude Sonnet 3.5
+* GPT-4o
+
+
+## 安装
+
+### 使用Docker
+
+1. 下载源码
+
+```bash
+git clone https://github.com/abi/screenshot-to-code.git
+```
+
+2. 配置`gpt4o`或者`claude`密钥
+
+```bash
+echo "OPENAI_API_KEY=sk-your-key" > .env
+echo "ANTHROPIC_API_KEY=your-key" > .env
+```
+
+3. 启动
+
+```bash
+docker compose up -d --build
+```

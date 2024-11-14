@@ -1,0 +1,119 @@
+---
+sidebar_position: 1
+---
+
+[Docker Compose](https://docs.docker.com/compose/)是一个用于定义和运行多个`Docker`容器的命令行工具.
+
+
+
+## 帮助文档
+
+```text
+使用说明：
+定义并运行 Docker 多容器应用。
+
+用法：
+  docker-compose [-f <参数>...] [--profile <名称>...] [选项] [--] [命令] [参数...]
+  docker-compose -h|--help
+
+选项：
+  -f, --file 文件             指定另一个 compose 文件
+                              (默认: docker-compose.yml)
+  -p, --project-name 名称     指定另一个项目名称
+                              (默认: 目录名)
+  --profile 名称              指定要启用的配置文件
+  -c, --context 名称          指定上下文名称
+  --verbose                   显示更多输出信息
+  --log-level 级别           设置日志级别 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  --ansi (never|always|auto)  控制何时打印 ANSI 控制字符
+  --no-ansi                   不打印 ANSI 控制字符（已弃用）
+  -v, --version               打印版本信息并退出
+  -H, --host 主机             要连接的守护进程套接字
+
+  --tls                       使用 TLS；由 --tlsverify 隐含
+  --tlscacert CA路径         仅信任此 CA 签名的证书
+  --tlscert 客户端证书路径    TLS 证书文件路径
+  --tlskey TLS密钥路径       TLS 密钥文件路径
+  --tlsverify                使用 TLS 并验证远程
+  --skip-hostname-check      不检查守护进程的主机名是否与客户端证书中指定的名称匹配
+  --project-directory 路径    指定另一个工作目录
+                              (默认: Compose 文件的路径)
+  --compatibility            如果设置，Compose 将尝试转换 v3 文件中的键到非 Swarm 等效项（已弃用）
+  --env-file 路径            指定另一个环境文件
+
+命令：
+  build              构建或重新构建服务
+  config             验证并查看 Compose 文件
+  create             创建服务
+  down               停止并移除资源
+  events             实时接收容器事件
+  exec               在运行中的容器中执行命令
+  help               获取命令帮助
+  images             列出镜像
+  kill               强制停止容器
+  logs               查看容器输出
+  pause              暂停服务
+  port               打印端口绑定的公共端口
+  ps                 列出容器
+  pull               拉取服务镜像
+  push               推送服务镜像
+  restart            重启服务
+  rm                 移除已停止的容器
+  run                运行一次性命令
+  scale              设置服务的容器数量
+  start              启动服务
+  stop               停止服务
+  top                显示正在运行的进程
+  unpause            恢复暂停的服务
+  up                 创建并启动容器
+  version            显示版本信息并退出
+```
+
+### up
+
+```text
+构建、（重新）创建、启动并附加到服务的容器。
+
+除非已经在运行，否则此命令也会启动任何链接的服务。
+
+docker-compose up 命令会聚合每个容器的输出。当命令退出时，所有容器都会停止。运行 docker-compose up -d 会在后台启动容器并保持运行。
+
+如果服务已有现存的容器，且在容器创建后服务的配置或镜像发生了变化，docker-compose up 会通过停止并重新创建容器（保留挂载的卷）来应用这些变化。要防止 Compose 应用这些变化，请使用 --no-recreate 标志。
+
+如果你想强制 Compose 停止并重新创建所有容器，请使用 --force-recreate 标志。
+
+用法：up [选项] [--scale 服务=数量...] [--] [服务...]
+
+选项：
+-d, --detach 后台模式：在后台运行容器，打印新容器名称。
+与 --abort-on-container-exit 不兼容。
+--no-color 生成单色输出。
+--quiet-pull 拉取时不打印进度信息
+--no-deps 不启动链接的服务。
+--force-recreate 即使容器配置和镜像没有改变，也重新创建容器。
+--always-recreate-deps 重新创建依赖容器。
+与 --no-recreate 不兼容。
+--no-recreate 如果容器已存在，不重新创建它们。
+与 --force-recreate 和 -V 不兼容。
+--no-build 即使缺失也不构建镜像。
+--no-start 创建服务后不启动它们。
+--build 在启动容器前构建镜像。
+--abort-on-container-exit 如果任何容器停止，则停止所有容器。
+与 -d 不兼容。
+--attach-dependencies 附加到依赖容器。
+-t, --timeout TIMEOUT 在附加模式或容器已在运行时，
+使用此超时时间（秒）来关闭容器。（默认：10）
+-V, --renew-anon-volumes 重新创建匿名卷，而不是从之前的容器获取数据。
+--remove-orphans 删除未在 Compose 文件中定义的服务的容器。
+--exit-code-from SERVICE 返回选定服务容器的退出码。
+暗含 --abort-on-container-exit。
+--scale SERVICE=NUM 将 SERVICE 扩展到 NUM 个实例。
+覆盖 Compose 文件中的 scale 设置（如果存在）。
+--no-log-prefix 不在日志中打印前缀。
+```
+
+## 生成命令行
+
+import DockerComposeCommandBuilder from '@site/src/components/DockerComposeCommandBuilder';
+
+<DockerComposeCommandBuilder/>

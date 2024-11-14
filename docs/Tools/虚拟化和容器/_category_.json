@@ -1,0 +1,8 @@
+{
+  "label": "虚拟化和容器",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "虚拟化和容器技术是现代IT基础设施的核心,通过资源隔离和抽象化提供灵活、高效的计算环境."
+  }
+}
