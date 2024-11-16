@@ -1,23 +1,9 @@
-// src/components/CertbotCommandBuilder.tsx
-import React, { useState } from 'react';
-import {
-    TextInput,
-    Switch,
-    Button,
-    Card,
-    Stack,
-    Group,
-    Select,
-    MultiSelect,
-    Tooltip,
-    ActionIcon,
-    Text,
-    Badge,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
-import { MdOutlineContentCopy } from "react-icons/md";
-import { FaQuestionCircle, FaPlus, FaTrash } from "react-icons/fa";
+import React, {useState} from 'react';
+import {ActionIcon, Badge, Button, Card, Group, Select, Stack, Switch, Text, TextInput,} from '@mantine/core';
+import {useForm} from '@mantine/form';
+import {notifications} from '@mantine/notifications';
+import {MdOutlineContentCopy} from "react-icons/md";
+import {FaPlus, FaTrash} from "react-icons/fa";
 
 interface CertbotFormValues {
     domains: string[];
