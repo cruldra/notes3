@@ -1,0 +1,8 @@
+{
+  "label": "常用库",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Nodejs生态常用库"
+  }
+}

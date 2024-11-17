@@ -1,0 +1,187 @@
+---
+sidebar_position: 1
+---
+
+[Prisma](https://www.prisma.io/docs/orm/overview/introduction/what-is-prisma)是一个开源的`ORM`框架,用于与数据库进行交互.它提供了一种简单而强大的方式来管理数据库连接、执行查询和处理数据.
+
+## 安装和初始化
+
+### 安装依赖
+```bash
+# 提供cli工具,开发时需要用到
+npm install prisma --save-dev
+
+# 提供数据库交互API,生产时需要用到
+npm install @prisma/client
+```
+
+### 初始化
+
+```bash
+npx prisma init
+```
+
+当执行此命令时,`Prisma`会在项目根目录下创建一个`prisma`目录,其中包含一个`schema.prisma`文件,用于定义数据库模型和连接信息.
+
+```text
+prisma/
+  └── schema.prisma    # Prisma 模型定义文件
+.env                   # 环境变量文件
+```
+
+### 配置数据库连接
+
+import {DatabaseURLBuilder} from '@site/src/components/CommandBuilder';
+
+<DatabaseURLBuilder/>
+
+
+
+当修改了`schema.prisma`文件后,需要执行此命令来生成对应的`TypeScript`类型和数据库交互代码.
+
+## 模型定义和生成
+
+### 模型定义
+
+在`schema.prisma`文件中,可以使用`model`关键字定义数据库模型.每个模型对应数据库中的一张表,模型中的字段对应表中的列.
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+    <TabItem value="base" label="基本" default>
+    ```prisma
+        ///用户信息
+        model User {
+            ///用户id
+            id        Int      @id @default(autoincrement())
+            ///用户名(唯一)
+            username  String   @unique
+            ///用户密码
+            password  String
+            ///手机号(唯一)
+            phone     String?  @unique
+            ///邮箱(唯一)
+            email     String?  @unique
+            ///创建时间
+            createdAt DateTime @default(now())
+            ///更新时间
+            updatedAt DateTime @updatedAt
+
+            @@map("users")
+        }
+    ```
+    </TabItem>
+    <TabItem value="pnpm" label="pnpm">
+
+    </TabItem>
+</Tabs>
+
+
+### 生成客户端代码
+
+```bash
+npx prisma generate
+```
+
+当执行此命令时,`Prisma`会在`node_modules/.prisma/client/`目录下生成类似下面这样的客户端代码:
+
+```text
+node_modules/.prisma/client/
+├── index.js                # 主入口文件
+├── index.d.ts             # TypeScript 类型定义
+├── schema.prisma          # schema 副本
+└── libquery_engine-*.dll  # 查询引擎
+```
+
+参考[当我执行npx prisma generate时会发生什么](https://poe.com/s/vbPzPtG9lcLPLE1duu0s)
+
+## 架构迁移
+
+`架构迁移`是指在数据库中创建、修改或删除表、列、约束等数据库对象的过程.`Prisma`提供了`Prisma Migrate`命令行工具来实现这一功能.
+
+```bash
+npx prisma migrate dev --name init
+```
+
+这个命令会基于`schema.prisma`文件中的模型定义,在数据库中创建相应的表和列.并将生成的迁移脚本保存到`prisma/migrations`目录下.
+
+```text
+使用数据库迁移更新数据库架构
+
+用法：
+  $ prisma migrate [命令] [选项]
+
+开发环境命令：
+
+         dev   根据 Prisma schema 的变更创建迁移，将其应用到数据库，
+               并触发生成器（如 Prisma Client）
+       reset   重置数据库并应用所有迁移（所有数据将丢失）
+
+生产/预发环境命令：
+
+      deploy   将待处理的迁移应用到数据库
+      status   检查数据库迁移的状态
+     resolve   解决数据库迁移问题（如基线、失败的迁移、热修复等）
+
+适用于所有环境的命令：
+
+        diff   比较两个任意来源的数据库架构
+
+选项：
+
+  -h, --help   显示此帮助信息
+    --schema   指定 Prisma schema 文件的自定义路径
+
+示例：
+
+  根据 Prisma schema 的变更创建迁移，应用到数据库，并触发生成器
+  $ prisma migrate dev
+
+  重置数据库并应用所有迁移
+  $ prisma migrate reset
+
+  在生产/预发环境中应用待处理的迁移
+  $ prisma migrate deploy
+
+  检查生产/预发环境数据库中的迁移状态
+  $ prisma migrate status
+
+  指定 schema 文件
+  $ prisma migrate status --schema=./schema.prisma
+
+  比较两个数据库的架构并将差异渲染为 SQL 脚本
+  $ prisma migrate diff \
+    --from-url "$DATABASE_URL" \
+    --to-url "postgresql://login:password@localhost:5432/db" \
+    --script
+```
+
+### 生成注释
+
+默认情况下,`npx prisma migrate dev`命令不会给数据库和列添加注释.如果需要添加注释,需要用到[prisma-db-comments-generator](https://github.com/onozaty/prisma-db-comments-generator)
+
+```bash
+npm install --save-dev @onozaty/prisma-db-comments-generator
+```
+
+然后在`schema.prisma`文件中修改生成器配置:
+
+```prisma
+generator comments {
+  provider = "prisma-db-comments-generator"
+}
+```
+
+在`schema.prisma`文件中使用`///`注释来添加注释,例如:
+
+```prisma
+model User {
+    ///用户id
+    id        Int      @id @default(autoincrement())
+    ///用户名(唯一)
+    username  String   @unique
+}
+```
+
+最后执行`npx prisma migrate dev`命令,即可在数据库中看到注释.
