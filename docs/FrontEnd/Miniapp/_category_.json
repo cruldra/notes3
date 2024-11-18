@@ -1,0 +1,8 @@
+{
+  "label": "小程序",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "微信、支付宝、百度、字节等一系列小程序的开发"
+  }
+}

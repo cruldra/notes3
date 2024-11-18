@@ -1,0 +1,8 @@
+{
+  "label": "Taro",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Taro是一个开源的跨平台开发框架,允许开发者使用React/Vue等语法编写一套代码,然后同时生成运行于微信小程序、支付宝小程序、H5、React Native 等多个平台的应用."
+  }
+}

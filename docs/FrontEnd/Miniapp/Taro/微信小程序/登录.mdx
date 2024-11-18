@@ -1,0 +1,50 @@
+---
+sidebar_position: 1
+---
+
+微信小程序实现登录主要流程如图:
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.26li88rq08.png)
+
+## 前端
+
+```tsx
+Taro.login({
+  success: function (res) {
+    if (res.code) {
+      //发起网络请求
+      Taro.request({
+        url: 'https://test.com/onLogin',
+        data: {
+          code: res.code
+        }
+      })
+    } else {
+      console.log('登录失败！' + res.errMsg)
+    }
+  }
+})
+```
+
+
+## 后端
+
+1. 引入[微信Java开发包](https://github.com/binarywang/WxJava)
+
+```xml
+<dependency>
+  <groupId>com.github.binarywang</groupId>
+  <artifactId>weixin-java-miniapp</artifactId>
+  <version>4.6.0</version>
+</dependency>
+```
+
+2. 创建`WxMaService`实例
+
+```kotlin
+val wxMaService: WxMaService = WxMaServiceImpl()
+val config = WxMaDefaultConfigImpl()
+config.appid = "wx123456789"
+config.secret = "1234567890abcdef"
+wxMaService.wxMaConfig = config
+```

@@ -1,0 +1,8 @@
+{
+  "label": "预处理器",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "CSS预处理器是一种特殊的编程语言,它扩展了CSS语法，提供变量、嵌套、混合、函数等特性,让CSS更易于维护和复用."
+  }
+}

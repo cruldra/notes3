@@ -1,0 +1,79 @@
+---
+sidebar_position: 1
+---
+
+
+`css`预处理器是一种程序,它能让你用更强大的方式编写`CSS`.**它在普通`CSS`的基础上增加编程特性,最终编译成普通的`CSS`文件.**
+
+主要的`CSS`预处理器有:
+
+- [Sass](https://www.sass.hk/)
+- [Less](http://lesscss.cn/)
+- [Stylus](http://stylus-lang.com/)
+
+以`sass`为例,可以通过对比来解释预处理器的作用:
+
+1. 变量使用:
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+    <TabItem value="css" label="CSS" default>
+        ```css
+        .button {
+            background: #1890ff;
+            color: #1890ff;
+        }
+        .title {
+            color: #1890ff;
+        }
+        ```
+    </TabItem>
+    <TabItem value="sass" label="Sass">
+        ```sass
+        $primary-color: #1890ff;
+        .button {
+            background: $primary-color;
+            color: $primary-color;
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+2. 嵌套规则:
+
+<Tabs>
+    <TabItem value="css" label="CSS" default>
+        ```css
+        .nav {
+            background: #fff;
+        }
+        .nav .list {
+            margin: 0;
+        }
+        .nav .list .item {
+            padding: 10px;
+        }
+        .nav .list .item:hover {
+            background: #f0f0f0;
+        }
+        ```
+    </TabItem>
+    <TabItem value="sass" label="Sass">
+        ```css
+        .nav {
+            background: #fff;
+            .list {
+                margin: 0;
+                .item {
+                    padding: 10px;
+                    &:hover {
+                        background: #f0f0f0;
+                    }
+                }
+            }
+        }
+        ```
+    </TabItem>
+</Tabs>

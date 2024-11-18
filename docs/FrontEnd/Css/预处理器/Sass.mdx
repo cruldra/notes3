@@ -1,0 +1,147 @@
+[Sass(Syntactically Awesome Style Sheets)](https://www.sass.hk/)是一个`CSS`预处理器,它扩展了`CSS`的功能,让样式编写更灵活和强大.
+
+## 主要功能
+
+1. 变量使用:
+```scss
+// 定义变量
+$primary-color: #1890ff;
+$font-stack: Arial, sans-serif;
+
+.button {
+  background: $primary-color;
+  font-family: $font-stack;
+}
+```
+
+2. 嵌套规则:
+```scss
+.nav {
+  background: #fff;
+
+  ul {
+    margin: 0;
+    padding: 0;
+
+    li {
+      display: inline-block;
+
+      a {
+        color: #000;
+        &:hover {  // & 表示父选择器
+          color: blue;
+        }
+      }
+    }
+  }
+}
+```
+
+3. 混入(Mixins):
+```scss
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  @include flex-center;
+  background: #f0f0f0;
+}
+```
+
+4. 继承:
+```scss
+%button-base {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+}
+
+.primary-button {
+  @extend %button-base;
+  background: blue;
+}
+
+.secondary-button {
+  @extend %button-base;
+  background: gray;
+}
+```
+
+5. 运算:
+```scss
+$base-size: 16px;
+
+.container {
+  width: 100%;
+  padding: $base-size * 2;
+  margin: $base-size + 10px;
+}
+```
+
+6. 函数:
+```scss
+@function calculate-width($n) {
+  @return $n * 100px;
+}
+
+.box {
+  width: calculate-width(2); // 200px
+}
+```
+
+7. 条件语句:
+```scss
+@mixin theme($dark: true) {
+  @if $dark {
+    background: black;
+    color: white;
+  } @else {
+    background: white;
+    color: black;
+  }
+}
+
+.dark-theme {
+  @include theme(true);
+}
+```
+
+8. 循环:
+```scss
+@for $i from 1 through 3 {
+  .item-#{$i} {
+    width: 100px * $i;
+  }
+}
+```
+
+9. 导入:
+```scss
+// _variables.scss
+$primary-color: #1890ff;
+
+// main.scss
+@import 'variables';
+
+.button {
+  color: $primary-color;
+}
+```
+
+10. 颜色函数:
+```scss
+$base-color: #1890ff;
+
+.button {
+  background: $base-color;
+  &:hover {
+    background: darken($base-color, 10%);
+  }
+  &:active {
+    background: lighten($base-color, 10%);
+  }
+}
+```
