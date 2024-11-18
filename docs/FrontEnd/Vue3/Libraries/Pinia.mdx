@@ -1,0 +1,91 @@
+[Pinia](https://pinia.vuejs.org/zh/)是`Vue`的官方状态管理库,作为`Vuex`的继任者.
+
+## 安装
+
+```bash
+npm install pinia
+```
+
+## 配置
+
+```ts
+// main.ts
+import { createPinia } from 'pinia'
+const pinia = createPinia()
+app.use(pinia)
+```
+
+## 创建状态仓库
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+    <TabItem value="original" label="原生" default>
+        ```ts
+        // store/counter.ts
+        import { defineStore } from 'pinia'
+
+        export const useCounterStore = defineStore('counter', {
+          // 状态
+          state: () => ({
+            count: 0,
+            name: 'Eduardo'
+          }),
+
+          // 计算属性
+          getters: {
+            doubleCount: (state) => state.count * 2
+          },
+
+          // 方法
+          actions: {
+            increment() {
+              this.count++
+            },
+            async fetchData() {
+              const data = await api.get('...')
+              this.someData = data
+            }
+          }
+        })
+        ```
+    </TabItem>
+    <TabItem value="setup" label="Setup">
+        ```ts
+        // store/counter.ts
+        import { defineStore } from 'pinia'
+
+        export const useCounterStore = defineStore('counter', () => {
+            const count = ref(0)
+            const doubleCount = computed(() => count.value * 2)
+
+            function increment() {
+                count.value++
+            }
+
+            return {count, doubleCount, increment}
+        })
+        ```
+    </TabItem>
+</Tabs>
+
+## 在组件中使用
+
+```vue
+<script setup>
+import { useCounterStore } from '@/stores/counter'
+
+const store = useCounterStore()
+
+// 访问 state
+console.log(store.count)
+
+// 调用 action
+store.increment()
+
+// 使用 getter
+console.log(store.doubleCount)
+</script>
+```
+

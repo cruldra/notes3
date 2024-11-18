@@ -1,0 +1,67 @@
+/* src/components/Collapsible.module.css */
+.collapsible {
+    margin: 1rem 0;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    border-radius: var(--ifm-code-border-radius);
+    background: var(--ifm-background-color);
+    box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.toggle {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: var(--ifm-color-emphasis-100);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ifm-color-emphasis-800);
+    transition: background 0.2s ease;
+}
+
+.toggle:hover {
+    background: var(--ifm-color-emphasis-200);
+}
+
+.title {
+    flex: 1;
+    text-align: left;
+}
+
+.icon {
+    margin-left: 1rem;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.content {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.open {
+    border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.codeWrapper {
+    margin: 0;
+    padding: 0;
+}
+
+.codeWrapper pre {
+    margin: 0;
+    border-radius: 0;
+}
+
+/* 暗黑模式适配 */
+[data-theme='dark'] .toggle {
+    background: var(--ifm-color-emphasis-200);
+    color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme='dark'] .toggle:hover {
+    background: var(--ifm-color-emphasis-300);
+}

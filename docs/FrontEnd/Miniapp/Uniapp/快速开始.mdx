@@ -1,0 +1,155 @@
+## 使用`cli`创建项目
+
+1. 选安装`vue cli`
+
+```bash
+npm install -g @vue/cli
+```
+
+2. 创建`ts`+`vue3`+`vite`+`uniapp`项目
+
+```bash
+npx degit dcloudio/uni-preset-vue#vite-ts my-vue3-project
+```
+
+## 添加`Unocss`支持
+
+1. 安装`unocss`以及[小程序专用预设](https://github.com/unocss-applet/unocss-applet/blob/main/README.zh-CN.md)
+
+```bash
+pnpm i -D unocss unocss-applet
+```
+
+import Collapsible from '@site/src/components/Collapsible';
+
+
+2. `UnoCSS`配置
+
+
+<Collapsible
+    title="unocss.config.ts"
+    defaultOpen={false}
+    maxHeight={1000}
+    showLineNumbers={true}
+    language="javascript"
+>
+    ```ts
+    import type { Preset, SourceCodeTransformer } from 'unocss'
+    import {defineConfig, presetAttributify} from 'unocss'
+
+    import {
+        presetApplet,
+        presetRemRpx,
+        transformerAttributify,
+    } from 'unocss-applet'
+
+    // uni-app
+    const isApplet = process.env?.UNI_PLATFORM?.startsWith('mp-') ?? false
+    // taro
+    // const isApplet = process.env.TARO_ENV !== 'h5' ?? false
+    const presets: Preset[] = []
+    const transformers: SourceCodeTransformer[] = []
+
+    if (isApplet) {
+        presets.push(presetApplet())
+        presets.push(presetRemRpx())
+        transformers.push(transformerAttributify({ ignoreAttributes: ['block'] }))
+    }else {
+        presets.push(presetApplet())
+        presets.push(presetAttributify())
+        presets.push(presetRemRpx({ mode: 'rpx2rem' }))
+    }
+
+    export default defineConfig({
+        presets: [
+        // ...
+        ...presets,
+        ],
+        transformers: [
+        // ...
+        ...transformers,
+        ],
+    })
+    ```
+</Collapsible>
+
+3. `Vite`配置
+
+<Collapsible
+    title="vite.config.mts"
+    defaultOpen={false}
+    maxHeight={1000}
+    showLineNumbers={true}
+    language="javascript"
+    >
+    ```ts
+        import uniModule from '@dcloudio/vite-plugin-uni'
+        import UnoCSS from 'unocss/vite'
+        import { defineConfig } from 'vite'
+
+        // @ts-expect-error missing types
+        const Uni = uniModule.default || uniModule
+
+        export default defineConfig({
+            plugins: [
+                Uni(),
+                UnoCSS(),
+            ],
+        })
+    ```
+</Collapsible>
+
+4. 引入`unocss`
+
+在`main.ts`中导入`import 'uno.css'`
+
+## 配置路径别名
+
+路径别名用于简化导入路径,假设有以下项目结构:
+```text
+项目结构：
+/src
+  /stores
+    example.ts
+  /components
+    Hello.vue
+```
+
+```ts
+// 使用别名前
+import { useCounterStore } from '../../stores/example'
+
+// 使用别名后
+import { useCounterStore } from '@/stores/example'
+```
+
+要启用路径别名,需要在`vite.config.ts`中添加以下配置:
+
+```ts
+// vite.config.ts
+const pathResolve = (dir: string): any => {
+    return resolve(__dirname, '.', dir);
+};
+
+const alias: Record<string, string> = {
+    '@': pathResolve('./src/'),
+};
+export default defineConfig({
+    resolve: {
+        alias,
+    },
+});
+```
+
+如果使用的`TypeScript`,还需要在`tsconfig.json`中添加以下配置:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+  }
+}
+```
