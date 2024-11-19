@@ -1,0 +1,77 @@
+---
+sidebar_position: 2
+---
+[TabBar](https://uniapp.dcloud.net.cn/collocation/pages.html#tabbar)是`uni-app`中的底部导航栏组件,用于在应用的主要功能界面之间进行快速切换.
+
+## 原生`Tabbar`
+
+1. 首先准备好页面
+
+```text
+project
+├── src                        // 源代码目录
+│   ├── pages                 // 页面文件目录
+│   │   ├── index
+│   │   │   └── index.vue
+│   │   └── mine
+│   │       └── index.vue
+```
+
+
+2. 将页面注册到`pages.json`中
+
+```json
+//pages.json
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "主页"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "个人中心"
+      }
+    }
+  ],
+  ...其它配置,
+}
+```
+
+3. 配置`tabbar`
+
+```json
+//pages.json
+{
+  ...其它配置,
+  "tabBar": {
+    "color": "#474747",
+    "selectedColor": "#dc3722",
+    "backgroundColor": "#f2f3f5",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/images/home.png",
+        "selectedIconPath": "static/images/selectedHome.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "static/images/about.png",
+        "selectedIconPath": "static/images/selectedAbout.png"
+      }
+    ]
+  }
+}
+```
+
+:::warning 警告
+确保`tabbar`的`list`中`pagePath`与`pages.json`中`pages`的`path`一致,否则会看到类似下面这样的错误:
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.2yydqhz24r.png)
+:::
+

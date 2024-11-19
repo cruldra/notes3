@@ -1,0 +1,134 @@
+## 主要流程
+
+微信小程序实现登录主要流程如图:
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.8ojq2f5yst.webp)
+
+## 前端
+
+1. 先创建按钮
+
+```html
+<button
+  v-if="isAgree"
+  class="wechat-login-btn"
+  :loading="loading"
+  open-type="getPhoneNumber"
+  @getphonenumber="getPhoneNumber"
+>
+微信一键登录
+</button>
+<button
+  v-else
+  class="wechat-login-btn"
+  @click="handleDisabledClick"
+>
+微信一键登录
+</button>
+```
+
+2. 在`script`中定义`getPhoneNumber`方法
+
+```js
+const getPhoneNumber = async (e: any) => {
+  // 用户拒绝授权
+  if (e.detail.errMsg !== 'getPhoneNumber:ok') {
+    await uni.showToast({
+      title: '登录失败',
+      icon: 'none'
+    })
+    return
+  }
+
+  loading.value = true
+  try {
+    // 1. 获取登录code
+    const loginRes = await uni.login()
+    // 2. 调用后端接口，传入code和加密数据
+    const res = (await authService.wxLogin({
+      code: loginRes.code,
+      encryptedData: e.detail.encryptedData,
+      iv: e.detail.iv
+    }))
+
+
+    // 3. 保存登录态
+    const {token, userInfo} = res.data!!
+    uni.setStorageSync('token', token)
+    uni.setStorageSync('userInfo', userInfo)
+
+    // 4. 登录成功跳转
+    await uni.switchTab({
+      url: '/pages/index/index'
+    })
+
+  } catch (error) {
+    await uni.showToast({
+      title: '登录失败，请重试',
+      icon: 'none'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+const handleDisabledClick = () => {
+  uni.showToast({
+    title: '请先同意用户协议和隐私政策',
+    icon: 'none'
+  })
+}
+```
+
+## 后端
+
+1. 引入[微信Java开发包](https://github.com/binarywang/WxJava)
+
+```xml
+<dependency>
+  <groupId>com.github.binarywang</groupId>
+  <artifactId>weixin-java-miniapp</artifactId>
+  <version>4.6.0</version>
+</dependency>
+```
+
+2. 创建`WxMaService`实例
+
+```kotlin
+val wxMaService: WxMaService = WxMaServiceImpl()
+val config = WxMaDefaultConfigImpl()
+config.appid = "wx123456789"
+config.secret = "1234567890abcdef"
+wxMaService.wxMaConfig = config
+```
+
+3. 获取手机号实现自动注册登录
+
+```kotlin
+@PostMapping("/auth/wxLogin")
+fun wxLogin(ctx: Context) {
+    val request = ctx.bodyAsClass<WechatLoginData>()
+    log.info("代码: ${request.code}")
+    // Initialize WxMaService
+    val wxService = IOC.getComponent(WxMaService::class.java)
+    log.info("appid: ${wxService.wxMaConfig.appid}")
+    // Get session info
+    val sessionInfo: WxMaJscode2SessionResult = wxService.jsCode2SessionInfo(request.code)
+
+    // Decrypt user info using sessionKey if needed
+    //val userInfo = wxService.userService.getUserInfo(sessionInfo.sessionKey, request.encryptedData, request.iv)
+    val wxPhoneInfo = wxService.userService.getPhoneNoInfo(sessionInfo.sessionKey, request.encryptedData, request.iv)
+    log.info("openid: ${sessionInfo.openid}")
+    ctx.json(
+        ResponsePayloads(
+            data = WechatLoginResult(
+                token = "TODO",
+                userInfo = UserInfo(
+                    avatar = "userInfo.avatarUrl",
+                    nickname = "userInfo.nickName",
+                    phoneNumber = wxPhoneInfo.phoneNumber
+                )
+            )
+        )
+    )
+}
+```

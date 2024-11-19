@@ -1,3 +1,6 @@
+---
+sidebar_position: 1
+---
 ## 使用`cli`创建项目
 
 1. 选安装`vue cli`
@@ -10,6 +13,43 @@ npm install -g @vue/cli
 
 ```bash
 npx degit dcloudio/uni-preset-vue#vite-ts my-vue3-project
+```
+
+3. 项目结构
+
+```text
+project
+├── src                        // 源代码目录
+│   ├── api                    // API 接口目录
+│   │   └── user.ts
+│   ├── components            // 公共组件
+│   │   └── CustomNavbar.vue
+│   ├── pages                 // 页面文件目录
+│   │   ├── index
+│   │   │   └── index.vue
+│   │   └── my
+│   │       └── index.vue
+│   ├── static                // 静态资源
+│   │   ├── images
+│   │   └── icons
+│   ├── stores                // Pinia 状态管理
+│   │   └── user.ts
+│   ├── styles                // 全局样式
+│   │   ├── common.scss
+│   │   └── variables.scss
+│   ├── utils                 // 工具函数
+│   │   ├── request.ts        // 请求封装
+│   │   └── common.ts
+│   ├── App.vue              // 应用配置，用来配置App全局样式
+│   ├── main.ts              // Vue初始化入口文件
+│   ├── manifest.json        // 配置应用名称、appid、logo、版本等打包信息
+│   ├── pages.json          // 配置页面路由、导航条、选项卡等页面类信息
+│   └── uni.scss            // uni-app内置的常用样式变量
+├── .gitignore              // git忽略文件
+├── index.html              // H5入口文件
+├── package.json            // 项目配置文件
+├── tsconfig.json          // TypeScript 配置文件
+└── vite.config.ts         // Vite 配置文件
 ```
 
 ## 添加`Unocss`支持

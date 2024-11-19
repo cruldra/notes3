@@ -1,0 +1,8 @@
+{
+  "label": "Vite",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "下一代的前端构建工具,提供更快的开发服务器启动和热更新"
+  }
+}

@@ -1,0 +1,39 @@
+`Vite`可以实现类似`Spring Boot`的`Properties`那样的功能.
+
+1. 首先在根目录下分别创建`.env`、`.env.development`、`.env.production`三个配置文件
+
+| 配置文件             | 说明                                           |
+|------------------|----------------------------------------------|
+| .env             | 通用配置                                         |
+| .env.development | 适用于开发环境(process.env.NODE_ENV=development)的配置 |
+| .env.production  | 适用于生产环境(process.env.NODE_ENV=production)的配置  |
+
+2. 以`KEY=VALUE`的形式写入配置项,`KEY`必须以`VITE_`开头,如`VITE_APP_TITLE=Vite App`
+
+```ini
+# .env
+VITE_APP_TITLE=Vite App
+VITE_APP_BASE_URL=/vite-app/
+```
+
+3. 配置`vite.config.ts`
+
+```ts
+export default defineConfig(configEnv => {
+    return {
+        define: {
+            'process.env': {
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+            }
+        },
+        //其它配置
+    }
+});
+```
+
+4. 使用`import.meta.env`获取配置
+
+```ts
+console.log(import.meta.env.VITE_APP_TITLE) //自定义配置
+console.log(import.meta.env.MODE) // development/production
+```
