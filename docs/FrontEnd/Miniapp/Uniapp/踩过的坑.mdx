@@ -1,0 +1,29 @@
+## 小程序不支持FormData
+
+```js
+// 选择头像
+const chooseAvatar = () => {
+  uni.chooseImage({
+    count: 1, // 只选择一张图片
+    sizeType: ['compressed'], // 压缩图片
+    sourceType: ['album', 'camera'], // 允许从相册选择和拍照
+    success: (res) => {
+      //const a = res.tempFiles[0]
+      // uploadAvatar(res.tempFilePaths[0])
+      const formData = new FormData()
+      formData.append('file', (res.tempFiles as File[])[0])
+      fileService.upload(formData)
+    },
+    fail: () => {
+      uni.showToast({
+        title: '选择图片失败',
+        icon: 'none'
+      })
+    }
+  })
+}
+```
+
+上面的代码在小程序中会报错,如图:
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.2verulb12u.webp)

@@ -14,7 +14,16 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs>
-    <TabItem value="sqlite" label="sqlite" default>
+    <TabItem value="postgresql" label="postgresql" default>
+        ```xml
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
+        </dependency>
+        ```
+    </TabItem>
+    <TabItem value="sqlite" label="sqlite" >
         ```xml
         <dependency>
             <groupId>org.xerial</groupId>
@@ -34,32 +43,14 @@ import TabItem from '@theme/TabItem';
     </TabItem>
 </Tabs>
 
-2. 添加对应的`EBean`依赖
-
-<Tabs>
-    <TabItem value="sqlite" label="sqlite" default>
-        ```xml
-        <dependency>
-            <groupId>io.ebean</groupId>
-            <artifactId>ebean-platform-sqlite</artifactId>
-            <version>15.6.0</version>
-        </dependency>
-        ```
-    </TabItem>
-    <TabItem value="h2" label="h2">
-        ```xml
-        <dependency>
-            <groupId>io.ebean</groupId>
-            <artifactId>ebean-platform-h2</artifactId>
-            <version>15.6.0</version>
-        </dependency>
-        ```
-    </TabItem>
-</Tabs>
-
-3. 如果使用`QueryBean`,还需要
+2. 添加`EBean`依赖
 
 ```xml
+<dependency>
+    <groupId>io.ebean</groupId>
+    <artifactId>ebean</artifactId>
+    <version>15.6.0</version>
+</dependency>
 <dependency>
     <groupId>io.ebean</groupId>
     <artifactId>ebean-querybean</artifactId>
@@ -80,56 +71,56 @@ import TabItem from '@theme/TabItem';
 
 5. 配置`apt`插件用于生成`QueryBean`
 
-```xml
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.13.0</version>
-    <configuration>
-        <annotationProcessorPaths>
-            <path> <!-- generate ebean query beans -->
-                <groupId>io.ebean</groupId>
-                <artifactId>querybean-generator</artifactId>
-                <version>15.6.0</version>
-            </path>
-        </annotationProcessorPaths>
-    </configuration>
-</plugin>
-```
-
-:::tip
-上面这种方式需要使用`java`来定义实体类,如果想使用`kotlin`来定义实体类,则需要在`kotlin-maven-plugin`插件配置中添加`kapt`配置
-:::
-
-```xml
-<plugin>
-    <groupId>org.jetbrains.kotlin</groupId>
-    <artifactId>kotlin-maven-plugin</artifactId>
-    <version>2.0.10</version>
-    <executions>
-        ...
-        <execution>
-            <id>kapt</id>
-            <goals>
-                <goal>kapt</goal>
-            </goals>
+<Tabs>
+    <TabItem value="java" label="java" default>
+        ```xml
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
             <configuration>
-                <sourceDirs>
-                    <sourceDir>src/main/kotlin</sourceDir>
-                </sourceDirs>
                 <annotationProcessorPaths>
-                    <annotationProcessorPath>
+                    <path> <!-- generate ebean query beans -->
                         <groupId>io.ebean</groupId>
-                        <artifactId>kotlin-querybean-generator</artifactId>
+                        <artifactId>querybean-generator</artifactId>
                         <version>15.6.0</version>
-                    </annotationProcessorPath>
+                    </path>
                 </annotationProcessorPaths>
             </configuration>
-        </execution>
-    </executions>
-</plugin>
-
-```
+        </plugin>
+        ```
+    </TabItem>
+    <TabItem value="kotlin" label="kotlin">
+        ```xml
+        <plugin>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-plugin</artifactId>
+            <version>2.0.10</version>
+            <executions>
+                ...
+                <execution>
+                    <id>kapt</id>
+                    <goals>
+                        <goal>kapt</goal>
+                    </goals>
+                    <configuration>
+                        <sourceDirs>
+                            <sourceDir>src/main/kotlin</sourceDir>
+                        </sourceDirs>
+                        <annotationProcessorPaths>
+                            <annotationProcessorPath>
+                                <groupId>io.ebean</groupId>
+                                <artifactId>kotlin-querybean-generator</artifactId>
+                                <version>15.6.0</version>
+                            </annotationProcessorPath>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        ```
+    </TabItem>
+</Tabs>
 
 ## 创建数据库
 

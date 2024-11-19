@@ -1,0 +1,132 @@
+[Sa-Token](https://sa-token.cc/doc.html#/)是一个非常轻量且功能强大的`Java`权限认证框架.
+
+## 和Web框架集成
+
+[Sa-Token](https://sa-token.cc/doc.html#/)可以通过[自定义SaTokenContext](https://sa-token.cc/v/v1.28.0/doc/index.html#/fun/sa-token-context?id=%e8%87%aa%e5%ae%9a%e4%b9%89-satokencontext-%e6%8c%87%e5%8d%97)来和不同的`Web`框架集成.
+
+
+### Javalin
+
+`Javalin`使用的是`Jetty`作为`Web`服务器,遵循`Jakarta Servlet API`规范.
+
+1. 添加依赖
+
+```xml
+<dependency>
+    <groupId>cn.dev33</groupId>
+    <artifactId>sa-token-jakarta-servlet</artifactId>
+    <version>1.39.0</version>
+</dependency>
+```
+
+2. 在`Javalin`中实现类似`SpringMVCUtil.getRequest()`的效果
+
+```kotlin
+object JavalinRequestHolder {
+    private val contextThreadLocal = ThreadLocal<Context>()
+
+    fun setContext(ctx: Context) {
+        contextThreadLocal.set(ctx)
+    }
+
+    fun getContext(): Context {
+        return contextThreadLocal.get() ?: throw IllegalStateException("Context not found in current thread")
+    }
+
+    fun clear() {
+        contextThreadLocal.remove()
+    }
+}
+```
+
+3. 在路由前后调用`SaTokenContext`的`set`和`clear`方法
+
+```kotlin
+// 在每个请求开始时保存 Context
+app.before { ctx ->
+    JavalinRequestHolder.setContext(ctx)
+}
+
+// 在每个请求结束后清理 Context
+app.after { ctx ->
+    JavalinRequestHolder.clear()
+}
+```
+
+4. 创建`Javalin`专用的`SaTokenContext`
+
+import Collapsible from '@site/src/components/Collapsible';
+
+<Collapsible
+    title="SaTokenContext.kt"
+    defaultOpen={false}
+    maxHeight={1000}
+    showLineNumbers={true}
+    language="kotlin"
+>
+```kotlin
+class SaTokenForJavalin : SaTokenContext {
+    private val pathMatcher = AntPathMatcher()
+    override fun getRequest(): SaRequest {
+        return SaRequestForServlet(JavalinRequestHolder.getContext().req())
+    }
+
+    override fun getResponse(): SaResponse {
+        return SaResponseForServlet(JavalinRequestHolder.getContext().res())
+    }
+
+    override fun getStorage(): SaStorage {
+        return SaStorageForServlet(JavalinRequestHolder.getContext().req())
+    }
+
+    override fun matchPath(pattern: String?, path: String?): Boolean {
+        // 如果pattern或path为空，返回false
+        if (pattern.isNullOrBlank() || path.isNullOrBlank()) {
+            return false
+        }
+
+        return try {
+            // 使用AntPathMatcher进行路径匹配
+            pathMatcher.match(pattern, path)
+        } catch (e: Exception) {
+            // 发生异常时返回false
+            false
+        }
+    }
+
+}
+```
+</Collapsible>
+
+5. 告诉`Sa-Token`使用`Javalin`专用的`SaTokenContext`
+
+```kotlin
+object SaTokenConfigManager {
+    fun init() {
+        // 注册上下文
+        SaManager.setConfig(SaTokenConfig())
+        SaManager.setSaTokenContext(SaTokenForJavalin())
+
+        // 配置Sa-Token
+        val config = SaTokenConfig().apply {
+            tokenName = "satoken"     // token名称
+            timeout = 2592000         // token有效期，单位s 默认30天
+            activeTimeout = -1      // token临时有效期
+            isConcurrent = true       // 是否允许同一账号并发登录
+            isShare = true            // 在多人登录同一账号时，是否共用一个token
+            tokenStyle = "uuid"       // token风格
+            isLog = false             // 是否输出操作日志
+        }
+        SaManager.setConfig(config)
+    }
+}
+```
+
+6. 在创建`Javalin`实例前初始化
+
+```kotlin
+SaTokenConfigManager.init()
+val app = Javalin.create { config ->
+    ...
+}.start(7001)
+```

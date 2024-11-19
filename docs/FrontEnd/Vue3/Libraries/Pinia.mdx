@@ -72,7 +72,7 @@ import TabItem from '@theme/TabItem';
 
 ## 在组件中使用
 
-```vue
+```html
 <script setup>
 import { useCounterStore } from '@/stores/counter'
 
@@ -89,3 +89,85 @@ console.log(store.doubleCount)
 </script>
 ```
 
+## 解构导致丢失响应性的问题
+
+在使用`React`的`useState`时,经常会使用解构的方式来获取状态,例如:
+
+```ts
+const [count, setCount] = useState(0)
+```
+
+如果在使用`Pinia`时也使用解构的方式,会导致状态失去响应性,例如:
+
+```html
+<script setup lang="ts">
+import { useAuthStore } from "@/stores/auth.ts"
+
+// ❌ 错误方式：失去响应性
+const { loginType } = useAuthStore()
+console.log(loginType) // 得到当前值，但不会随 store 更新
+
+// ✅ 正确方式1：直接使用 store
+const store = useAuthStore()
+console.log(store.loginType) // 会随 store 更新
+
+// ✅ 正确方式2：使用 storeToRefs
+import { storeToRefs } from 'pinia'
+const store = useAuthStore()
+const { loginType } = storeToRefs(store)
+console.log(loginType.value) // 会随 store 更新
+</script>
+
+<template>
+  <!-- ❌ 错误方式 -->
+  <div>{{ loginType }}</div>
+
+  <!-- ✅ 正确方式1 -->
+  <div>{{ store.loginType }}</div>
+
+  <!-- ✅ 正确方式2 -->
+  <div>{{ loginType }}</div>
+</template>
+```
+
+:::tip 提示
+解构赋值会丢失响应性是因为其本质上是创建了一个新的变量,并将值复制给这个变量,从而断开了与原始响应式对象的连接.
+:::
+
+
+## 持久化
+
+`持久化`是指将**状态存储在本地**,以便在页面刷新或关闭后仍然保留状态.需要用到[Pinia Persistedstate插件](https://prazdevs.github.io/pinia-plugin-persistedstate/zh/)
+
+1. 安装
+
+```bash
+pnpm i pinia-plugin-persistedstate
+```
+
+2. 配置存储介质
+
+```ts
+const store = createPinia();
+
+//uniapp
+store.use(createPersistedState({
+    storage: {
+        getItem: uni.getStorageSync,
+        setItem: uni.setStorageSync
+    }
+}))
+```
+
+3. 然后在创建store时,添加`persist: true`选项
+
+```ts
+export const useUserStore = defineStore('user',() => {
+    const user = ref(null)
+    return {
+        user,
+    }
+}, {
+    persist: true
+})
+```
