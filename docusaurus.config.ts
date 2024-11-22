@@ -91,12 +91,6 @@ const config: Config = {
             items: [
                 {
                     type: 'docSidebar',
-                    sidebarId: 'tutorialSidebar',
-                    position: 'left',
-                    label: 'Tutorial',
-                },
-                {
-                    type: 'docSidebar',
                     sidebarId: 'jvmEcosystem',
                     position: 'left',
                     label: 'JVM',
@@ -110,6 +104,11 @@ const config: Config = {
                     sidebarId: 'tools',
                     position: 'left',
                     label: '工具',
+                }, {
+                    type: 'docSidebar',
+                    sidebarId: 'personal',
+                    position: 'left',
+                    label: '个人',
                 },
                 {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
