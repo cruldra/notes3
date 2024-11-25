@@ -109,6 +109,11 @@ const config: Config = {
                     sidebarId: 'personal',
                     position: 'left',
                     label: '个人',
+                },{
+                    type: 'docSidebar',
+                    sidebarId: 'ai',
+                    position: 'left',
+                    label: '人工智能',
                 },
                 {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
