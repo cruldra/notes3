@@ -1,0 +1,17 @@
+## 发布自己的jar包
+
+1. 使用谷歌账号登录[Maven Central](https://central.sonatype.com/publishing/namespaces)
+2. 创建一个命名空间,命名空间是域名反写,如`com.github.zhangkaitao`
+3. 验证命名空间,它会要求新建一个`txt dns`记录以验证域名所有权
+
+    创建命名空间后会随机生成一个`Verification Key`,为了证明这个命名空间的所有权,需要添加一个`DNS TXT`记录,其值要与该值相同.
+
+    ![](https://github.com/cruldra/picx-images-hosting/raw/master/image.1027lia26f.png),
+
+    ![](https://github.com/cruldra/picx-images-hosting/raw/master/image.b8y1hu0my.webp)
+
+    以下状态表示命名空间验证成功:
+
+    ![](https://github.com/cruldra/picx-images-hosting/raw/master/image.5xaofd0k00.webp)
+
+4. 在命令空间中[部署组件(jar包)](https://central.sonatype.org/publish/publish-portal-upload/)

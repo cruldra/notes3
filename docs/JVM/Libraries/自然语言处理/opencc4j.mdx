@@ -1,0 +1,18 @@
+[opencc4j](https://github.com/houbb/opencc4j?tab=readme-ov-file#%E8%BD%AC%E4%B8%BA%E7%AE%80%E4%BD%93-tosimple)是[OpenCC](https://github.com/BYVoid/OpenCC)项目的`Java`版本,`OpenCC`用于在繁体中文和简体中文之间转换.
+
+## 安装
+
+```xml
+<dependency>
+    <groupId>com.github.houbb</groupId>
+    <artifactId>opencc4j</artifactId>
+    <version>1.8.1</version>
+</dependency>
+```
+
+## 繁体转简体
+
+```java
+String original = "生命不息，奮鬥不止";
+String result = ZhConverterUtil.toSimple(original);
+```

@@ -104,16 +104,23 @@ const config: Config = {
                     sidebarId: 'tools',
                     position: 'left',
                     label: '工具',
-                }, {
-                    type: 'docSidebar',
-                    sidebarId: 'personal',
-                    position: 'left',
-                    label: '个人',
-                },{
+                },
+                // {
+                //     type: 'docSidebar',
+                //     sidebarId: 'personal',
+                //     position: 'left',
+                //     label: '个人',
+                // },
+                {
                     type: 'docSidebar',
                     sidebarId: 'ai',
                     position: 'left',
-                    label: '人工智能',
+                    label: 'AI',
+                },{
+                    type: 'docSidebar',
+                    sidebarId: 'python',
+                    position: 'left',
+                    label: 'Python',
                 },
                 {to: '/blog', label: 'Blog', position: 'left'},
                 /*{

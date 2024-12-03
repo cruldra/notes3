@@ -1,0 +1,53 @@
+[react-diff-viewer](https://github.com/praneshr/react-diff-viewer#install)是一个用`Diff`和`React`制作的简单而漂亮的文本差异查看器组件.
+
+
+## 安装
+
+```bash
+pnpm i react-diff-viewer
+```
+
+## 示例
+
+```jsx
+import ReactDiffViewer from 'react-diff-viewer';
+const ScriptCompareModal = ({
+                                context,
+                                id,
+                                innerProps,
+                            }: ContextModalProps<video.Video>) => {
+    const {originalScript, newScript} = innerProps
+    return (
+        <ReactDiffViewer
+            oldValue={JSON.parse(originalScript?.content??"{'text': ''}")?.text}
+            newValue={newScript?.content}
+            splitView={true}
+            showDiffOnly={false}
+            disableWordDiff={true}
+        />
+    );
+}
+export default ScriptCompareModal;
+```
+
+## 参数说明
+
+| 参数                        | 类型            | 默认值                              | 说明                                       |
+|---------------------------|---------------|----------------------------------|------------------------------------------|
+| oldValue                  | string        | ''                               | 要对比的旧文本内容                                |
+| newValue                  | string        | ''                               | 要对比的新文本内容                                |
+| splitView                 | boolean       | true                             | 是否使用分屏视图模式。true为左右分屏，false为单列视图          |
+| disableWordDiff           | boolean       | false                            | 是否禁用单词级别的差异显示                            |
+| compareMethod             | DiffMethod    | DiffMethod.CHARS                 | 差异对比算法。支持CHARS、WORDS、LINES等多种模式          |
+| hideLineNumbers           | boolean       | false                            | 是否隐藏行号                                   |
+| renderContent             | function      | undefined                        | 自定义渲染函数，用于实现代码高亮等功能                      |
+| onLineNumberClick         | function      | undefined                        | 行号点击事件处理函数，格式: (lineId: string) => void  |
+| highlightLines            | array[string] | []                               | 需要高亮的行列表。使用L-和R-前缀区分左右面板，如['L-2', 'L-3'] |
+| showDiffOnly              | boolean       | true                             | 是否只显示存在差异的行                              |
+| extraLinesSurroundingDiff | number        | 3                                | 在showDiffOnly模式下，差异行周围显示的额外行数            |
+| codeFoldMessageRenderer   | function      | 'Expand \{number\} of lines ...' | 自定义折叠信息的渲染函数                             |
+| styles                    | object        | {}                               | 自定义样式对象，用于覆盖默认样式                         |
+| useDarkTheme              | boolean       | true                             | 是否使用深色主题                                 |
+| leftTitle                 | string        | undefined                        | 左侧面板的标题（分屏模式下）                           |
+| rightTitle                | string        | undefined                        | 右侧面板的标题（分屏模式下）                           |
+| linesOffset               | number        | 0                                | 行号的起始计数值                                 |

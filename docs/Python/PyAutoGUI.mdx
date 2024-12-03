@@ -1,0 +1,46 @@
+[pyautogui](https://github.com/asweigart/pyautogui)用于自动控制鼠标和键盘.
+
+## 安装
+
+```bash
+pip install pyautogui
+```
+
+## click
+
+模拟鼠标点击事件.
+
+```python
+def click(x=None,         # x坐标，可以是数字、字符串(图片文件名)或坐标序列
+          y=None,         # y坐标
+          clicks=1,       # 点击次数
+          interval=0.0,   # 多次点击时的间隔时间
+          button="primary", # 鼠标按键
+          duration=0.0,   # 移动鼠标到目标位置的持续时间
+          tween=...,      # 鼠标移动的插值函数
+          logScreenshot=None, # 是否记录截图
+          _pause=True)    # 是否暂停
+```
+
+示例：
+```python
+import pyautogui
+
+# 在当前位置点击
+pyautogui.click()
+
+# 点击指定坐标
+pyautogui.click(x=100, y=200)
+
+# 双击
+pyautogui.click(clicks=2, interval=0.1)
+
+# 右键点击
+pyautogui.click(button='right')
+
+# 点击图片
+pyautogui.click('button.png')
+
+# 平滑移动到位置后点击
+pyautogui.click(x=100, y=200, duration=1.0)
+```
