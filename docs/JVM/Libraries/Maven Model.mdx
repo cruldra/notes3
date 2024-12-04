@@ -1,0 +1,25 @@
+[Maven Model](https://mvnrepository.com/artifact/org.apache.maven/maven-model/4.0.0-rc-1)用于以编程的方式操作`pom.xml`文件
+
+## 安装
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-model -->
+<dependency>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-model</artifactId>
+    <version>4.0.0-rc-1</version>
+</dependency>
+```
+
+## 基本示例
+
+```java
+Model model = new Model();
+model.setModelVersion("4.0.0");
+model.setGroupId("com.example");
+model.setArtifactId("my-project");
+model.setVersion("1.0-SNAPSHOT");
+
+ModelWriter writer = new DefaultModelWriter();
+writer.write(new File("pom.xml"), null, model);
+```
