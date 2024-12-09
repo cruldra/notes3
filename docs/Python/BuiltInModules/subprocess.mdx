@@ -1,0 +1,96 @@
+```python
+# subprocess模块
+"""
+带有可访问I/O流的子进程模块
+此模块允许你创建进程，连接它们的输入/输出/错误管道，并获取它们的返回码。
+"""
+
+# 主要 API
+run(...)          # 运行命令并等待完成，返回CompletedProcess实例
+Popen(...)        # 用于灵活地在新进程中执行命令的类
+
+# 常量
+DEVNULL           # 特殊值，表示使用os.devnull
+PIPE              # 特殊值，表示应该创建管道
+STDOUT            # 特殊值，表示stderr应该重定向到stdout
+
+# 旧版 API
+call(...)         # 运行命令并等待完成，返回返回码
+check_call(...)   # 与call()相同，但如果返回码不为0则抛出CalledProcessError
+check_output(...) # 与check_call()相同，但返回stdout内容而不是返回码
+getoutput(...)    # 在shell中运行命令并等待完成，返回输出
+getstatusoutput(...)  # 在shell中运行命令并等待完成，返回(退出码,输出)元组
+```
+
+**示例**
+
+```python
+# 推荐使用 run()
+result = subprocess.run(['ls', '-l'], capture_output=True, text=True)
+print(result.stdout)
+
+# 需要更多控制时使用 Popen
+process = subprocess.Popen(['ping', 'google.com'], stdout=subprocess.PIPE)
+while True:
+    line = process.stdout.readline()
+    if not line:
+        break
+    print(line.decode())
+
+# 简单命令可以使用check_output
+output = subprocess.check_output(['echo', 'hello'])
+```
+
+## Popen
+`subprocess.Popen`是`Python`中用于创建和管理子进程的核心类.
+
+```python
+Popen(
+    args,                    # 要执行的命令，可以是字符串或序列
+    bufsize=-1,             # 缓冲区大小，默认系统缓冲
+    executable=None,        # 可执行文件路径
+    stdin=None,             # 标准输入，可以是PIPE
+    stdout=None,            # 标准输出，可以是PIPE
+    stderr=None,            # 标准错误，可以是PIPE
+    preexec_fn=None,        # 子进程运行前的回调函数
+    close_fds=True,         # 是否关闭父进程的文件描述符
+    shell=False,            # 是否通过shell执行
+    cwd=None,              # 子进程工作目录
+    env=None,              # 子进程环境变量
+    universal_newlines=None, # 文本模式(已弃用,用text代替)
+    startupinfo=None,       # Windows专用启动信息
+    creationflags=0,        # Windows专用创建标志
+    restore_signals=True,    # 是否恢复信号处理器
+    start_new_session=False, # 是否启动新会话
+    pass_fds=(),            # 要传递给子进程的文件描述符
+
+    # 关键字参数
+    text=None,              # 是否以文本模式运行
+    encoding='utf-8',       # 文本编码
+    errors=None,            # 编码错误处理
+    user=None,              # 以指定用户运行
+    group=None,             # 以指定组运行
+    extra_groups=None,      # 额外的组
+    umask=-1,              # 设置umask
+    pipesize=-1,           # 管道大小
+    process_group=None      # 进程组
+)
+```
+
+**示例**
+
+```python
+# 基本使用
+p = subprocess.Popen(['ls', '-l'], stdout=subprocess.PIPE)
+output = p.communicate()[0]
+
+# shell方式
+p = subprocess.Popen('echo $HOME', shell=True, stdout=subprocess.PIPE)
+
+# 重定向输入输出
+with open('output.txt', 'w') as f:
+    p = subprocess.Popen(['command'], stdout=f)
+
+# 指定工作目录和环境变量
+p = subprocess.Popen('command', cwd='/tmp', env={'PATH': '/usr/bin'})
+```

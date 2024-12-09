@@ -1,0 +1,83 @@
+[FastAPI](https://fastapi.tiangolo.com/)是一个比`Flask`更现代的`Python Web`框架.
+
+## 安装
+
+```bash
+pip install fastapi
+pip install uvicorn
+```
+
+## 基本示例
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional
+
+app = FastAPI(
+    title="My API",
+    description="This is a sample API",
+    version="1.0.0"
+)
+
+# 定义数据模型
+class User(BaseModel):
+    id: int
+    name: str
+    email: Optional[str] = None
+
+# 定义路由
+@app.get("/users/{user_id}", response_model=User)
+async def get_user(user_id: int):
+    """
+    获取用户信息
+    """
+    return {"id": user_id, "name": "Test User", "email": "test@example.com"}
+
+@app.post("/users/", response_model=User)
+async def create_user(user: User):
+    """
+    创建新用户
+    """
+    return user
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+* 访问`/docs`可以看到自动生成的`Swagger UI`界面
+* 访问`/redoc`可以看到另一种风格的`ReDoc`文档界面
+* 访问`/openapi.json`可以获取`OpenAPI JSON`格式的规范
+
+## @app.post
+
+用于定义`HTTP POST`方法的`API`端点
+
+```python
+@app.post(
+    path,                   # URL 路径
+    response_model,         # 响应数据模型
+    status_code,           # HTTP状态码
+    tags,                  # API分组标签
+    dependencies,          # 依赖项
+    summary,               # API简要说明
+    description,           # API详细描述
+    response_description,  # 响应说明,默认"Successful Response"
+    responses,            # 自定义响应说明
+    deprecated,           # 是否废弃
+    operation_id,         # 操作ID
+    response_model_include, # 响应模型包含的字段
+    response_model_exclude, # 响应模型排除的字段
+    response_model_by_alias, # 是否使用字段别名,默认True
+    response_model_exclude_unset,  # 是否排除未设置值的字段
+    response_model_exclude_defaults, # 是否排除默认值字段
+    response_model_exclude_none,    # 是否排除None值字段
+    include_in_schema,    # 是否包含在API文档中,默认True
+    response_class,       # 响应类,默认JSONResponse
+    name,                # 路由名称
+    callbacks,           # 回调路由
+    openapi_extra,      # OpenAPI额外信息
+    generate_unique_id_function # 生成唯一ID的函数
+)
+```
