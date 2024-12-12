@@ -1,0 +1,80 @@
+[Clicknium](https://clicknium.com/)是一个用于实现桌面和Web应用程序的自动化的`Python`库.
+
+
+## 安装
+
+```bash
+pip install clicknium
+```
+
+## 开始使用
+
+
+### 设置许可证
+
+:::tip
+免费许可证最多允许10个定位器,可以用免费邮箱申请一个月商业许可证,然后在代码中设置许可证密钥
+:::
+
+```python
+from clicknium import clicknium as cc, locator
+
+# 设置许可证密钥
+cc.config.set_license(params.license_str)
+```
+
+
+### 定位器
+
+:::tip
+定位器指向界面上的某个元素,这是实现自动化操作的基础
+:::
+
+```python
+from clicknium import clicknium as cc, locator,ui
+
+# 定位到元素
+el = ui(locator.chrome.bing_search_input)
+
+# 点击元素
+el.click()
+```
+
+
+### 热键
+
+```python
+@_ExceptionHandle.try_except  # 异常处理装饰器,用于捕获和处理方法执行期间的异常
+def send_hotkey(self,
+    hotkey: str,              # 要发送的快捷键组合,例如 "^c" 表示 Ctrl+C
+    preaction: Literal["setfocus", "click"] = PreAction.SetFocus,  # 发送快捷键前的预操作
+                             # setfocus: 设置焦点(默认)
+                             # click: 点击元素
+    timeout: int = 30        # 操作超时时间,单位为秒,默认30秒
+) -> None:                   # 无返回值
+    """
+    向目标UI元素发送快捷键组合
+
+    Args:
+        hotkey: 快捷键字符串,例如:
+            "^a" - Ctrl+A
+            "^c" - Ctrl+C
+            "^v" - Ctrl+V
+            "%{F4}" - Alt+F4
+
+        preaction: 发送快捷键前要执行的操作
+            "setfocus" - 设置焦点(默认)
+            "click" - 点击元素
+
+        timeout: 操作超时时间,单位秒,默认30秒
+
+    Returns:
+        None: 该方法没有返回值
+
+    Examples:
+        element.send_hotkey("^a")  # 全选
+        element.send_hotkey("^c", preaction="click")  # 点击并复制
+        element.send_hotkey("^v", timeout=10)  # 粘贴,10秒超时
+    """
+    pass
+```

@@ -1,0 +1,95 @@
+以双下划线开头和结尾的方法称为`魔术方法(Magic Methods)`,下面是一些常用的魔术方法:
+
+
+```python
+class Example:
+    def __init__(self, value):
+        """构造方法"""
+        self.value = value
+
+    def __str__(self):
+        """字符串表示，用于 str() 和 print()"""
+        return f"Value is {self.value}"
+
+    def __repr__(self):
+        """开发字符串表示，用于调试"""
+        return f"Example(value={self.value})"
+
+    def __len__(self):
+        """长度，支持 len()"""
+        return len(self.value)
+
+    def __getitem__(self, key):
+        """索引访问，支持 x[key]"""
+        return self.value[key]
+
+    def __call__(self):
+        """可调用对象，支持 x()"""
+        return f"Called with value {self.value}"
+
+    def __eq__(self, other):
+        """相等比较，支持 =="""
+        return self.value == other.value
+
+    def __lt__(self, other):
+        """小于比较，支持 <"""
+        return self.value < other.value
+
+    def __add__(self, other):
+        """加法，支持 +"""
+        return Example(self.value + other.value)
+
+    def __enter__(self):
+        """上下文管理器入口，支持 with"""
+        print("Entering context")
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """上下文管理器出口"""
+        print("Exiting context")
+
+# 使用示例
+x = Example("hello")
+y = Example("world")
+
+print(str(x))              # Value is hello
+print(repr(x))            # Example(value=hello)
+print(len(x))             # 5
+print(x[0])              # h
+print(x())               # Called with value hello
+print(x == y)            # False
+print(x < y)             # True
+print(x + y)             # Value is helloworld
+
+with Example("test") as e:
+    print(e.value)       # test
+# 输出:
+# Entering context
+# test
+# Exiting context
+```
+
+## `__contains__`
+
+`__contains__`魔术方法用于实现`in`运算符的行为,例如:
+
+```python
+class Range(BaseModel):
+    min: float
+    max: float
+
+    def __contains__(self, value):
+        return self.min <= value <= self.max
+
+# 创建一个范围对象
+time_range = Range(min=60, max=300)
+
+# 使用 in 运算符检查值是否在范围内
+print(100 in time_range)  # True
+print(30 in time_range)   # False
+print(400 in time_range)  # False
+
+# 等价于调用 __contains__ 方法
+print(time_range.__contains__(100))  # True
+```
+

@@ -1,0 +1,23 @@
+[Playwright](https://playwright.dev/)用于浏览器自动化,类似`Selenium`.
+
+## 安装
+
+```bash
+pip install playwright
+```
+
+## 通过`cdp`连接浏览器
+
+```python
+from playwright.sync_api import sync_playwright, ElementHandle, Page
+
+
+with sync_playwright() as p:
+    browser = p.chromium.connect_over_cdp("http://localhost:9222")
+    context = browser.contexts[0]
+    page = context.new_page()
+    try:
+        page.goto('https://app.heygen.com/projects')
+    finally:
+        page.close()
+```
