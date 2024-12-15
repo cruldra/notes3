@@ -1,0 +1,100 @@
+[asyncio](https://docs.python.org/zh-cn/3/library/asyncio.html)模块用于在`Python`中实现异步编程.
+
+
+## 示例1:并发执行
+
+```python
+import asyncio
+
+async def process_item(item):
+    await asyncio.sleep(1)  # 模拟耗时操作
+    return item * 2
+
+async def main():
+    # 并发处理多个任务
+    items = [1, 2, 3, 4, 5]
+    tasks = [process_item(item) for item in items]
+    results = await asyncio.gather(*tasks)
+    print(results)  # [2, 4, 6, 8, 10]
+
+```
+
+## 示例2:超时控制
+
+```python
+import asyncio
+
+async def long_operation():
+    await asyncio.sleep(5)
+    return "完成"
+
+async def main():
+    try:
+        # 设置超时时间为2秒
+        result = await asyncio.wait_for(long_operation(), timeout=2)
+    except asyncio.TimeoutError:
+        print("操作超时")
+```
+
+## 示例3:事件循环
+
+```python
+import asyncio
+
+# 获取事件循环
+loop = asyncio.get_event_loop()
+
+# 在循环中运行协程
+loop.run_until_complete(main())
+
+# 关闭循环
+loop.close()
+```
+
+## 示例4:队列
+
+```python
+async def producer(queue):
+    for i in range(5):
+        await queue.put(i)
+        await asyncio.sleep(1)
+
+async def consumer(queue):
+    while True:
+        item = await queue.get()
+        print(f"处理项目: {item}")
+        queue.task_done()
+
+async def main():
+    queue = asyncio.Queue()
+    # 创建生产者和消费者任务
+    producer_task = asyncio.create_task(producer(queue))
+    consumer_task = asyncio.create_task(consumer(queue))
+    await producer_task
+```
+
+## 示例5:异步上下文管理器
+
+```python
+class AsyncResource:
+    async def __aenter__(self):
+        print("获取资源")
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        print("释放资源")
+
+async def main():
+    async with AsyncResource():
+        print("使用资源")
+```
+
+## 示例6:锁和同步原语
+```python
+lock = asyncio.Lock()
+
+async def protected_operation():
+    async with lock:
+        # 这段代码同一时间只能有一个协程执行
+        await asyncio.sleep(1)
+```

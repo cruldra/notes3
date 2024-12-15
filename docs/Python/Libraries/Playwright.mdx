@@ -21,3 +21,157 @@ with sync_playwright() as p:
     finally:
         page.close()
 ```
+
+
+## 下载
+
+```python
+# 触发下载的按钮
+download__option = page.wait_for_selector('li.rc-menu-item:has-text("Download")')
+
+# Setup download handler
+with page.expect_download(timeout=120000) as download_info:
+    # Click download button
+    download__option.click()
+# 准备下载目录
+os.makedirs('./.data/videos', exist_ok=True)
+# Save the downloaded file
+download = download_info.value
+download.save_as(video_file_path)
+```
+
+
+## 基于文本搜索
+
+```python
+from playwright.sync_api import sync_playwright
+
+def search_by_text():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
+
+        # 1. 通过精确文本匹配
+        element = page.get_by_text("完全匹配的文本")
+
+        # 2. 通过部分文本匹配
+        element = page.get_by_text("部分文本", exact=False)
+
+        # 3. 通过正则表达式匹配
+        element = page.get_by_text(re.compile(r"正则表达式"))
+
+        # 4. 结合选择器和文本
+        element = page.locator("div").filter(has_text="要查找的文本")
+
+        # 5. 通过角色和文本查找
+        button = page.get_by_role("button", name="按钮文本")
+
+        # 6. 通过标签属性和文本
+        element = page.locator("label", has_text="标签文本")
+
+        # 7. 多层级查找
+        parent = page.locator("div", has_text="父元素文本")
+        child = parent.locator("span", has_text="子元素文本")
+
+        # 8. 查找包含多个文本的元素
+        element = page.locator("div").filter(has_text="文本1").filter(has_text="文本2")
+
+        # 实际使用时的点击操作
+        element.click()
+
+        browser.close()
+```
+
+## 文本输入
+
+文本输入有`fill`和`type`两种方式.
+
+```python
+# 先清空输入框,然后一次性设置值
+def fill(
+    value: str,           # 要填充的值，用于输入框、文本框或可编辑元素
+    *,
+    timeout: float = None,  # 最大超时时间(毫秒)，默认30秒，设为0禁用超时
+    no_wait_after: bool = None,  # 已废弃选项，无实际效果
+    force: bool = None    # 是否跳过可操作性检查，默认False
+) -> None:               # 无返回值
+
+# 模拟真实的用户输入,逐个输入字符
+def type(
+    text: str,            # 要输入的文本
+    *,
+    delay: float = None,  # 按键之间的延迟时间(毫秒)，默认0
+    timeout: float = None,# 最大超时时间(毫秒)，默认30秒，设为0禁用超时
+    no_wait_after: bool = None  # 已废弃选项，无实际效果
+) -> None:               # 无返回值
+```
+
+
+**示例**
+
+```python
+# 找到搜索框并输入关键词
+search_input = page.wait_for_selector('input[data-e2e="searchbar-input"]')
+search_input.click()
+search_input.type(params.keyword)
+search_input.press('Enter')
+```
+
+
+## 页面跳转
+
+**在完成导航动作后等待当前页面跳转到指定`URL`**
+
+```python
+def wait_for_url(
+    self,
+    url: str | Pattern[str] | (str) -> bool,  # URL匹配模式：可以是字符串、正则表达式或返回布尔值的函数。若是不含通配符的字符串，则需要完全匹配
+    *,
+    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,  # 等待条件，默认为"load"
+                                                                                            # - "commit": 收到网络响应且文档开始加载时
+                                                                                            # - "domcontentloaded": DOMContentLoaded事件触发时
+                                                                                            # - "load": load事件触发时
+                                                                                            # - "networkidle": 至少500ms无网络连接时(不推荐)
+    timeout: float | None = None  # 超时时间(毫秒)，默认30秒，设为0则永不超时。
+                                 # 可通过以下方法修改默认值:
+                                 # - browser_context.set_default_navigation_timeout()
+                                 # - browser_context.set_default_timeout()
+                                 # - page.set_default_navigation_timeout()
+                                 # - page.set_default_timeout()
+) -> None:  # 等待主框架导航到指定URL，无返回值
+
+# 示例
+
+# 点击链接将间接导致导航
+page.click("a.delayed-navigation")
+# 等待导航到目标URL
+page.wait_for_url("**/target.html")
+
+```
+
+**在完成导航动作前等待当前页面跳转到指定`URL`**
+
+```python
+def expect_navigation(
+    self,
+    *,
+    url: str | Pattern[str] | (str) -> bool | None = None,  # URL匹配模式：可以是字符串、正则表达式或返回布尔值的函数
+                                                           # 若是不含通配符的字符串，则需要完全匹配。默认None表示匹配任意URL
+    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] | None = None,  # 等待条件，默认为"load"
+                                                                                            # - "commit": 收到网络响应且文档开始加载时
+                                                                                            # - "domcontentloaded": DOMContentLoaded事件触发时
+                                                                                            # - "load": load事件触发时
+                                                                                            # - "networkidle": 至少500ms无网络连接时(不推荐)
+    timeout: float | None = None  # 超时时间(毫秒)，默认30秒，设为0则永不超时
+                                 # 可通过以下方法修改默认值:
+                                 # - browser_context.set_default_navigation_timeout()
+                                 # - browser_context.set_default_timeout()
+                                 # - page.set_default_navigation_timeout()
+                                 # - page.set_default_timeout()
+) -> EventContextManager[Response]:  # 返回主资源的响应对象。如果有多次重定向，返回最后一次重定向的响应
+                                    # 如果是锚点导航或使用History API导航，则返回null
+
+# 示例
+with page.expect_popup() as new_page_info:
+    page.get_by_text("Navigate after timeout").click()
+```
