@@ -1,0 +1,82 @@
+[configparser](https://docs.python.org/3/library/configparser.html)是`Python`内置的配置文件解析器,用于处理`INI`格式的配置文件.
+
+
+## 基本读写
+
+```python
+import configparser
+
+# 创建配置解析器
+config = configparser.ConfigParser()
+
+# 读取配置文件
+config.read('config.ini', encoding='utf-8')
+
+# 写入配置文件
+with open('config.ini', 'w', encoding='utf-8') as f:
+    config.write(f)
+```
+
+
+## 读取`ini`文件
+
+```python
+# config.ini 内容示例:
+# [Database]
+# host = localhost
+# port = 5432
+# user = admin
+# password = 123456
+#
+# [Email]
+# smtp_server = smtp.gmail.com
+# smtp_port = 587
+# sender = sender@example.com
+
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini', encoding='utf-8')
+
+# 获取所有节
+sections = config.sections()  # ['Database', 'Email']
+
+# 读取配置项
+db_host = config['Database']['host']  # 'localhost'
+db_port = config.getint('Database', 'port')  # 5432
+db_user = config.get('Database', 'user')  # 'admin'
+
+# 检查节或选项是否存在
+has_email = config.has_section('Email')  # True
+has_password = config.has_option('Database', 'password')  # True
+
+# 获取节内所有配置项
+db_config = dict(config['Database'])
+```
+
+
+## 写入`ini`文件
+
+```python
+import configparser
+
+config = configparser.ConfigParser()
+
+# 添加节和配置项
+config['Database'] = {
+    'host': 'localhost',
+    'port': '5432',
+    'user': 'admin',
+    'password': '123456'
+}
+
+# 另一种添加方式
+config.add_section('Email')
+config.set('Email', 'smtp_server', 'smtp.gmail.com')
+config.set('Email', 'smtp_port', '587')
+config.set('Email', 'sender', 'sender@example.com')
+
+# 写入文件
+with open('config.ini', 'w', encoding='utf-8') as f:
+    config.write(f)
+```

@@ -1,0 +1,69 @@
+[SQLModel](https://sqlmodel.tiangolo.com/)是一个`Python ORM`框架, 它基于`SQLAlchemy`和`Pydantic`构建.类似于`Node`生态中的`Prisma`
+
+:::tip
+使用[Prisma Client Python](https://prisma-client-py.readthedocs.io/en/stable/)的话可以用`Prisma ORM`相同的`API`在`Python`中访问数据库,但这个库目前还不太完善
+:::
+
+## 安装
+
+```bash
+pip install sqlmodel
+```
+
+## 示例
+
+```python
+from typing import Optional
+from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+# 定义模型
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    name: str
+    age: Optional[int] = None
+
+class Post(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str
+    content: str
+    user_id: int = Field(foreign_key="user.id")
+
+# 创建数据库引擎
+engine = create_engine("sqlite:///database.db")
+
+# 创建表
+SQLModel.metadata.create_all(engine)
+
+# CRUD操作
+def create_user():
+    user = User(email="test@example.com", name="Test User", age=25)
+    with Session(engine) as session:
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+    return user
+
+def get_user(user_id: int):
+    with Session(engine) as session:
+        statement = select(User).where(User.id == user_id)
+        user = session.exec(statement).first()
+    return user
+
+def update_user(user_id: int, name: str):
+    with Session(engine) as session:
+        statement = select(User).where(User.id == user_id)
+        user = session.exec(statement).first()
+        user.name = name
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+    return user
+
+def delete_user(user_id: int):
+    with Session(engine) as session:
+        statement = select(User).where(User.id == user_id)
+        user = session.exec(statement).first()
+        session.delete(user)
+        session.commit()
+```
