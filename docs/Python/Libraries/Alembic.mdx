@@ -1,0 +1,28 @@
+[Alembic](https://alembic.sqlalchemy.org/en/latest/)用于实现数据库版本控制,可以和`SQLAlchemy`和`SQLModel`等`ORM`库一起使用.
+
+## 安装
+
+```bash
+pip install alembic
+```
+
+## 使用方法
+
+```python
+
+# 1. 初始化 alembic
+alembic init alembic
+
+# 2. 修改 alembic.ini 文件中的数据库URL
+sqlalchemy.url = sqlite:///courses.db
+
+# 3. 修改 alembic/env.py，导入你的模型
+from your_models import Course
+target_metadata = SQLModel.metadata
+
+# 5. 创建新的迁移
+alembic revision --autogenerate -m "update course model"
+
+# 6. 应用迁移
+alembic upgrade head
+```
