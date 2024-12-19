@@ -67,3 +67,58 @@ def delete_user(user_id: int):
         session.delete(user)
         session.commit()
 ```
+
+## 模型定义
+
+### 枚举
+
+假设`课程表`中有一个状态字段, 它有三个值: `draft`, `published`, `archived`, 那么我们可以这样定义:
+
+```python
+class CourseStatus(str, Enum):
+    """
+    课程状态枚举
+    """
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
+
+    @classmethod
+    def get_description(cls) -> Dict[str, str]:
+        return {
+            cls.DRAFT: "草稿",
+            cls.PUBLISHED: "已发布",
+            cls.ARCHIVED: "已归档",
+        }
+
+class Course(SQLModel, table=True):
+    """
+    课程表
+    """
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+    status: CourseStatus = Field(
+        default=CourseStatus.DRAFT,
+        sa_column=Column(String),
+        description="课程状态"
+    )
+```
+
+如果要让生成列是一个原生的枚举类型(Mysql、Postgresql等部分数据库支持), 可以这样定义:
+
+```python
+from sqlalchemy import create_engine, Column, String, Enum as SQLAlchemyEnum
+
+class Course(SQLModel, table=True):
+    """
+    课程表
+    """
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+    status: CourseStatus = Field(
+        default=CourseStatus.DRAFT,
+        sa_column=Column(
+            SQLAlchemyEnum(CourseType, name="course_type_enum", native_enum=True),
+            comment='课程类型'
+        ),
+        description="课程状态"
+    )
+```

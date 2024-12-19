@@ -50,7 +50,104 @@ if __name__ == "__main__":
 * 访问`/redoc`可以看到另一种风格的`ReDoc`文档界面
 * 访问`/openapi.json`可以获取`OpenAPI JSON`格式的规范
 
-## @app.post
+## 创建应用
+
+:::tip 提示
+通过创建`FastAPI`类的实例来创建一个`Web`应用.
+:::
+
+```python
+FastAPI(
+    # 基础配置
+    debug: bool = False,              # 是否启用调试模式
+    title: str = "FastAPI",          # API 标题
+    description: str = "",           # API 描述
+    version: str = "0.1.0",         # API 版本号
+
+    # 文档相关
+    docs_url: str | None = "/docs",  # Swagger UI 文档地址，设为 None 可禁用
+    redoc_url: str | None = "/redoc", # ReDoc 文档地址，设为 None 可禁用
+    openapi_url: str | None = "/openapi.json", # OpenAPI 文档地址
+
+    # 路由和依赖
+    routes: list[BaseRoute] | None = None,  # 路由列表
+    dependencies: Sequence[Depends] | None = None,  # 全局依赖项
+
+    # 中间件和异常处理
+    middleware: Sequence[Middleware] | None = None,  # 中间件列表
+    exception_handlers: dict = None,  # 异常处理器
+
+    # 生命周期事件
+    on_startup: Sequence[() -> Any] | None = None,   # 启动时执行的函数列表
+    on_shutdown: Sequence[() -> Any] | None = None,  # 关闭时执行的函数列表
+    lifespan: Callable | None = None,  # 生命周期管理器
+
+    # OpenAPI 文档配置
+    openapi_tags: list[dict] | None = None,  # API 标签配置
+    servers: list[dict] | None = None,       # API 服务器配置
+    terms_of_service: str | None = None,     # 服务条款URL
+    contact: dict | None = None,             # 联系信息
+    license_info: dict | None = None,        # 许可证信息
+
+    # 路径和响应配置
+    root_path: str = "",                     # API 根路径
+    responses: dict | None = None,           # 默认响应
+    default_response_class: Type[Response] = JSONResponse,  # 默认响应类
+
+    # 其他高级配置
+    redirect_slashes: bool = True,   # 是否自动重定向斜杠
+    deprecated: bool | None = None,  # 是否将整个 API 标记为已弃用
+    include_in_schema: bool = True,  # 是否包含在 OpenAPI schema 中
+)
+```
+
+## 通用响应结构
+
+```python
+from typing import TypeVar, Optional, Generic
+
+from pydantic import BaseModel, Field
+
+T = TypeVar('T')
+
+
+class Error(BaseModel):
+    """表示一个错误
+
+    Attributes:
+        type: 错误类型
+        message: 错误信息
+        code: 错误码
+
+    Author: dongjak
+    Created: 2024/11/08
+    Version: 1.0
+    Since: 1.0
+    """
+    type: Optional[str] = Field(default=None, description="错误类型")
+    message: Optional[str] = Field(default=None, description="错误信息")
+    code: Optional[int] = Field(default=None, description="错误码")
+
+
+class ResponsePayloads(BaseModel, Generic[T]):
+    """响应载荷"""
+    data: Optional[T] = Field(default=None, description="数据")
+    error: Optional[Error] = Field(default=None, description="错误信息")
+
+
+# 使用
+@router.get("/courses", response_model=ResponsePayloads[List[Course]])
+def get_courses(course_type: CourseType = Query(
+    title="课程类型",
+    default=CourseType.BUSINESS_IP,
+    description=json.dumps(CourseType.get_description(), ensure_ascii=False)
+)):
+    pass
+```
+
+## 路由定义
+
+### @app.post
 
 用于定义`HTTP POST`方法的`API`端点
 
@@ -80,4 +177,59 @@ if __name__ == "__main__":
     openapi_extra,      # OpenAPI额外信息
     generate_unique_id_function # 生成唯一ID的函数
 )
+```
+
+### 查询参数
+
+```python
+# 这个函数用于在创建路由时定义查询参数
+def Query(
+    # 基础参数
+    default: Any = Undefined,  # 默认值
+    default_factory: Callable = _Unset,  # 默认值工厂函数
+
+    # 别名相关
+    alias: str | None = None,  # 参数别名
+    alias_priority: int | None = _Unset,  # 别名优先级
+    validation_alias: str | None = None,  # 验证时使用的别名
+    serialization_alias: str | None = None,  # 序列化时使用的别名
+
+    # 文档相关
+    title: str | None = None,  # 参数标题
+    description: str | None = None,  # 参数描述
+
+    # 数值范围验证
+    gt: float | None = None,   # 大于
+    ge: float | None = None,   # 大于等于
+    lt: float | None = None,   # 小于
+    le: float | None = None,   # 小于等于
+
+    # 字符串长度验证
+    min_length: int | None = None,  # 最小长度
+    max_length: int | None = None,  # 最大长度
+
+    # 正则表达式验证
+    pattern: str | None = None,  # 正则表达式模式
+    regex: str | None = None,    # 正则表达式(同pattern)
+
+    # 其他验证
+    discriminator: str | None = None,  # 鉴别器
+    strict: bool | None = _Unset,      # 严格模式
+    multiple_of: float | None = _Unset, # 倍数验证
+    allow_inf_nan: bool | None = _Unset,  # 是否允许无穷和NaN
+    max_digits: int | None = _Unset,      # 最大数字位数
+    decimal_places: int | None = _Unset,   # 小数位数
+
+    # 示例相关
+    examples: list | None = None,  # 示例列表
+    example: Any | None = _Unset,  # 单个示例
+    openapi_examples: dict[str, Example] | None = None,  # OpenAPI示例
+
+    # OpenAPI文档相关
+    deprecated: Union[deprecated, str, bool, None] = None,  # 是否废弃
+    include_in_schema: bool = True,  # 是否包含在API文档中
+    json_schema_extra: dict[str, Any] | None = None,  # 额外的JSON Schema信息
+
+    **extra: Any  # 额外参数
+) -> Any
 ```
