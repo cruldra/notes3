@@ -1,0 +1,8 @@
+{
+  "label": "数据库",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "各种不同数据源的适配器或者ORM框架及工具"
+  }
+}

@@ -1,0 +1,79 @@
+## `__init__.py`
+
+1. 基础用法 - 声明包
+
+```python
+# 最简单的用法：空文件
+# my_package/__init__.py
+# 仅用来标识这是一个包
+```
+
+2. 导出接口 - 定义`__all__`
+
+```python
+# my_package/__init__.py
+
+from .module1 import ClassA, function1
+from .module2 import ClassB
+from .constants import VERSION
+
+__all__ = [
+    'ClassA',
+    'ClassB',
+    'function1',
+    'VERSION'
+]
+```
+
+3. 定义版本信息和元数据
+
+```python
+# my_package/__init__.py
+
+__version__ = '1.0.0'
+__author__ = 'Your Name'
+__email__ = 'your.email@example.com'
+__description__ = 'Package description'
+__license__ = 'MIT'
+```
+
+4. 包级别的初始化
+
+```python
+# my_package/__init__.py
+
+import logging
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# 初始化全局变量
+GLOBAL_CONFIG = {
+    'debug': False,
+    'api_url': 'https://api.example.com'
+}
+
+# 初始化函数
+def initialize():
+    """包初始化函数"""
+    pass
+```
+
+5. 条件导入和平台特定代码
+
+```python
+# my_package/__init__.py
+
+import sys
+import platform
+
+if sys.platform == 'win32':
+    from .windows import WindowsClass as PlatformClass
+elif sys.platform == 'darwin':
+    from .macos import MacClass as PlatformClass
+else:
+    from .linux import LinuxClass as PlatformClass
+```

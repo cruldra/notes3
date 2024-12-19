@@ -1,0 +1,27 @@
+[Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)基于`Pydantic`实现配置管理,用于从环境变量或秘密文件加载设置或配置类.
+
+## 安装
+
+```bash
+pip install pydantic-settings
+```
+
+## 从`.env`文件加载配置
+
+```python
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    default_search_page: str = Field(
+        default=None,
+        description="默认搜索页面"
+    )
+
+    model_config = SettingsConfigDict(
+        env_file=".env"
+    )
+
+
+# 创建设置实例
+settings = Settings()
+```
