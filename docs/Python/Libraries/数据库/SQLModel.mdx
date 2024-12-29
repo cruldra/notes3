@@ -122,3 +122,32 @@ class Course(SQLModel, table=True):
         description="课程状态"
     )
 ```
+
+### 多对一
+
+假设课程表和导师表是多对一,也就是一个导师可以有多个课程,那可以这样定义:
+
+```python
+class Course(SQLModel, table=True):
+    """
+    课程表
+    """
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+
+    # 添加外键关联
+    teacher_id: Optional[int] = Field(
+        default=None,
+        foreign_key="asm_teacher.id",
+        description="导师ID"
+    )
+    # 添加关系属性
+    teacher: Optional["Teacher"] = Relationship(back_populates="courses")
+
+class Teacher(SQLModel, table=True):
+    """
+    导师表
+    """
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+    # 添加反向关系
+    courses: List["Course"] = Relationship(back_populates="teacher")
+```

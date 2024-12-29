@@ -1,0 +1,20 @@
+[Cryptography](https://github.com/pyca/cryptography)用于加密和解密数据.
+
+## 安装
+
+```bash
+pip install cryptography
+```
+
+## 示例
+
+```python
+from cryptography.fernet import Fernet
+# 生成密钥
+key = Fernet.generate_key()
+# 加密
+cipher_suite = Fernet(key)
+cipher_text = cipher_suite.encrypt(b"Hello, World!")
+# 解密
+plain_text = cipher_suite.decrypt(cipher_text)
+```

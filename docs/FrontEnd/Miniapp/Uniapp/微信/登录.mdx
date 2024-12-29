@@ -79,7 +79,7 @@ const handleDisabledClick = () => {
 }
 ```
 
-## 后端
+## 后端(Java)
 
 1. 引入[微信Java开发包](https://github.com/binarywang/WxJava)
 
@@ -131,4 +131,61 @@ fun wxLogin(ctx: Context) {
         )
     )
 }
+```
+
+## 后端(Python)
+
+1. 安装`pycryptodome`用于解决微信返回的数据
+2. 安装`wechatpy`微信开发包
+
+```bash
+pip install pycryptodome wechatpy
+```
+
+```python
+class WXBizDataCrypt:
+    def __init__(self, appId, sessionKey):
+        self.appId = appId
+        self.sessionKey = sessionKey
+
+    def decrypt(self, encryptedData, iv):
+        # base64 decode
+        sessionKey = base64.b64decode(self.sessionKey)
+        encryptedData = base64.b64decode(encryptedData)
+        iv = base64.b64decode(iv)
+
+        cipher = AES.new(sessionKey, AES.MODE_CBC, iv)
+
+        decrypted = json.loads(self._unpad(cipher.decrypt(encryptedData)))
+
+        if decrypted['watermark']['appid'] != self.appId:
+            raise Exception('Invalid Buffer')
+
+        return decrypted
+
+    def _unpad(self, s):
+        return s[:-ord(s[len(s)-1:])]
+
+@router.post("/auth/wxLogin")
+async def wx_login(data: WechatLoginData = Body(...)):
+    client = WeChatClient(settings.wechat_app_id, settings.wechat_app_secret)
+    session_info = client.wxa.code_to_session(data.code)
+    wx = WXBizDataCrypt(settings.wechat_app_id, session_info['session_key'])
+    decrypted_data = wx.decrypt(data.encryptedData, data.iv)
+    print(f"手机号: {decrypted_data['purePhoneNumber']}")
+    print(f"国家代码: {decrypted_data['countryCode']}")
+    # TODO: Initialize WxMaService equivalent
+    # TODO: Get session info using code
+
+    # Mock response for now
+    return ResponsePayloads(
+        data=WechatLoginResult(
+            token="mock_token",
+            userInfo=UserInfo(
+                avatar="default_avatar",
+                nickname="default_nickname",
+                phoneNumber="13800138000"
+            )
+        )
+    )
 ```
