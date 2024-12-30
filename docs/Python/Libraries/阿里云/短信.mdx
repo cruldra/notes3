@@ -1,0 +1,45 @@
+[阿里云短信服务SDK](https://help.aliyun.com/zh/sms/developer-reference/sdk-product-overview/)
+
+## 安装
+
+```bash
+pip install alibabacloud_dysmsapi20170525
+```
+
+## 示例
+
+```python
+from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
+from alibabacloud_dysmsapi20170525.models import SendSmsRequest
+from alibabacloud_tea_openapi import models as open_api_models
+
+class SMSClient:
+    def __init__(self):
+        config = open_api_models.Config(
+            access_key_id=settings.aliyun_access_key_id,
+            access_key_secret=settings.aliyun_access_key_secret,
+        )
+        # 访问的域名
+        config.endpoint = 'dysmsapi.aliyuncs.com'
+        self.client = Dysmsapi20170525Client(config)
+
+    def send_sms(self, phone_number: str, template_param: dict):
+        """
+        发送短信
+        :param phone_number: 手机号
+        :param template_param: 模板参数
+        :return: 发送结果
+        """
+        try:
+            send_request = SendSmsRequest(
+                phone_numbers=phone_number,
+                sign_name=settings.sms_sign_name,
+                template_code=settings.sms_template_code,
+                template_param=str(template_param)
+            )
+            response = self.client.send_sms(send_request)
+            return response
+        except Exception as e:
+            print(f"发送短信失败: {str(e)}")
+            raise e
+```
