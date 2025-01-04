@@ -1,0 +1,43 @@
+
+## 流程
+
+1. 注册企业微信并使用和小程序相同的主体进行认证
+2. 拿到企业id,类似于`wwcb527c697cf5b860`
+3. 在小程序中绑定企业id
+    ![](https://github.com/cruldra/picx-images-hosting/raw/master/image.1oviapwow8.webp)
+4. 在"联系客服"按钮的回调中打开客服会话
+
+    ```js
+    function service() {
+      // #ifdef H5
+      window.location.href = 'https://work.weixin.qq.com/kfid/kfcd82a7c0d2ebd2e66'
+      // #endif
+      // #ifdef MP-WEIXIN
+      wx.openCustomerServiceChat({
+        extInfo: {
+          url: 'https://work.weixin.qq.com/kfid/kfcd82a7c0d2ebd2e66'
+        },
+        corpId: "wwcb527c697cf5b860",
+        success(res) {
+          console.log('成功');
+        },
+        fail(err) {
+          console.log(err, '报错');
+        }
+      })
+      // #endif
+
+    }
+    ```
+
+5. 效果
+
+<video
+    controls
+    style={{
+        width: '100%',
+    }}
+    src="https://ailoveworld.oss-cn-hangzhou.aliyuncs.com/videos/2025-01-01%2015-06-4.mp4"
+>
+    Your browser does not support the video tag.
+</video>

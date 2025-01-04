@@ -1,0 +1,8 @@
+{
+  "label": "常用库",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "开发微信平台相关应用时用到的库"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "label": "客服",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "有关微信客服的文档"
+  }
+}

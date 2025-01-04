@@ -122,12 +122,6 @@ const config: Config = {
                     position: 'left',
                     label: 'Python',
                 },
-                {
-                    type: 'docSidebar',
-                    sidebarId: 'lol',
-                    position: 'left',
-                    label: 'LOL',
-                },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
                   href: 'https://github.com/facebook/docusaurus',
