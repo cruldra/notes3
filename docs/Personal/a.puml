@@ -1,0 +1,47 @@
+@startuml
+!include <C4/C4_Component>
+
+LAYOUT_LEFT_RIGHT()
+
+title 文物搜索系统组件架构图
+
+Person(user, "用户", "使用小程序搜索文物")
+
+System_Boundary(search_system, "文物搜索系统") {
+    Container(miniapp, "微信小程序", "前端界面", "提供搜索界面和结果展示")
+
+    ComponentDb(main_db, "主数据库", "PostgreSQL", "存储文物基础信息")
+    ComponentDb(vector_db, "向量数据库", "Milvus", "存储图像特征向量")
+
+    Container_Boundary(backend, "后端服务") {
+        Component(search_service, "检索服务", "处理各类搜索请求")
+        Component(data_process, "数据处理服务", "数据清洗和特征提取")
+        Component(auth_service, "认证服务", "用户认证和权限控制")
+    }
+
+    Container_Boundary(ai_service, "AI服务") {
+        Component(ocr, "OCR服务", "文字识别")
+        Component(feature_extract, "特征提取", "图像特征提取")
+        Component(img_process, "图像处理", "图像预处理")
+    }
+}
+
+System_Ext(cms, "数据管理系统", "文物数据录入和管理")
+
+Rel(user, miniapp, "使用")
+Rel(miniapp, search_service, "发起搜索请求", "HTTPS")
+Rel(miniapp, auth_service, "认证", "HTTPS")
+
+Rel(search_service, main_db, "查询结构化数据")
+Rel(search_service, vector_db, "图像相似度检索")
+
+Rel(cms, data_process, "导入数据")
+Rel(data_process, main_db, "存储基础数据")
+Rel(data_process, ai_service, "特征提取")
+Rel(data_process, vector_db, "存储特征向量")
+
+Rel(ai_service, img_process, "预处理")
+Rel(img_process, feature_extract, "提取特征")
+Rel(img_process, ocr, "文字识别")
+
+@enduml

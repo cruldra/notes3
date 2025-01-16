@@ -105,12 +105,12 @@ const config: Config = {
                     position: 'left',
                     label: '工具',
                 },
-                // {
-                //     type: 'docSidebar',
-                //     sidebarId: 'personal',
-                //     position: 'left',
-                //     label: '个人',
-                // },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'personal',
+                    position: 'left',
+                    label: '个人',
+                },
                 {
                     type: 'docSidebar',
                     sidebarId: 'ai',
