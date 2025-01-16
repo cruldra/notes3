@@ -1,0 +1,39 @@
+* `Nextjs`用于提供全栈能力
+* `Nextjs`路由在`src/app/api`中定义
+* 对于`Nextjs`路由响应,统一采用如下格式(你需要根据使用的具体语言做相应转换)
+    ```python
+
+    T = TypeVar('T')
+
+
+    class Error(BaseModel):
+        """表示一个错误
+
+        Attributes:
+            type: 错误类型
+            message: 错误信息
+            code: 错误码
+
+        Author: dongjak
+        Created: 2024/11/08
+        Version: 1.0
+        Since: 1.0
+        """
+        type: Optional[str] = Field(default=None, description="错误类型")
+        message: Optional[str] = Field(default=None, description="错误信息")
+        code: Optional[int] = Field(default=None, description="错误码")
+
+
+    class ResponsePayloads(BaseModel, Generic[T]):
+        """响应载荷"""
+        data: Optional[T] = Field(default=None, description="数据")
+        error: Optional[Error] = Field(default=None, description="错误信息")
+        ```
+* `Prisma`是用于数据库操作的`ORM`框架,用于提供数据库操作能力
+* `Prisma`模型定义文件位于`prisma/schema.prisma`
+* `Refine`用于提供`CRUD`能力
+* `Refine`路由定义位于`src/app/layout.tsx`
+* `Refine`资源定义位于`src/app/[resource]`
+* 每个`Refine`资源目录中最少包含`列表(page.tsx)`和`布局(layout.tsx)`两个文件,`新增(create.tsx)`和`编辑(edit.tsx)`两个文件视具体的需求而定
+* `Antd`用于提供`UI`组件
+* 默认不做任何异常处理
