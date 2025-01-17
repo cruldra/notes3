@@ -120,6 +120,11 @@ const config: Config = {
                     sidebarId: 'python',
                     position: 'left',
                     label: 'Python',
+                },{
+                    type: 'docSidebar',
+                    sidebarId: 'codeSnippets',
+                    position: 'left',
+                    label: '代码片段',
                 },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
