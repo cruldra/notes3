@@ -151,3 +151,17 @@ class Teacher(SQLModel, table=True):
     # 添加反向关系
     courses: List["Course"] = Relationship(back_populates="teacher")
 ```
+
+### JSON类型
+
+```python
+class  Agent(SQLModel, table=True):
+    tags: List[str] = Field(
+        default=[],
+        sa_column=Column(
+            JSON,
+            comment='标签列表，如：["人气导师", "从业年丰富"]'
+        ),
+        description="标签列表"
+    )
+```
