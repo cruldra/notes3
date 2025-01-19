@@ -39,12 +39,6 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 FROM node:lts-alpine AS base
 WORKDIR /app
 
-# 下载源码
-#FROM base AS source
-#
-#RUN apk add --no-cache git && \
-#    git clone --recurse-submodules https://ghk@github.com/22/proj .
-
 # 安装依赖及构建
 FROM base AS builder
 ENV DOCKER=true
