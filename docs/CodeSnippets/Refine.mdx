@@ -1,0 +1,270 @@
+## 列表页
+
+```tsx
+"use client";
+
+import {DeleteButton, EditButton, List, useTable} from "@refinedev/antd";
+import type {BaseRecord, CrudFilters} from "@refinedev/core";
+import {Button, Form, Input, Select, Space, Table, Tag} from "antd";
+import React from "react";
+
+const AIAgentList = () => {
+    const [form] = Form.useForm();
+    const {tableProps, searchFormProps} = useTable({
+        syncWithLocation: false,
+        onSearch: (params: any) => {
+            const filters: CrudFilters = [];
+
+            // 即使值为空也添加过滤条件
+            filters.push({
+                field: "name",
+                operator: "contains",
+                value: params.name || ""
+            });
+
+            filters.push({
+                field: "type",
+                operator: "eq",
+                value: params.type || undefined
+            });
+
+            return filters;
+        },
+    });
+
+    // 处理表单提交
+    const handleSearch = () => {
+        const values = form.getFieldsValue();
+        searchFormProps?.onFinish?.(values);
+    };
+
+    // 处理重置
+    const handleReset = () => {
+        form.resetFields();
+        // 使用空值触发搜索
+        searchFormProps?.onFinish?.({
+            name: "",
+            type: undefined
+        });
+    };
+    return (
+        <List>
+            {/* 添加搜索表单 */}
+            <Form
+                {...searchFormProps}
+                form={form}
+                layout="inline"
+                style={{marginBottom: 16}}
+            >
+                <Form.Item name="name">
+                    <Input
+                        placeholder="搜索智能体名称"
+                        allowClear
+                        style={{width: 200}}
+                    />
+                </Form.Item>
+                <Form.Item name="type">
+                    <Select
+                        placeholder="选择智能体类型"
+                        allowClear
+                        style={{width: 140}}
+                        options={[
+                            {label: '聊天助手', value: 'CHAT'},
+                            {label: '文本生成', value: 'TEXT'},
+                            {label: '工作流', value: 'WORKFLOW'},
+                        ]}
+                    />
+                </Form.Item>
+                <Form.Item>
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={handleSearch}
+                        >
+                            搜索
+                        </Button>
+                        <Button
+                            onClick={handleReset}
+                        >
+                            重置
+                        </Button>
+                    </Space>
+                </Form.Item>
+            </Form>
+            <Table {...tableProps} rowKey="id">
+                <Table.Column
+                    title="智能体名称"
+                    dataIndex="name"
+                />
+                <Table.Column
+                    title="图标"
+                    dataIndex="icon"
+                    render={(icon) => (
+                        icon ? <img src={icon} alt="icon"
+                                    style={{width: 40, height: 40, borderRadius: '4px'}}/> : '-'
+                    )}
+                />
+                <Table.Column
+                    title="参数配置"
+                    dataIndex="parameters"
+                    render={(params) => (
+                        <pre style={{margin: 0}}>
+                            {JSON.stringify(params, null, 2)}
+                        </pre>
+                    )}
+                />
+                <Table.Column
+                    title="创建时间"
+                    dataIndex="createdAt"
+                    render={(date) => new Date(date).toLocaleString()}
+                />
+                <Table.Column
+                    title="标签"
+                    dataIndex="tags"
+                    render={(tags) => (
+                        <Space wrap>
+                            {Array.isArray(tags) && tags.map((tag, index) => (
+                                <Tag color="blue" key={index}>
+                                    {tag}
+                                </Tag>
+                            ))}
+                        </Space>
+                    )}
+                />
+                <Table.Column
+                    title="用户"
+                    dataIndex="userId"
+                    render={(value) => (
+                        <RecordNameCell
+                            value={value}
+                            resource="user"
+                            nameField="nickname"
+                        />
+                    )}
+                />
+                <Table.Column
+                    title={"操作"}
+                    dataIndex="actions"
+                    render={(_, record: BaseRecord) => (
+                        <Space>
+                            <EditButton hideText size="small" recordItemId={record.id}/>
+                            <DeleteButton hideText size="small" recordItemId={record.id}/>
+                        </Space>
+                    )}
+                />
+            </Table>
+        </List>
+    );
+}
+
+export default AIAgentList;
+```
+## 编辑页
+
+```tsx
+"use client";
+
+import {Edit, useForm} from "@refinedev/antd";
+import {Form, Input, Select, Upload} from "antd";
+import React from "react";
+import {PlusOutlined} from "@ant-design/icons";
+
+export default function AIAgentEdit() {
+    const {formProps, saveButtonProps} = useForm({});
+    return (
+        <Edit saveButtonProps={saveButtonProps}>
+            <Form<any> {...formProps} layout="vertical">
+                <Form.Item
+                    label="智能体名称"
+                    name="name"
+                    rules={[{required: true, message: '请输入智能体名称'}]}
+                >
+                    <Input placeholder="请输入智能体名称"/>
+                </Form.Item>
+
+                <Form.Item
+                    label="图标"
+                    name="icon"
+                >
+                    <Upload
+                        name="file"
+                        action="/api/file/upload"
+                        listType="picture-card"
+                        maxCount={1}
+                        defaultFileList={
+                            formProps.initialValues?.icon
+                                ? [{
+                                    uid: '-1',
+                                    name: 'icon',
+                                    status: 'done',
+                                    url: formProps.initialValues.icon,
+                                }]
+                                : []
+                        }
+                        onChange={({file}) => {
+                            if (file.status === 'done') {
+                                formProps.form?.setFieldValue('icon', file.response.data.url);
+                            }
+                        }}
+                    >
+                        <div>
+                            <PlusOutlined/>
+                            <div style={{marginTop: 8}}>上传图标</div>
+                        </div>
+                    </Upload>
+                </Form.Item>
+
+                <Form.Item
+                    label="功能描述"
+                    name="description"
+                >
+                    <Input.TextArea
+                        rows={4}
+                        placeholder="请输入智能体的功能描述"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    label="智能体类型"
+                    name="type"
+                    rules={[{required: true, message: '请选择智能体类型'}]}
+                    initialValue="CHAT"
+                >
+                    <Select>
+                        <Select.Option value="CHAT">聊天助手</Select.Option>
+                        <Select.Option value="TEXT">文本生成</Select.Option>
+                        <Select.Option value="WORKFLOW">工作流</Select.Option>
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    label="Dify密钥"
+                    name="difyKey"
+                >
+                    <Input.Password
+                        placeholder="请输入Dify密钥"
+                    />
+                </Form.Item>
+                <Form.Item
+                    label="标签"
+                    name="tags"
+                >
+                    <Select
+                        mode="tags"
+                        style={{width: '100%'}}
+                        placeholder="请输入或选择标签"
+                        options={[
+                            {value: 'SY', label: '商业IP'},
+                            {value: 'CH', label: '出海'},
+                            {value: 'YX', label: '营销'},
+                            {value: 'TRZ', label: '投融资'},
+                            {value: 'GL', label: '管理'},
+                            {value: 'YY', label: 'AI应用'},
+                        ]}
+                    />
+                </Form.Item>
+            </Form>
+        </Edit>
+    );
+}
+
+```

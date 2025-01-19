@@ -1,0 +1,8 @@
+{
+  "label": "ASGI服务器",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "ASGI(Asynchronous Server Gateway Interface)服务器是Python异步Web服务器的接口规范和实现,用于处理异步Web请求和WebSocket等协议"
+  }
+}

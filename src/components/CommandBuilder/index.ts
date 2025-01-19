@@ -5,3 +5,4 @@ export {default as OpenaiTestCommandBuilder} from './OpenaiTestCommandBuilder';
 export {default as DatabaseURLBuilder} from './DatabaseURLBuilder';
 export {default as DockerBuildBuilder} from './DockerBuildBuilder';
 export {default as UbuntuSwapSetBuilder} from './UbuntuSwapSetBuilder';
+export {default as UvicornCmdBuilder} from './UvicornCmdBuilder';

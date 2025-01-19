@@ -1,0 +1,96 @@
+[Uvicorn](https://www.uvicorn.org/)是一个`Python ASGI`服务器,它实现了`HTTP/1.1`和`WebSocket`协议.
+
+
+## 安装
+
+```bash
+pip install uvicorn[standard]
+```
+
+```text
+Usage: uvicorn [OPTIONS] APP
+
+Options:
+  --host TEXT                     绑定socket的主机地址 [默认: 127.0.0.1]
+  --port INTEGER                  绑定socket的端口号。如果为0，将自动选择可用端口
+                                  [默认: 8000]
+  --uds TEXT                      绑定到UNIX域套接字
+  --fd INTEGER                    从指定的文件描述符绑定socket
+  --reload                        启用自动重载
+  --reload-dir PATH               显式设置重载目录，而不使用当前工作目录
+  --reload-include TEXT           设置监视文件时要包含的glob模式。默认包含'*.py'；
+                                  这些默认值可以通过`--reload-exclude`覆盖。
+                                  此选项仅在安装watchfiles时生效。
+  --reload-exclude TEXT           设置监视文件时要排除的glob模式。默认包含
+                                  '.*, .py[cod], .sw.*, ~*'；这些默认值可以通过
+                                  `--reload-include`覆盖。此选项仅在安装
+                                  watchfiles时生效。
+  --reload-delay FLOAT           检查应用是否需要重载的延迟时间。默认为0.25秒
+                                  [默认: 0.25]
+  --workers INTEGER               工作进程数量。默认使用环境变量$WEB_CONCURRENCY
+                                  如果可用，否则为1。与--reload不兼容。
+  --loop [auto|asyncio|uvloop]    事件循环实现方式 [默认: auto]
+  --http [auto|h11|httptools]     HTTP协议实现方式 [默认: auto]
+  --ws [auto|none|websockets|wsproto]
+                                  WebSocket协议实现方式 [默认: auto]
+  --ws-max-size INTEGER           WebSocket最大消息大小(字节)
+                                  [默认: 16777216]
+  --ws-max-queue INTEGER          WebSocket消息队列最大长度 [默认: 32]
+  --ws-ping-interval FLOAT        WebSocket ping间隔(秒) [默认: 20.0]
+  --ws-ping-timeout FLOAT         WebSocket ping超时时间(秒) [默认: 20.0]
+  --ws-per-message-deflate BOOLEAN
+                                  WebSocket逐消息压缩 [默认: True]
+  --lifespan [auto|on|off]        生命周期实现方式 [默认: auto]
+  --interface [auto|asgi3|asgi2|wsgi]
+                                  选择ASGI3、ASGI2或WSGI作为应用接口
+                                  [默认: auto]
+  --env-file PATH                 环境配置文件
+  --log-config PATH               日志配置文件。支持的格式: .ini, .json, .yaml
+  --log-level [critical|error|warning|info|debug|trace]
+                                  日志级别 [默认: info]
+  --access-log / --no-access-log  启用/禁用访问日志
+  --use-colors / --no-use-colors  启用/禁用彩色日志输出
+  --proxy-headers / --no-proxy-headers
+                                  启用/禁用X-Forwarded-Proto、X-Forwarded-For、
+                                  X-Forwarded-Port来填充远程地址信息
+  --server-header / --no-server-header
+                                  启用/禁用默认Server头
+  --date-header / --no-date-header
+                                  启用/禁用默认Date头
+  --forwarded-allow-ips TEXT      信任代理头的IP地址、IP网络或字面量（如UNIX
+                                  Socket路径）的逗号分隔列表。默认使用
+                                  $FORWARDED_ALLOW_IPS环境变量，如果可用，
+                                  否则为'127.0.0.1'。字面量'*'表示信任所有。
+  --root-path TEXT                为挂载在指定URL路径下的应用设置ASGI 'root_path'
+  --limit-concurrency INTEGER     允许的最大并发连接数或任务数，超过后将返回
+                                  HTTP 503响应
+  --backlog INTEGER               等待队列中允许的最大连接数
+  --limit-max-requests INTEGER    终止进程前要处理的最大请求数
+  --timeout-keep-alive INTEGER    如果在此超时时间内未收到新数据，则关闭
+                                  Keep-Alive连接 [默认: 5]
+  --timeout-graceful-shutdown INTEGER
+                                  等待优雅关闭的最长秒数
+  --ssl-keyfile TEXT              SSL密钥文件
+  --ssl-certfile TEXT             SSL证书文件
+  --ssl-keyfile-password TEXT     SSL密钥文件密码
+  --ssl-version INTEGER           使用的SSL版本(参见stdlib ssl模块)
+                                  [默认: 17]
+  --ssl-cert-reqs INTEGER         是否需要客户端证书(参见stdlib ssl模块)
+                                  [默认: 0]
+  --ssl-ca-certs TEXT             CA证书文件
+  --ssl-ciphers TEXT              使用的加密套件(参见stdlib ssl模块)
+                                  [默认: TLSv1]
+  --header TEXT                   指定自定义默认HTTP响应头，格式为Name:Value对
+  --version                       显示uvicorn版本并退出
+  --app-dir TEXT                  在指定目录中查找APP，通过将其添加到PYTHONPATH。
+                                  默认为当前工作目录
+  --h11-max-incomplete-event-size INTEGER
+                                  对于h11，不完整事件的最大缓冲字节数
+  --factory                       将APP视为应用工厂，即一个()-> <ASGI app>可调用对象
+  --help                          显示此消息并退出
+```
+
+
+import {UvicornCmdBuilder} from '@site/src/components/CommandBuilder';
+
+<UvicornCmdBuilder/>
