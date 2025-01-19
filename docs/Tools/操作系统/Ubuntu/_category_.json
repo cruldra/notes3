@@ -1,0 +1,8 @@
+{
+  "label": "Ubuntu",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Ubuntu是一个基于Debian的Linux发行版，以其易用性和稳定性著称。"
+  }
+}

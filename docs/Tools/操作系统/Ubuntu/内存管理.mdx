@@ -1,0 +1,20 @@
+## 创建虚拟内存
+```bash
+# 创建swap文件:
+sudo fallocate -l 4G /swapfile   # 创建4GB的swap文件
+# 设置权限
+sudo chmod 600 /swapfile
+# 格式化为swap格式
+sudo mkswap /swapfile
+# 启用swap
+sudo swapon /swapfile
+# 设置开机自动启用
+sudo echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+# 调整swappiness值(0-100之间，越高表示越倾向于使用swap)
+sudo echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+```
+
+
+import {UbuntuSwapSetBuilder} from '@site/src/components/CommandBuilder';
+
+<UbuntuSwapSetBuilder/>
