@@ -2,6 +2,8 @@
 
 ```text
 📦 projectRoot/
+├── 📂 prisma/
+│   ├── 📄 schema.prisma
 ├── 📂 src/
 │   ├── 📂 app/
 │   │   ├── 📂 api/
@@ -38,3 +40,24 @@
 ├── ⚙️ tsconfig.json
 └── ⚙️ next.config.mjd
 ```
+
+## 开发流程
+
+
+### 资源管理列表页面
+
+1. 确定要管理的资源,通常是数据库表,管理后台中,数据库表定义位于`$projectRoot/prisma/schema.prisma`
+2. 在`$projectRoot/src/app/`下创建资源文件夹,文件夹名称是表模型名称的复数形式,如模型名称`SystemParameter`,对应文件夹名称是`systemParameters`
+3. 在资源文件夹下创建`layout.tsx`文件,这是资源的布局文件,用于定义资源的布局,如导航栏,侧边栏等
+4. 在资源文件夹下创建`page.tsx`文件,这是资源的列表页面
+5. `page.tsx`的内容可以参考[Refine列表页模板](./Refine.mdx#列表页)
+
+### 资源创建页面
+
+1. 在资源文件夹下创建`create/page.tsx`文件,这是资源的创建页面
+2. `create/page.tsx`的内容可以参考[Refine创建页模板](./Refine.mdx#编辑页)
+
+### 资源编辑页面
+
+1. 在资源文件夹下创建`edit/page.tsx`文件,这是资源的编辑页面
+2. `edit/page.tsx`的内容可以参考[Refine编辑页模板](./Refine.mdx#编辑页)
