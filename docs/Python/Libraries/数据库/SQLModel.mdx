@@ -165,3 +165,124 @@ class  Agent(SQLModel, table=True):
         description="标签列表"
     )
 ```
+
+
+## 查询
+
+```python
+user = session.exec(select(User).where(User.age == 25)).first()
+
+# 大于
+users = session.exec(select(User).where(User.age > 18)).all()
+
+# 小于
+users = session.exec(select(User).where(User.score < 60)).all()
+
+# 大于等于
+users = session.exec(select(User).where(User.level >= 3)).all()
+
+# 小于等于
+users = session.exec(select(User).where(User.status <= 1)).all()
+
+# 使用 AND
+users = session.exec(
+        select(User)
+        .where(User.age >= 18)
+        .where(User.age <= 30)
+    ).all()
+
+# 使用 between
+users = session.exec(
+    select(User)
+    .where(User.age.between(18, 30))
+).all()
+
+# IN 查询
+users = session.exec(
+        select(User)
+        .where(User.age.in_(ages))
+    ).all()
+
+# NOT IN
+users = session.exec(
+    select(User)
+    .where(User.age.not_in([18, 20, 22]))
+).all()
+
+# all
+users = session.exec(
+        select(User)
+        .where(
+            or_(
+                User.age < 18,
+                User.score < 60
+            )
+        )
+    ).all()
+
+# 升序
+users = session.exec(
+    select(User)
+    .order_by(User.age)
+).all()
+
+# 降序
+users = session.exec(
+    select(User)
+    .order_by(User.age.desc())
+).all()
+
+# 分页
+users = session.exec(
+        select(User)
+        .offset(10)
+        .limit(10)
+    ).all()
+
+
+# 8. 聚合函数
+def aggregation_queries(session: Session):
+    from sqlalchemy import func
+
+    # 计数
+    count = session.exec(
+        select(func.count(User.id))
+    ).first()
+
+    # 最大值
+    max_age = session.exec(
+        select(func.max(User.age))
+    ).first()
+
+    # 最小值
+    min_age = session.exec(
+        select(func.min(User.age))
+    ).first()
+
+    # 平均值
+    avg_score = session.exec(
+        select(func.avg(User.score))
+    ).first()
+
+    # 求和
+    total_score = session.exec(
+        select(func.sum(User.score))
+    ).first()
+
+# 9. 分组查询
+def group_queries(session: Session):
+    from sqlalchemy import func
+
+    # 按级别分组统计人数
+    result = session.exec(
+        select(User.level, func.count(User.id))
+        .group_by(User.level)
+    ).all()
+
+    # 按级别分组统计平均分
+    result = session.exec(
+        select(User.level, func.avg(User.score))
+        .group_by(User.level)
+        .having(func.avg(User.score) > 60)
+    ).all()
+```

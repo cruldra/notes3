@@ -1,8 +1,0 @@
-{
-  "label": "Nodejs",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "Node.js是一个基于Chrome V8引擎的JavaScript运行时环境,用于在服务器端执行JavaScript代码."
-  }
-}

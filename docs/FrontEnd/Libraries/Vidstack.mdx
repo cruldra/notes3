@@ -1,0 +1,43 @@
+[Vidstack](https://www.vidstack.io/)是一个开源的`HTML5`视频播放器库.
+
+
+## 安装
+
+```json
+pnpm i @vidstack/react@next
+```
+
+## 使用
+
+1. 引入样式
+
+```tsx
+import '@vidstack/react/player/styles/default/theme.css';
+import '@vidstack/react/player/styles/default/layouts/video.css';
+```
+
+2. 渲染播放器
+
+
+```tsx
+import {MediaPlayer, MediaProvider, Poster} from '@vidstack/react';
+import {
+    defaultLayoutIcons,
+    DefaultLayoutTranslations,
+    DefaultVideoLayout
+} from '@vidstack/react/player/layouts/default';
+
+
+<MediaPlayer
+    poster={video.posterUrl}
+    src={video.playUrl}>
+    <MediaProvider>
+        <Poster className="vds-poster"/>
+    </MediaProvider>
+    <DefaultVideoLayout slots={{
+        googleCastButton: null,
+        settingsMenu: null,
+        pipButton: null,
+    }} translations={CHINESE} icons={defaultLayoutIcons}/>
+</MediaPlayer>
+```
