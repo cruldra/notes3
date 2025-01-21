@@ -116,7 +116,7 @@ export const courseService = createApi(CourseService, request)
       <div class="item" v-for="(item, index) in list" :key="index">
         {{ item.title }}
       </div>
-      
+
       <!-- 加载状态 -->
       <div v-if="list.length" class="loading-text">
         {{ pageParams.hasMore ? '正在加载...' : '没有更多了' }}
@@ -147,16 +147,16 @@ const pageParams = ref({
 const getList = async () => {
   if (!pageParams.value.hasMore || pageParams.value.isLoading) return
   pageParams.value.isLoading = true
-  
+
   try {
     const res = await listApi.getList(pageParams.value.offset, pageParams.value.limit)
-    
+
     if (pageParams.value.offset === 0) {
       list.value = res.data || []
     } else {
       list.value.push(...(res.data || []))
     }
-    
+
     pageParams.value.hasMore = (res.data || []).length === pageParams.value.limit
     pageParams.value.offset += pageParams.value.limit
   } finally {
@@ -202,14 +202,14 @@ const onLoadMore = async () => {
 <template>
   <div class="chat-container">
     <!-- 聊天消息列表 -->
-    <scroll-view 
-      class="message-list" 
+    <scroll-view
+      class="message-list"
       scroll-y
       :scroll-top="scrollTop"
       :scroll-with-animation="true"
     >
       <div class="message-inner">
-        <div v-for="(msg, index) in messageList" :key="index" 
+        <div v-for="(msg, index) in messageList" :key="index"
              :class="['message', msg.type === 'user' ? 'user' : 'ai']">
           {{ msg.content }}
         </div>
@@ -223,9 +223,9 @@ const onLoadMore = async () => {
 
     <!-- 输入框 -->
     <div class="input-box">
-      <input 
+      <input
         v-model="inputText"
-        class="input" 
+        class="input"
         placeholder="请输入内容..."
       />
       <button @tap="sendMessage" class="send-btn">发送</button>
@@ -258,7 +258,7 @@ function connectWebSocket() {
     try {
       const data = JSON.parse(res.data)
       currentTaskId.value = data.task_id
-      
+
       // 处理停止
       if(data.stopped) {
         isGenerating.value = false
@@ -269,7 +269,7 @@ function connectWebSocket() {
       if(data.error) {
         uni.showToast({ title: data.error, icon: 'none' })
         isGenerating.value = false
-        return  
+        return
       }
 
       // 处理结束
@@ -282,7 +282,7 @@ function connectWebSocket() {
       if(data.answer) {
         isGenerating.value = true
         const lastMsg = messageList.value[messageList.value.length - 1]
-        
+
         if(!lastMsg || lastMsg.type === 'user') {
           messageList.value.push({
             type: 'ai',
@@ -302,9 +302,9 @@ function connectWebSocket() {
 // 发送消息
 function sendMessage() {
   if(!inputText.value) return
-  
+
   messageList.value.push({
-    type: 'user', 
+    type: 'user',
     content: inputText.value
   })
 
@@ -361,3 +361,91 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 </style>
 ```
+
+### sse
+
+```html
+// page.vue
+<template>
+  <view class="container">
+    <!-- 显示接收到的消息 -->
+    <view class="message" v-if="message">
+      {{ message }}
+    </view>
+  </view>
+</template>
+
+<script lang="ts" setup>
+import { ref, onUnmounted } from 'vue'
+import { Base64 } from './base64'
+
+const message = ref('')
+let requestTask: any = null
+
+// 初始化SSE连接
+const initSSE = () => {
+  const token = uni.getStorageSync('token')
+
+  // #ifdef MP-WEIXIN
+  //@ts-ignore
+  requestTask = wx.request({
+    url: `${import.meta.env.VITE_BASE_URL}/your-sse-endpoint`,
+    header: {
+      "Authorization": `Bearer ${token}`
+    },
+    enableChunked: true, // 启用分块传输
+    success: (res: any) => {
+      console.log('SSE连接成功')
+    },
+    fail: (err: any) => {
+      console.error('SSE连接失败:', err)
+    }
+  })
+
+  // 监听分块数据
+  requestTask.onChunkReceived((res: any) => {
+    try {
+      //@ts-ignore
+      const base64Str = wx.arrayBufferToBase64(res.data)
+      const text = new Base64().decode(base64Str)
+
+      if (text) {
+        // 解析SSE消息
+        const lines = text.split('\n')
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6))
+            // 处理接收到的数据
+            message.value = data
+          }
+        }
+      }
+    } catch (e: any) {
+      uni.showModal({
+        title: "错误",
+        content: e.message,
+        showCancel: false
+      });
+    }
+  })
+  // #endif
+}
+
+onLoaded(() => {
+  initSSE()
+})
+
+// 页面卸载时清理
+onUnmounted(() => {
+  if (requestTask) {
+    requestTask.offChunkReceived()
+    requestTask = null
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+</style>
+```
+
+**另外还有很多坑参考[这里](../FrontEnd/Miniapp/Uniapp/踩过的坑.mdx)**

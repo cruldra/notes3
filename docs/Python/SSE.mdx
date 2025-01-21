@@ -1,0 +1,92 @@
+```python
+from fastapi import FastAPI, Request, HTTPException, status
+from sse_starlette.sse import EventSourceResponse
+import asyncio
+from typing import Dict, Set, Optional
+import json
+from datetime import datetime
+from contextlib import asynccontextmanager
+from loguru import logger
+
+app = FastAPI()
+
+# 全局连接管理
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, Set[Request]] = {}
+
+    async def connect(self, client_id: str, request: Request):
+        if client_id not in self.active_connections:
+            self.active_connections[client_id] = set()
+        self.active_connections[client_id].add(request)
+        logger.info(f"Client {client_id} connected. Total connections: {len(self.active_connections)}")
+
+    async def disconnect(self, client_id: str, request: Request):
+        if client_id in self.active_connections:
+            self.active_connections[client_id].discard(request)
+            if not self.active_connections[client_id]:
+                del self.active_connections[client_id]
+        logger.info(f"Client {client_id} disconnected. Total connections: {len(self.active_connections)}")
+
+    def get_connections(self, client_id: str) -> Set[Request]:
+        return self.active_connections.get(client_id, set())
+
+manager = ConnectionManager()
+
+async def event_generator(request: Request, client_id: str) -> AsyncGenerator[str, None]:
+    """事件生成器"""
+    try:
+        await manager.connect(client_id, request)
+        while True:
+            if await request.is_disconnected():
+                break
+
+            data = {
+                "timestamp": datetime.now().isoformat(),
+                "client_id": client_id,
+                "data": "Your data here"
+            }
+
+            yield json.dumps({
+                "event": "update",
+                "data": data,
+                "id": str(datetime.now().timestamp())
+            })
+
+            await asyncio.sleep(1)
+    except Exception as e:
+        logger.error(f"Error in event_generator: {str(e)}")
+        raise
+    finally:
+        await manager.disconnect(client_id, request)
+
+@app.get("/stream/{client_id}")
+async def stream(request: Request, client_id: str):
+    """SSE 端点"""
+    try:
+        return EventSourceResponse(
+            event_generator(request, client_id),
+            ping=20,
+            media_type="text/event-stream",
+            headers={
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'X-Accel-Buffering': 'no'
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in stream endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+# 广播消息给所有连接的客户端
+async def broadcast_message(client_id: str, message: str):
+    """广播消息"""
+    connections = manager.get_connections(client_id)
+    for request in connections:
+        if not await request.is_disconnected():
+            # 实现消息广播逻辑
+            pass
+```
