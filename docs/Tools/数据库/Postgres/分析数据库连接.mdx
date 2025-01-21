@@ -1,0 +1,178 @@
+## 查看当前所有连接详细信息
+
+```sql
+SELECT
+    pid,
+    usename as username,
+    datname as database,
+    client_addr as client_ip,
+    application_name,
+    backend_start,
+    state,
+    state_change,
+    wait_event_type,
+    wait_event,
+    query
+FROM pg_stat_activity;
+```
+
+## 查看每个数据库的连接数
+
+```sql
+SELECT
+    datname as database,
+    count(*) as connection_count
+FROM pg_stat_activity
+GROUP BY datname;
+```
+
+## 查看最大连接数配置
+
+```sql
+-- 查看最大连接数设置
+SHOW max_connections;
+
+-- 查看每种类型的最大连接数
+SHOW superuser_reserved_connections;
+```
+
+## 查看空闲连接
+
+```sql
+-- 查看空闲连接
+SELECT
+    pid,
+    usename,
+    datname,
+    state,
+    current_timestamp - state_change as idle_time
+FROM pg_stat_activity
+WHERE state = 'idle';
+
+-- 查看长时间空闲的连接(超过5分钟)
+SELECT *
+FROM pg_stat_activity
+WHERE state = 'idle'
+AND current_timestamp - state_change > interval '5 minutes';
+```
+
+## 查看正在执行的查询
+
+```sql
+-- 查看当前正在执行的查询
+SELECT
+    pid,
+    usename,
+    query_start,
+    now() - query_start as duration,
+    query
+FROM pg_stat_activity
+WHERE state = 'active';
+
+-- 查看长时间运行的查询(超过1分钟)
+SELECT
+    pid,
+    usename,
+    query_start,
+    now() - query_start as duration,
+    query
+FROM pg_stat_activity
+WHERE state = 'active'
+AND now() - query_start > interval '1 minute';
+```
+
+## 连接池统计
+
+```sql
+-- 查看等待连接的数量
+SELECT count(*)
+FROM pg_stat_activity
+WHERE wait_event_type = 'Client';
+
+-- 查看各种状态的连接数量
+SELECT
+    state,
+    count(*)
+FROM pg_stat_activity
+GROUP BY state;
+```
+
+## 终止连接的命令
+
+```sql
+-- 终止指定连接
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE state = 'idle'
+AND pid <> pg_backend_pid();
+
+-- 终止指定数据库的所有连接
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'database_name';
+
+-- 终止空闲超过10分钟的连接
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE state = 'idle'
+AND current_timestamp - state_change > interval '10 minutes';
+```
+
+## 监控连接变化
+
+```sql
+-- 创建监控视图
+CREATE VIEW connection_stats AS
+SELECT
+    datname,
+    usename,
+    count(*) as total_connections,
+    sum(CASE WHEN state = 'active' THEN 1 ELSE 0 END) as active_connections,
+    sum(CASE WHEN state = 'idle' THEN 1 ELSE 0 END) as idle_connections
+FROM pg_stat_activity
+GROUP BY datname, usename;
+
+-- 查看连接统计
+SELECT * FROM connection_stats;
+```
+
+## 性能相关查询
+
+```sql
+-- 查看等待事件
+SELECT
+    wait_event_type,
+    wait_event,
+    count(*)
+FROM pg_stat_activity
+WHERE wait_event is not null
+GROUP BY wait_event_type, wait_event;
+
+-- 查看连接时长分布
+SELECT
+    datname,
+    extract(epoch from now() - backend_start)::integer / 60 as minutes_connected,
+    count(*)
+FROM pg_stat_activity
+GROUP BY datname, minutes_connected
+ORDER BY datname, minutes_connected;
+```
+
+## 定期清理脚本
+
+```sql
+-- 创建清理函数
+CREATE OR REPLACE FUNCTION cleanup_idle_connections()
+RETURNS void AS $$
+BEGIN
+    PERFORM pg_terminate_backend(pid)
+    FROM pg_stat_activity
+    WHERE state = 'idle'
+    AND current_timestamp - state_change > interval '30 minutes'
+    AND pid <> pg_backend_pid();
+END;
+$$ LANGUAGE plpgsql;
+
+-- 使用
+SELECT cleanup_idle_connections();
+```
