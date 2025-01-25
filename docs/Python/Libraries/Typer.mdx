@@ -1,0 +1,95 @@
+[Typer](https://typer.tiangolo.com/)用于构建命令行应用程序.
+
+## 安装
+
+```bash
+pip install typer
+```
+
+## 基础示例
+
+### 最简单的示例
+
+```python
+import typer
+
+def main():
+    print("Hello World")
+
+if __name__ == "__main__":
+    typer.run(main)
+```
+
+运行:
+```bash
+$ python main.py
+Hello World
+
+$ python main.py --help  # 自动生成帮助信息
+```
+
+### 添加命令行参数
+
+```python
+import typer
+
+def main(name: str, lastname: str = "", formal: bool = False):
+    """
+    向NAME打招呼,可以选择添加--lastname。
+    使用--formal可以更正式地打招呼。
+    """
+    if formal:
+        print(f"Good day Ms. {name} {lastname}.")
+    else:
+        print(f"Hello {name} {lastname}")
+
+if __name__ == "__main__":
+    typer.run(main)
+```
+
+运行:
+```bash
+$ python main.py Camila  # 必需参数
+Hello Camila
+
+$ python main.py Camila --lastname Gutiérrez  # 可选参数
+Hello Camila Gutiérrez
+
+$ python main.py Camila --lastname Gutiérrez --formal  # 布尔标志
+Good day Ms. Camila Gutiérrez.
+```
+
+## 参数类型
+
+Typer支持以下几种主要的参数类型:
+
+1. CLI Arguments (位置参数)
+   - 按顺序传递
+   - 默认为必需参数
+
+2. CLI Options (选项参数) 
+   - 使用`--`前缀
+   - 默认为可选参数
+   - 可以在命令中任意位置使用
+
+3. 布尔标志
+   - 不需要值的选项
+   - 例如`--formal`
+
+## 文档
+
+通过添加函数文档字符串,可以自动生成CLI帮助信息:
+
+```python
+def main(name: str):
+    """
+    这是一个示例程序。
+    这段描述会显示在帮助信息中。
+    """
+    print(f"Hello {name}")
+```
+
+使用`--help`查看帮助信息:
+```bash
+$ python main.py --help
+```

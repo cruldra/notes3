@@ -74,3 +74,23 @@ source show 显示为项目配置的源信息
 import {PoetryEnvPathConfig} from '@site/src/components/CommandBuilder';
 
 <PoetryEnvPathConfig/>
+
+## 导出依赖
+
+1. 简单导出,每行包含一个依赖的名称
+
+```bash
+# linux
+poetry show --only main | cut -d' ' -f1 > requirements.txt
+
+# windows
+poetry show --only main | ForEach-Object { ($_ -split ' ')[0] } > requirements.txt
+```
+
+结果类似:
+
+```text
+requests
+pandas
+numpy
+```
