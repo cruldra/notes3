@@ -78,3 +78,95 @@ def send_hotkey(self,
     """
     pass
 ```
+
+### 检查元素是否存在
+
+```python
+@staticmethod
+def is_existing(
+    locator: str,                    # 定位器字符串或_Locator对象
+    locator_variables: dict = {},    # 定位器变量字典
+    timeout: int = 30               # 超时时间(秒)
+) -> bool:                          # 返回布尔值
+    """
+    检查UI元素是否存在
+
+    Args:
+        locator: 定位器字符串或_Locator对象,用于定位UI元素
+        locator_variables: 定位器参数字典,用于初始化参数化定位器
+            例如: {"row": 1, "column": 1}
+        timeout: 操作超时时间,单位秒,默认30秒
+
+    Returns:
+        bool: 如果元素存在返回True,否则返回False
+
+    Examples:
+        # 检查元素是否存在
+        exists = cc.is_existing(locator.chrome.search_button)
+
+        # 使用参数化定位器检查元素
+        exists = cc.is_existing(
+            locator.excel.cell,
+            {"row": 1, "column": 2}
+        )
+    """
+    pass
+```
+
+**示例**
+
+```python
+from clicknium import clicknium as cc, locator
+
+# 检查元素是否存在
+exists = cc.is_existing(locator.chrome.search_button)
+```
+
+
+### 等待元素出现
+
+```python
+@staticmethod
+def wait_appear(
+    locator: str,                    # 定位器字符串或_Locator对象
+    locator_variables: dict = {},    # 定位器变量字典
+    wait_timeout: int = 30          # 等待超时时间(秒)
+) -> UiElement:                     # 返回UiElement对象
+    """
+    等待UI元素出现并在指定超时时间内返回该元素
+
+    Args:
+        locator: 定位器字符串或_Locator对象,用于定位UI元素
+        locator_variables: 定位器参数字典,用于初始化参数化定位器
+            例如: {"row": 1, "column": 1}
+        wait_timeout: 等待超时时间,单位秒,默认30秒
+
+    Returns:
+        UiElement: 如果元素出现则返回UiElement对象,否则返回None
+
+    Examples:
+        # 等待搜索按钮出现
+        search_btn = cc.wait_appear(locator.chrome.search_button)
+        if search_btn:
+            search_btn.click()
+
+        # 使用参数化定位器等待元素
+        cell = cc.wait_appear(
+            locator.excel.cell,
+            {"row": 1, "column": 2},
+            wait_timeout=10
+        )
+    """
+    pass
+```
+
+**示例**
+
+```python
+from clicknium import clicknium as cc, locator
+
+# 等待元素出现并操作
+element = cc.wait_appear(locator.chrome.search_button)
+if element:
+    element.click()
+```

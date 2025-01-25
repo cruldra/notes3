@@ -1,0 +1,108 @@
+[Tenacity](https://github.com/jd/tenacity)是一个`Python`重试,它提供了通用的重试机制,可以优雅地处理临时故障、网络问题等需要重试的场景.
+
+## 安装
+
+```bash
+pip install tenacity
+```
+
+## 示例
+
+### 最多等待30秒
+
+```python
+from tenacity import stop_after_delay, wait_fixed
+import tenacity
+import time
+
+@tenacity.retry(
+    stop=stop_after_delay(30),  # 最多等待30秒
+    wait=wait_fixed(2)          # 每次等待2秒
+)
+def my_function():
+    # 模拟某些操作
+    time.sleep(1)
+    return "操作成功"
+
+# 使用示例
+try:
+    result = my_function()
+    print(result)
+except tenacity.RetryError:
+    print("超过30秒未完成操作")
+```
+
+在上面的例子中：
+- `stop_after_delay(30)`: 设置最大等待时间为30秒
+- `wait_fixed(2)`: 每次重试前等待2秒
+- 如果30秒内函数执行成功，则返回结果
+- 如果超过30秒仍未成功，则抛出 `RetryError` 异常
+
+### 指定重试次数
+
+```python
+from tenacity import retry, stop_after_attempt
+
+@retry(stop=stop_after_attempt(3))  # 最多重试3次
+def may_fail_function():
+    # 可能会失败的操作
+    raise Exception("操作失败")
+
+try:
+    may_fail_function()
+except tenacity.RetryError:
+    print("重试3次后仍然失败")
+```
+
+### 指数退避重试
+
+```python
+from tenacity import retry, wait_exponential
+
+@retry(wait=wait_exponential(multiplier=1, min=4, max=10))
+def exponential_backoff_function():
+    """
+    重试间隔将按指数增长:
+    - 首次重试等待4秒
+    - 第二次重试等待8秒
+    - 后续重试等待10秒(达到最大值)
+    """
+    raise Exception("需要重试的操作")
+```
+
+### 条件重试
+
+```python
+from tenacity import retry, retry_if_exception_type
+import requests
+
+@retry(retry=retry_if_exception_type(requests.exceptions.RequestException))
+def fetch_url(url):
+    """只在发生网络请求相关异常时重试"""
+    return requests.get(url)
+```
+
+### 随机等待时间
+
+```python
+from tenacity import retry, wait_random
+
+@retry(wait=wait_random(min=1, max=2))
+def random_wait_function():
+    """每次重试等待1-2秒的随机时间"""
+    raise Exception("操作需要重试")
+```
+
+### 组合多个停止条件
+
+```python
+from tenacity import retry, stop_after_delay, stop_after_attempt
+
+@retry(stop=(stop_after_delay(60) | stop_after_attempt(5)))
+def combined_stop_function():
+    """当满足任一条件时停止重试：
+    - 总时间超过60秒
+    - 重试次数超过5次
+    """
+    raise Exception("操作需要重试")
+```
