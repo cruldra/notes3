@@ -11,18 +11,20 @@ pip install alembic
 ```python
 
 # 1. 初始化 alembic
-alembic init alembic
+alembic init db/migrations
 
 # 2. 修改 alembic.ini 文件中的数据库URL
 sqlalchemy.url = sqlite:///courses.db
 
-# 3. 修改 alembic/env.py，导入你的模型
-from your_models import Course
+# 3. 修改 alembic/env.py,配置target_metadata
 target_metadata = SQLModel.metadata
+
+# 4. 确保导入了模型定义,不然会生成空的迁移文件
+from db import *
 
 # 5. 创建新的迁移
 alembic revision --autogenerate -m "update course model"
 
-# 6. 应用迁移
+# 7. 应用迁移
 alembic upgrade head
 ```

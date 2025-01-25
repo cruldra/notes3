@@ -1,0 +1,76 @@
+[Poetry](https://python-poetry.org/)用于是下一代`Python`包管理工具,用于代替`pip`
+
+## 命令行
+
+```bash
+用法：
+command [选项] [参数]
+
+选项：
+-h, --help 显示指定命令的帮助信息。如果没有指定命令，则显示 list 命令的帮助信息
+-q, --quiet 不输出任何信息
+-V, --version 显示应用程序版本
+--ansi 强制使用 ANSI 输出
+--no-ansi 禁用 ANSI 输出
+-n, --no-interaction 不询问任何交互式问题
+--no-plugins 禁用插件
+--no-cache 禁用 Poetry 源缓存
+-C, --directory=DIRECTORY Poetry 命令的工作目录（默认为当前工作目录）
+-v|vv|vvv, --verbose 增加消息的详细程度：1 为正常输出，2 为更详细输出，3 为调试输出
+
+可用命令：
+about 显示关于 Poetry 的信息
+add 添加新依赖到 pyproject.toml 并安装
+build 构建包（默认创建 tarball 和 wheel）
+check 验证 pyproject.toml 文件的内容及其与 poetry.lock 文件的一致性
+config 管理配置设置
+export 将 lock 文件导出为其他格式
+help 显示命令的帮助信息
+init 在当前目录创建基本的 pyproject.toml 文件
+install 安装项目依赖
+list 列出命令
+lock 锁定项目依赖
+new 在指定路径创建新的 Python 项目
+publish 发布包到远程仓库
+remove 从项目依赖中移除包
+run 在适当的环境中运行命令
+search 在远程仓库中搜索包
+shell 在虚拟环境中启动 shell
+show 显示包的信息
+update 根据 pyproject.toml 文件更新依赖
+version 显示项目版本或在提供有效的升级规则时升级版本
+
+缓存命令：
+cache clear 清除指定名称的 Poetry 缓存
+cache list 列出 Poetry 的缓存
+
+调试命令：
+debug info 显示调试信息
+debug resolve 调试依赖解析
+
+环境命令：
+env info 显示当前环境的信息
+env list 列出与当前项目关联的所有虚拟环境
+env remove 移除与项目关联的虚拟环境
+env use 激活或为当前项目创建新的虚拟环境
+
+自身管理命令：
+self add 向 Poetry 的运行环境添加额外的包
+self install 安装此 Poetry 安装所需的锁定包（包括插件）
+self lock 锁定 Poetry 安装的系统要求
+self remove 从 Poetry 的运行环境中移除额外的包
+self show 显示 Poetry 运行环境中的包
+self show plugins 显示当前已安装插件的信息
+self update 更新 Poetry 到最新版本
+
+源管理命令：
+source add 为项目添加源配置
+source remove 移除为项目配置的源
+source show 显示为项目配置的源信息
+```
+
+## 虚拟环境管理
+
+import {PoetryEnvPathConfig} from '@site/src/components/CommandBuilder';
+
+<PoetryEnvPathConfig/>
