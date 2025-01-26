@@ -93,3 +93,105 @@ def main(name: str):
 ```bash
 $ python main.py --help
 ```
+
+## 命令(Commands)
+
+Typer允许创建具有多个命令(也称为子命令)的CLI程序。例如`git`就有多个命令如`git push`和`git pull`。
+
+### 基本命令示例
+
+```python
+import typer
+
+app = typer.Typer()
+
+@app.command()
+def create():
+    print("创建用户: 张三")
+
+@app.command()
+def delete():
+    print("删除用户: 张三")
+
+if __name__ == "__main__":
+    app()
+```
+
+运行:
+```bash
+# 查看帮助信息
+$ python main.py --help
+Usage: main.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  显示帮助信息并退出
+
+Commands:
+  create  创建用户
+  delete  删除用户
+
+# 执行create命令
+$ python main.py create
+创建用户: 张三
+
+# 执行delete命令
+$ python main.py delete
+删除用户: 张三
+```
+
+### 自动显示帮助信息
+
+通过设置`no_args_is_help=True`,当不带参数运行程序时会自动显示帮助信息:
+
+```python
+import typer
+
+app = typer.Typer(no_args_is_help=True)  # 添加这个参数
+
+@app.command()
+def create():
+    print("创建用户: 张三")
+
+@app.command()
+def delete():
+    print("删除用户: 张三")
+
+if __name__ == "__main__":
+    app()
+```
+
+现在直接运行程序就会显示帮助信息:
+```bash
+$ python main.py
+Usage: main.py [OPTIONS] COMMAND [ARGS]...
+...
+```
+
+### 命令排序
+
+Typer会按照命令在代码中声明的顺序显示命令。例如:
+
+```python
+import typer
+
+app = typer.Typer()
+
+@app.command()
+def delete():  # delete在前
+    print("删除用户")
+
+@app.command() 
+def create():  # create在后
+    print("创建用户")
+
+if __name__ == "__main__":
+    app()
+```
+
+帮助信息中命令的显示顺序将是:
+```bash
+Commands:
+  delete
+  create
+```
+
