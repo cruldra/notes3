@@ -1,6 +1,14 @@
 ---
 sidebar_position: 2
 ---
+## 自动保存
+
+```json
+{
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
+}
+```
 
 ## 调整界面缩放
 
@@ -14,5 +22,20 @@ sidebar_position: 2
    ```json
    {
      "window.zoomLevel": 1.2  // 大于1放大，小于1缩小
+   }
+   ```
+
+## 安装`Fira Code`字体
+
+1. 下载安装 [Fira Code](https://github.com/tonsky/FiraCode/releases)
+   - 下载 `.zip` 文件，解压后进入 `ttf` 文件夹
+   - 全选所有 `.ttf` 文件 → 右键 → **"安装"**
+
+2. 配置 VS Code
+   ```json
+   {
+     "editor.fontFamily": "Fira Code",
+     "editor.fontLigatures": true, // 启用连字
+     "editor.fontSize": 16  // 可选
    }
    ```
