@@ -1,0 +1,33 @@
+---
+sidebar_position: 1
+---
+```python
+if __name__ == '__main__':
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+
+    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
+    model = AutoModelForCausalLM.from_pretrained("distilgpt2", output_hidden_states=True)
+    print(tokenizer)
+    print(model) 
+```
+
+要运行上面的例子:
+
+1. 使用`nvidia-smi`查看[CUDA](./CUDA.mdx)版本
+2. 安装`pytorch` - `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126`
+3. 安装`transformers` - `pip install transformers`
+
+
+**相关库对比表**
+
+| 库名称         | 定义                                                                 | 主要功能/特点                                                                 | 典型用途                                                                 | 安装命令 (PyPI)                                                                 | 版本兼容性 (示例)                          |
+|----------------|----------------------------------------------------------------------|------------------------------------------------------------------------------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------|--------------------------------------------|
+| **CUDA**       | NVIDIA的并行计算平台和编程模型                                       | GPU加速计算，提供深度学习底层硬件加速支持                                     | 加速神经网络训练/推理，高性能并行计算                                    | 需通过NVIDIA官网安装对应版本                                                     | 与GPU驱动版本强相关                        |
+| **PyTorch**    | 基于Python的开源机器学习框架                                         | 动态计算图，自动微分，GPU加速，丰富的神经网络模块                            | 模型开发/训练，学术研究，生产部署                                        | `pip install torch torchvision torchaudio` (需指定CUDA版本)                       | 2.0.1+cu118 (对应CUDA 11.8)                |
+| **TorchVision**| PyTorch的计算机视觉扩展库                                            | 提供图像数据集、变换操作、预训练模型（ResNet等）                              | 图像分类/检测/分割，数据增强，迁移学习                                   | `pip install torchvision`                                                       | 需与PyTorch版本匹配 (e.g. 0.15.1+cu118)    |
+| **TorchAudio** | PyTorch的音频处理库                                                  | 提供音频I/O、信号处理、预训练语音模型                                         | 语音识别/合成，音频分类，声纹识别                                        | `pip install torchaudio`                                                        | 需与PyTorch版本匹配 (e.g. 2.0.2+cu118)     |
+| **Transformers**| Hugging Face的自然语言处理库                                        | 提供BERT/GPT等预训练模型，支持文本分类/生成/翻译等NLP任务                     | 文本生成，问答系统，情感分析，机器翻译                                   | `pip install transformers`                                                      | 4.30.0+ (通常向前兼容主流PyTorch版本)       |
+
+**架构图**
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.1ovji4pgaa.png)

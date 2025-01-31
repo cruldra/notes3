@@ -10,3 +10,58 @@
 > “那只猫追着自己的尾巴，结果它撞到了花瓶。”
 
 要理解“它”指代的是“猫”还是“尾巴”，人类会自然地关注前文的“猫”和“尾巴”。**Self-Attention 的作用类似**：模型在处理“它”这个词时，会自动计算它与“猫”“尾巴”“追”等词的关联程度，从而确定“它”的指代对象。
+
+## 和[transformers](https://github.com/huggingface/transformers/blob/main/i18n/README_zh-hans.md)库的关系
+
+
+Hugging Face 的 `transformers` 库与谷歌提出的 **Transformer 架构** 有密切的继承和扩展关系，但两者属于不同层面的概念。以下是它们的核心联系与区别：
+
+---
+
+### 1. **谷歌的 Transformer 架构（2017）**
+- **是什么**：  
+  谷歌在 2017 年的论文《[Attention Is All You Need](https://arxiv.org/abs/1706.03762)》中提出了 **Transformer** 架构。它首次用 **自注意力机制（Self-Attention）** 完全替代了传统的循环神经网络（RNN）和卷积神经网络（CNN），成为处理序列数据（如文本）的全新范式。
+  
+- **核心贡献**：  
+  - 编码器-解码器结构（Encoder-Decoder）。
+  - 自注意力机制（并行计算、长距离依赖建模）。
+  - 多头注意力（Multi-Head Attention）和位置编码（Positional Encoding）。
+
+---
+
+### 2. **Hugging Face 的 `transformers` 库**
+- **是什么**：  
+  Hugging Face 的 [`transformers`](https://github.com/huggingface/transformers) 是一个开源库，提供了基于 Transformer 架构的 **预训练模型实现** 和 **易用工具**，支持 PyTorch、TensorFlow 等框架。它集成了 BERT、GPT、T5 等经典模型，并简化了模型的加载、训练和推理流程。
+
+- **核心功能**：  
+  - 提供数百种预训练模型（如 BERT、GPT-2、RoBERTa、T5）。
+  - 统一的 API 接口（如 `AutoModel`、`AutoTokenizer`）。
+  - 支持文本分类、翻译、生成等任务。
+
+---
+
+### 3. **两者的关系**
+- **继承**：  
+  `transformers` 库中的模型（如 BERT、GPT）均基于谷歌的 Transformer 架构或其变体。例如：
+  - **BERT** 使用 Transformer 的 **编码器**（Encoder）。
+  - **GPT** 使用 Transformer 的 **解码器**（Decoder）。
+
+- **扩展**：  
+  Hugging Face 在原始架构基础上做了大量改进和扩展：
+  - **模型多样化**：支持编码器、解码器或混合结构的模型（如 BART、T5）。
+  - **预训练与微调工具**：提供数据集加载、训练管道（`Trainer` 类）、模型压缩（如 DistilBERT）等。
+  - **社区生态**：用户可共享自定义模型到 [Model Hub](https://huggingface.co/models)，形成开源生态。
+
+---
+
+### 4. **类比理解**
+- **Transformer 架构** 类似于“发动机的设计蓝图”，定义了核心原理（如自注意力）。
+- **`transformers` 库** 则是“基于该蓝图的汽车工厂”，生产了各种型号的汽车（BERT、GPT 等），并提供了维修工具和加油站（API 和生态）。
+
+---
+
+### 5. **总结**
+- **Transformer** 是基础架构，属于算法设计层面的创新。
+- **`transformers` 库** 是基于该架构的工程实现和扩展，降低了使用门槛，推动了 Transformer 模型在工业界的普及。
+
+如果要用一句话概括：Hugging Face 的库是 Transformer 架构的“实践者”和“推广者”，将论文中的理论转化为开发者友好的工具。
