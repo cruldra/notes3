@@ -51,3 +51,12 @@ sidebar_position: 2
     }
 }
 ```
+
+## 无法连接到`wsl`主机
+
+1. 完全退出 VSCode。
+2. 在 WSL2 终端中，输入 `rm -rf ~/.vscode-server/` 并回车。
+3. 再次打开 VSCode。
+
+
+参考[这里](https://github.com/microsoft/vscode/issues/187360#issuecomment-1722550316)
