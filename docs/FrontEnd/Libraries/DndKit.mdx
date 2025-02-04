@@ -1,0 +1,154 @@
+[dnd kit](https://dndkit.com/)是一个适用于`React`的轻量级、高性能、可访问且可扩展的拖放工具包.
+
+
+## 安装
+
+```bash
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/modifiers @dnd-kit/utilities
+```
+
+## 使用
+
+1. 引入必要的依赖
+
+    ```tsx
+    import type {DragEndEvent} from '@dnd-kit/core';
+    import {DndContext, DragOverlay} from '@dnd-kit/core';
+    import {restrictToVerticalAxis} from '@dnd-kit/modifiers';
+    import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
+    import {CSS} from '@dnd-kit/utilities';
+    ```
+
+2. 定义拖拽组件
+
+    ```tsx
+    const DraggableRow = ({ children, ...props }: RowProps) => {
+        const {
+            attributes,  // 拖拽属性
+            listeners,   // 拖拽事件监听器
+            setNodeRef, // 设置可拖拽元素的ref
+            transform,  // 变换信息
+            transition, // 过渡效果
+            isDragging, // 是否正在拖拽
+        } = useSortable({
+            id: props['data-row-key'],
+        });
+
+        const style: React.CSSProperties = {
+            ...props.style,
+            transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
+            transition: transition || 'all 0.2s',
+            cursor: 'move',
+            // 拖拽时的样式
+            ...(isDragging ? {
+                position: 'relative',
+                zIndex: 0,
+                background: token.colorFillAlter,
+                opacity: 0.2,
+            } : {}),
+        };
+
+        return (
+            <tr
+                {...props}
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+            >
+                {children}
+            </tr>
+        );
+    };
+    ```
+
+3. 创建拖拽时显示的预览组件
+
+    ```tsx
+    const DragRowContent = ({ record }: { record: Instruction }) => {
+        return (
+            <div style={{/* 样式省略 */}}>
+                {/* 拖拽时显示的内容 */}
+                <div>{record.name}</div>
+                <div>{record.type}</div>
+                <div>{record.description}</div>
+            </div>
+        );
+    };
+    ```
+
+4. 设置拖拽上下文和事件处理
+
+    ```tsx
+    // 状态管理
+    const [draggedInstruction, setDraggedInstruction] = useState<Instruction | null>(null);
+
+    // 拖拽开始处理
+    const handleDragStart = (event: DragEndEvent) => {
+        const { active } = event;
+        document.body.style.cursor = 'grabbing';
+        const draggedInst = selectedInstructions.find(
+            inst => inst.id.toString() === active.id.toString()
+        );
+        if (draggedInst) {
+            setDraggedInstruction(draggedInst);
+        }
+    };
+
+    // 拖拽结束处理
+    const onDragEnd = ({ active, over }: DragEndEvent) => {
+        setDraggedInstruction(null);
+        document.body.style.cursor = '';
+
+        if (active.id !== over?.id) {
+            // 重新排序逻辑
+            const activeIndex = selectedIds.findIndex(id => id === Number(active.id));
+            const overIndex = selectedIds.findIndex(id => id === Number(over?.id));
+            const newIds = [...selectedIds];
+            const [removed] = newIds.splice(activeIndex, 1);
+            newIds.splice(overIndex, 0, removed);
+            setSelectedIds(newIds);
+            onChange?.(newIds);
+        }
+    };
+    ```
+
+5. 组装拖拽功能组件
+
+    ```tsx
+    <DndContext
+        modifiers={[restrictToVerticalAxis]}  // 限制为垂直拖拽
+        onDragStart={handleDragStart}
+        onDragEnd={onDragEnd}
+    >
+        <SortableContext
+            items={selectedInstructions.map(i => i.id.toString())}
+            strategy={verticalListSortingStrategy}
+        >
+            <Table
+                components={{
+                    body: {
+                        row: DraggableRow,  // 使用自定义的可拖拽行
+                    },
+                }}
+                rowKey="id"
+                columns={columns}
+                dataSource={selectedInstructions}
+            />
+        </SortableContext>
+
+        {/* 拖拽时的预览层 */}
+        <DragOverlay>
+            {draggedInstruction ? (
+                <DragRowContent record={draggedInstruction} />
+            ) : null}
+        </DragOverlay>
+    </DndContext>
+    ```
+
+上面的例子实现了:
+
+- 拖拽时的视觉反馈
+- 限制只能垂直拖动
+- 拖拽时显示自定义预览
+- 拖拽结束后更新数据顺序

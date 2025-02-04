@@ -1,0 +1,20 @@
+## 共享宿主机的代理配置
+
+**问题背景**
+
+宿主机通过`clash`等应用可以访问`github`、`huggingface`等网站,但是`wsl`中不行.
+
+**解决方法**
+
+1. 编辑`C:\Users\xxx`目录下的`.wslconfig`文件,如果没有则创建。
+2. 在`.wslconfig`文件中添加以下内容:
+    ```ini
+    [wsl2]
+    networkingMode = mirrored
+    autoProxy = true
+    ```
+3. 重启WSL2
+    ```powershell
+    wsl --shutdown
+    wsl
+    ```
