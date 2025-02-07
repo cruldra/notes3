@@ -1,0 +1,26 @@
+## 安装
+
+**1. 安装 unocss**
+
+    ```bash
+    pnpm i -D unocss
+    ```
+
+**2. 在vite.config.ts中配置**
+
+```ts
+import UnoCSS from 'unocss/vite'
+export default defineConfig(configEnv => {
+    return {
+        plugins: [
+            UnoCSS(),
+        ],
+    }
+});
+```
+
+**3. 在main.ts中引入**
+
+```ts
+import 'uno.css'
+```
