@@ -1,0 +1,48 @@
+## 安装
+
+```
+pip install oss2
+```
+
+
+## 上传文件
+
+```python
+import oss2
+
+@router.post("/upload", response_model=UploadResponse)
+async def upload_file(file: UploadFile = File(...)):
+    # 读取文件内容
+    contents = await file.read()
+
+    # 生成文件名
+    file_name = f"{int(datetime.now().timestamp())}-{file.filename}"
+
+    # 初始化 OSS 客户端
+    auth = oss2.Auth(
+        settings.oss_access_key_id,
+        settings.oss_access_key_secret
+    )
+
+    # 正确构建 endpoint
+    endpoint = "https://oss-cn-hangzhou.aliyuncs.com"
+    bucket = oss2.Bucket(
+        auth,
+        endpoint,  # 使用不带 bucket 的 endpoint
+        settings.oss_bucket,
+        connect_timeout=30  # 增加超时时间
+    )
+
+    # 上传到OSS
+    result = bucket.put_object(file_name, contents)
+
+    # 构建文件URL
+    file_url = f"https://{settings.oss_bucket}.oss-cn-hangzhou.aliyuncs.com/{file_name}"
+
+    return UploadResponse(
+        data={
+            "url": file_url,
+            "fileName": file_name
+        }
+    )
+```

@@ -1,0 +1,8 @@
+{
+  "label": "文档管理",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "docx、xls、ppt等文档管理"
+  }
+}

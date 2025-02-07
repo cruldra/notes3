@@ -1,0 +1,31 @@
+## 安装
+
+```
+pip install python-docx docxtpl
+```
+
+## 使用`jinja2`渲染`docx`模板
+
+```python
+from docxtpl import DocxTemplate
+
+# 加载模板
+doc = DocxTemplate("template.docx")
+
+# 准备数据
+context = {
+    'name': '张三',
+    'age': 25,
+    'items': ['项目1', '项目2', '项目3'],
+    'table_data': [
+        {'id': 1, 'value': 'A'},
+        {'id': 2, 'value': 'B'}
+    ]
+}
+
+# 渲染模板
+doc.render(context)
+
+# 保存结果
+doc.save("output.docx")
+```
