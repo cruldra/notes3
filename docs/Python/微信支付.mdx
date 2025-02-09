@@ -1,0 +1,91 @@
+## 产品终端对应表
+
+| 支付产品\终端类型  | 小程序 | 公众号/服务号 | PC网站 | 移动网站 | 移动应用 |
+|------------|-----|---------|------|------|------|
+| **JSAPI**  | ✅   | ✅       | ❌    | ❌    | ❌    |
+| **APP**    | ❌   | ❌       | ❌    | ❌    | ✅    |
+| **Native** | ❌   | ❌       | ✅    | ❌    | ❌    |
+| **付款码**    | ❌   | ❌       | ❌    | ❌    | ❌    |
+| **H5**     | ❌   | ❌       | ❌    | ✅    | ❌    |
+| **刷脸**     | ❌   | ❌       | ❌    | ❌    | ❌    |
+
+## 各种参数
+
+### 应用ID
+
+公众号、服务号、小程序、企业微信的`AppID`,先在对应的平台申请,然后在`商户平台>产品中心>AppID账号管理中`绑定
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.6t78kcwhid.webp)
+
+:::tip 提示
+- 在[WechatPy](https://www.wechatpy.org/)这个库中,它的名字叫`appid`
+:::
+
+#### 企业微信
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.9kgasfl9r6.webp)
+
+### 商户APIv2密钥
+
+在`商户平台>账户中心>API安全`中申请
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.1zido8opwz.webp)
+
+:::tip 提示
+- 在[WechatPy](https://www.wechatpy.org/)这个库中,它的名字叫`api_key`
+:::
+
+### 商户号
+
+商户开通后自带,在`商户平台>产品中心>开发配置`中查看
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.wiodcw1wu.webp)
+
+:::tip 提示
+- 在[WechatPy](https://www.wechatpy.org/)这个库中,它的名字叫`mch_id`
+:::
+
+### APIv3密钥
+
+在`商户平台>账户中心>API安全`中申请
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.2rv95za0uk.webp)
+
+这个按照提示申请完会下载一个压缩包,如图:
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.3yekel0til.webp)
+
+:::tip 提示
+- 在[WechatPy](https://www.wechatpy.org/)这个库中,`apiclient_cert.pem`对应`mch_cert`
+- 在[WechatPy](https://www.wechatpy.org/)这个库中,`apiclient_key.pem`对应`mch_key`
+:::
+
+## JSAPI
+
+### 使用场景
+
+1. 用户在`公众号/小程序`中点击`支付`按钮,通过`JSAPI`拉起微信支付
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.sz0trgkwz.png)
+### 前提条件
+
+1. 需要先[开通商户](./开通商户.md)
+2. 需要有一个通过认证的`公众号/小程序`
+3. 在商户管理后台中把`公众号/小程序`关联到商户
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.4xum5vhlqy.webp)
+
+4. 在小程序中关联商户
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.7lk2hpqx2h.png)
+
+
+
+## 相关链接
+* [商户平台](https://pay.weixin.qq.com/index.php/core/info)
+* [Python/PC/移动网站支付](https://github.com/cruldra/ai_quantum_api/blob/master/orders/utils.py)
+* [Python/小程序支付](https://github.com/cruldra/asm-py/blob/master/services/MiniappPayService.py)
+
+## 常见问题
+
+* [H5微信支付报错：商家参数格式有误，请联系商家解决前言](https://juejin.cn/post/7249288803532865597)

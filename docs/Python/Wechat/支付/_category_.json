@@ -1,8 +1,0 @@
-{
-  "label": "支付",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "有关微信支付的文档"
-  }
-}

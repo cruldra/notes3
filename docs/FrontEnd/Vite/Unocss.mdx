@@ -19,8 +19,120 @@ export default defineConfig(configEnv => {
 });
 ```
 
-**3. 在main.ts中引入**
+**3. 新建uno.config.ts**
+
+```ts
+import { defineConfig} from 'unocss'
+
+export default defineConfig({
+  presets: [],
+  shortcuts: [
+    // 可以在这里添加自定义快捷方式
+  ],
+  rules: [
+    // 可以在这里添加自定义规则
+  ],
+})
+```
+
+**4. 在main.ts中引入**
 
 ```ts
 import 'uno.css'
 ```
+
+## `@unocss/preset-attributify`预设
+
+启用属性化模式的预设,允许使用`HTML`属性的方式来添加样式
+例如:
+```html
+<div bg="blue-400" text="sm white">
+```
+
+而不是
+```html
+<div class="bg-blue-400 text-sm text-white">
+```
+
+
+**1. 安装**
+
+```bash
+pnpm i -D @unocss/preset-attributify
+```
+
+**2. 在`uno.config.ts`中配置**
+
+```ts
+import { defineConfig, presetAttributify } from 'unocss'
+export default defineConfig({
+  presets: [
+    presetAttributify(),
+  ],
+})
+```
+
+**3. 新建一个`uno.d.ts`文件**
+
+为了防止`ts`报错,如图:
+
+![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.4ub1rl83m0.webp)
+
+```ts
+import type { AttributifyAttributes } from '@unocss/preset-attributify'
+
+
+declare module 'react' {
+  interface HTMLAttributes<T> extends AttributifyAttributes {}
+} 
+```
+
+## `@unocss/reset`预设
+
+用于统一不同浏览器的默认样式,确保跨浏览器的一致性
+
+**1. 安装**
+
+```bash
+pnpm i -D @unocss/reset
+```
+
+**2. 在`uno.config.ts`中配置**
+
+```ts
+import { defineConfig, presetAttributify } from 'unocss'
+export default defineConfig({
+  presets: [
+    presetReset(),
+  ],
+})
+```
+
+## `@unocss/preset-uno`预设
+
+用于提供基础的样式规则,如颜色、字体、间距等
+
+**1. 安装**
+
+```bash
+pnpm i -D @unocss/preset-uno
+```
+
+**2. 在`uno.config.ts`中配置**
+
+```ts
+import { defineConfig, presetUno } from 'unocss'
+export default defineConfig({
+  presets: [
+    presetUno(),
+  ],
+})
+```
+
+**3. 在`main.tsx`中引入**
+
+```ts
+import '@unocss/reset/normalize.css'; 
+```
+
+
