@@ -1,3 +1,5 @@
+## 后端
+
 ```python
 from fastapi import FastAPI, Request, HTTPException, status
 from sse_starlette.sse import EventSourceResponse
@@ -89,4 +91,111 @@ async def broadcast_message(client_id: str, message: str):
         if not await request.is_disconnected():
             # 实现消息广播逻辑
             pass
+```
+
+
+## 前端
+
+```ts
+/**
+ * 发送消息给应用，并以SSE形式接收响应
+ * @param config 聊天请求配置
+ * @param onMessage 接收到消息时的回调函数
+ * @param onError 发生错误时的回调函数
+ * @param onComplete SSE流关闭时的回调函数
+ */
+export async function sendMessage(
+  config: ChatRequestConfig,
+  onMessage: (event: MessageEvent) => void,
+  onError?: (error: Error) => void,
+  onComplete?: () => void
+): Promise<void> {
+  const token = useUserStore.getState().token;
+
+  if (!token) {
+    throw new Error('未找到用户 token，请先登录');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/dify/chat-messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(config)
+    });
+
+    if (!response.ok) {
+      throw new Error(`发送消息失败: ${response.statusText}`);
+    }
+
+    if (!response.body) {
+      throw new Error('未接收到响应数据');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        onComplete?.();
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const eventData = JSON.parse(line.slice(6)) as MessageEvent;
+            onMessage(eventData);
+          } catch (error) {
+            console.error('解析消息失败:', error);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    onError?.(error instanceof Error ? error : new Error(String(error)));
+  }
+}
+```
+
+## `React`竞态条件问题
+
+通过`SSE`以流式方式短时间内推送大量数据(如聊天应用)时再使用`setState`就可能会出现竞态条件问题.
+
+```text
+{"event":"message","conversation_id":"916cc8ce-734f-49b9-9164-5be49481c8da","message_id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","created_at":1739265121,"task_id":"0bf64e7f-6bf0-464c-9215-b1f03df706ff","id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","answer":"您","from_variable_selector":null}
+{"event":"message","conversation_id":"916cc8ce-734f-49b9-9164-5be49481c8da","message_id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","created_at":1739265121,"task_id":"0bf64e7f-6bf0-464c-9215-b1f03df706ff","id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","answer":"似","from_variable_selector":null}
+{"event":"message","conversation_id":"916cc8ce-734f-49b9-9164-5be49481c8da","message_id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","created_at":1739265121,"task_id":"0bf64e7f-6bf0-464c-9215-b1f03df706ff","id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","answer":"乎","from_variable_selector":null}
+{"event":"message","conversation_id":"916cc8ce-734f-49b9-9164-5be49481c8da","message_id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","created_at":1739265121,"task_id":"0bf64e7f-6bf0-464c-9215-b1f03df706ff","id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","answer":"输入","from_variable_selector":null}
+{"event":"message","conversation_id":"916cc8ce-734f-49b9-9164-5be49481c8da","message_id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","created_at":1739265121,"task_id":"0bf64e7f-6bf0-464c-9215-b1f03df706ff","id":"395e56cb-28a7-41fd-b7a9-0f01703095fb","answer":"的","from_variable_selector":null}
+```
+
+```ts
+(event) => {
+                setMessages(prev => {
+                    const lastMessage = prev[prev.length - 1];
+                    if (lastMessage.role === 'assistant') {
+                        return [
+                            ...prev.slice(0, -1),
+                            {
+                                ...lastMessage,
+                                content: lastMessage.content + event.answer
+                            }
+                        ];
+                    } else {
+                        return [
+                            ...prev,
+                            convertChatEventToMessage(event)
+                        ];
+                    }
+                });
+            },
 ```

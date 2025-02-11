@@ -60,3 +60,16 @@ sidebar_position: 2
 
 
 参考[这里](https://github.com/microsoft/vscode/issues/187360#issuecomment-1722550316)
+
+## 用`chrome`调试react
+
+```json
+// 在launch.json中添加
+{
+    "name": "Run Chrome",
+    "type": "chrome",
+    "request": "launch",
+    "url": "http://localhost:1420",
+    "webRoot": "${workspaceFolder}"
+}
+```
