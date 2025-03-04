@@ -76,3 +76,6 @@ async def stream(...) -> AsyncGenerator[bytes, None]:
 
 ### **终极答案**
 `AsyncGenerator` 的本质是：**把「数据流动」和「时间管理」的权力完全交给调用者**。它像一条智能流水线，在需要等待的时候自动「停工」，把车间（CPU资源）让给其他流水线，等到原材料（网络数据）到位后又自动「复工」，最大化利用时间资源。
+
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.lvvh7v413.webp)
