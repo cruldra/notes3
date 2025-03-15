@@ -1,0 +1,21 @@
+## 背景
+
+- 从win11家庭版装ubuntu24.04
+2. 再从ubuntu24.04装win11专业版
+3. 提示
+
+![](https://github.com/cruldra/picx-images-hosting/raw/master/image.41y7olo25h.webp)
+
+## 解决办法
+
+1. `shift+f10`打开终端
+2. `regedit`打开注册表
+3. 定位到`HKEY_LOCAL_MACHINE > SYSTEM > Setup`
+4. 新建`LabConfig`项
+5. 新建5个DWORD32值:
+
+名称：BypassTPMCheck，值：0x00000001
+名称：BypassSecureBootCheck，值：0x00000001
+名称：BypassRAMCheck，值：0x00000001
+名称：BypassCPUCheck，值：0x00000001
+名称：BypassStorageCheck，值：0x00000001
