@@ -7,3 +7,15 @@ sudo apt-get install speedtest-cli
 # 测试
 speedtest-cli
 ```
+
+## 设置系统全局http代理
+
+```bash
+sudo nano /etc/environment
+
+#在文件底部添加
+
+http_proxy="http://192.168.1.6:7890"
+https_proxy="http://192.168.1.6:7890"
+no_proxy="localhost,127.0.0.1,::1"
+```

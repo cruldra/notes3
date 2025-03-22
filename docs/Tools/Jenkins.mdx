@@ -1,0 +1,99 @@
+## 使用`Jenkins`容器
+
+### `docker`命令
+
+1. 首先把宿主机中的`docker.sock`映射到容器中
+
+    ```yaml
+    jenkins:
+    image: jenkins/jenkins:latest
+    user: root
+    container_name: jenkins
+    ports:
+      - "8880:8080"
+      - "5030:5000"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./jenkins/data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    ```
+
+2. 然后按照以下步骤在`jenkins`容器中安装`docker cli`
+
+    ```bash
+    # 进入 Jenkins 容器
+    docker exec -it jenkins bash
+
+    # 更新软件包列表
+    apt-get update
+
+    # 安装依赖
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+    # 添加 Docker 官方 GPG 密钥
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+    # 设置 Docker 稳定版仓库
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    # 再次更新软件包列表
+    apt-get update
+
+    # 只安装 Docker CLI (不安装完整的 Docker Engine)
+    apt-get install -y docker-ce-cli
+    ```
+3. 验证
+
+    ```bash
+    docker --version
+    docker ps
+    ```
+
+### `node`命令
+
+1. 在容器中安装`node`
+
+    ```bash
+    # 进入 Jenkins 容器
+    docker exec -it jenkins bash
+
+    # 安装 NVM 的依赖
+    apt-get update
+    apt-get install -y curl build-essential libssl-dev
+
+    # 以 Jenkins 用户身份安装 NVM
+    su - jenkins
+
+    # 下载并安装 NVM
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+    # 加载 NVM
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    # 安装特定版本的 Node.js
+    nvm install 16
+
+    # 设置默认版本
+    nvm alias default 16
+
+    # 验证安装
+    node --version
+    npm --version
+
+    # 退出 jenkins 用户会话
+    exit
+    ```
+
+2. 把可执行文件链接到`/usr/bin`
+
+    ```bash
+    # 进入 Jenkins 容器
+    docker exec -it jenkins bash
+
+    # 创建符号链接
+    ln -sf /root/.nvm/versions/node/v22.14.0/bin/pnpm /usr/bin/pnpm
+    ln -sf /root/.nvm/versions/node/v22.14.0/bin/npm /usr/bin/npm
+    ln -sf /root/.nvm/versions/node/v22.14.0/bin/node /usr/bin/node
+    ```

@@ -18,3 +18,9 @@
     wsl --shutdown
     wsl
     ```
+
+## 启用root登录
+
+1. 在`C:\Users\用户名\AppData\Local\Microsoft\WindowsApps`找到`ubuntuxx.exe`
+2. 先用普通身份运行`sudo passwd root`
+3. 打开`cmd`，运行`ubuntuxx.exe config --default-user root`
