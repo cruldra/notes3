@@ -126,6 +126,12 @@ const config: Config = {
                     position: 'left',
                     label: '代码片段',
                 },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'softwareEngineering',
+                    position: 'left',
+                    label: '软件工程',
+                },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
                   href: 'https://github.com/facebook/docusaurus',
