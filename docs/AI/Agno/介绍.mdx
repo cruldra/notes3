@@ -1,0 +1,128 @@
+# Agno 介绍
+
+[Agno 首页![浅色logo](https://mintlify.s3.us-west-1.amazonaws.com/agno/logo/black.svg)![深色logo](https://mintlify.s3.us-west-1.amazonaws.com/agno/logo/white.svg)](https://docs.agno.com/)
+
+搜索或提问...
+
+Ctrl K
+
+搜索...
+
+导航
+
+介绍
+
+什么是Agno
+
+[用户指南](https://docs.agno.com/introduction)
+[示例](https://docs.agno.com/examples/introduction)
+[工作区](https://docs.agno.com/workspaces/introduction)
+[常见问题](https://docs.agno.com/faq/environment_variables)
+[API参考](https://docs.agno.com/reference/agents/agent)
+[更新日志](https://docs.agno.com/changelog/overview)
+
+**Agno是一个轻量级的多模态Agent构建库。它将LLM暴露为统一API并赋予它们记忆、知识、工具和推理等超能力。**
+
+*   **构建能够生成文本、图像、音频和视频的极速Agent**
+*   **根据需要添加记忆、知识、工具和推理能力**
+*   **随处运行，Agno是开源的**
+
+这是一个能够搜索网络的Agent示例：
+
+websearch_agent.py
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.duckduckgo import DuckDuckGoTools
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    markdown=True
+)
+agent.print_response("纽约有什么新鲜事？", stream=True)
+```
+
+## 主要特性
+
+Agno简单、快速且模型无关。以下是一些主要特性：
+
+*   **极速**: Agent创建速度比LangGraph快10,000倍(参见[性能](https://github.com/agno-agi/agno#performance))
+*   **模型无关**: 使用任何模型、任何供应商，无锁定
+*   **多模态**: 原生支持文本、图像、音频和视频
+*   **多Agent**: 构建专业Agent团队
+*   **记忆管理**: 在数据库中存储Agent会话和状态
+*   **知识存储**: 使用向量数据库进行RAG或动态few-shot学习
+*   **结构化输出**: 让Agent以结构化格式响应
+*   **监控**: 在[agno.com](https://app.agno.com/)上实时跟踪Agent会话和性能
+
+## 快速开始
+
+如果你是Agno新手，可以从构建第一个Agent开始。
+
+[构建你的第一个Agent\
+----------------------\
+\
+学习如何使用Agno构建Agent](https://docs.agno.com/introduction/agents)
+[Agent游乐场\
+----------------\
+\
+使用漂亮的Agent UI与你的Agent聊天](https://docs.agno.com/introduction/playground)
+
+[Agent可观测性\
+-------------------](https://docs.agno.com/introduction/monitoring)
+
+[在](https://docs.agno.com/introduction/monitoring)
+[agno.com](https://app.agno.com/)上监控你的Agent
+
+之后，查看[示例库](https://docs.agno.com/examples)并使用Agno构建真实世界的应用程序。
+
+## 深入探索
+
+Agno是一个经过实战测试的框架，具有一流的性能，查看以下指南深入了解：
+
+[Agents\
+------\
+\
+学习核心Agent概念](https://docs.agno.com/agents)
+[Models\
+------\
+\
+使用任何模型、任何供应商，无锁定](https://docs.agno.com/models)
+[Tools\
+-----\
+\
+使用数百种工具扩展你的Agent](https://docs.agno.com/tools)
+[Knowledge\
+---------\
+\
+为你的Agent添加领域特定知识](https://docs.agno.com/knowledge)
+[Vector Databases\
+----------------\
+\
+为你的Agent添加语义搜索和检索](https://docs.agno.com/vectordb)
+[Storage\
+-------\
+\
+在数据库中持久化Agent状态和对话](https://docs.agno.com/storage)
+[Memory\
+------\
+\
+记住用户详细信息和会话摘要](https://docs.agno.com/agents/memory)
+[Embeddings\
+----------\
+\
+为你的知识库生成嵌入](https://docs.agno.com/embedder)
+[Workflows\
+---------\
+\
+使用Agent构建复杂工作流](https://docs.agno.com/workflows)
+
+[你的第一个Agent](https://docs.agno.com/introduction/agents)
+
+本页内容
+
+*   [主要特性](https://docs.agno.com/introduction#key-features)
+*   [快速开始](https://docs.agno.com/introduction#get-started)
+*   [深入探索](https://docs.agno.com/introduction#dive-deeper)
