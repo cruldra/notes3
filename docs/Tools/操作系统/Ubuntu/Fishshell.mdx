@@ -1,0 +1,125 @@
+
+Fish Shell（Friendly Interactive SHell）是一个智能且用户友好的命令行Shell，提供了语法高亮、自动建议、基于Web的配置等现代功能。本文将介绍如何在Ubuntu系统上安装最新版的Fish Shell并将其设置为默认Shell。
+
+## 安装Fish Shell
+
+### 方法一：使用官方PPA（推荐）
+
+Fish Shell官方维护了PPA（Personal Package Archive），可以方便地安装最新版本。
+
+1. 添加Fish Shell 4.x版本的PPA：
+
+```bash
+sudo apt-add-repository ppa:fish-shell/release-4
+sudo apt update
+```
+
+> 注意：如果你想安装3.x版本，可以使用`ppa:fish-shell/release-3`
+
+2. 安装Fish Shell：
+
+```bash
+sudo apt install fish
+```
+
+## 将Fish Shell设置为默认Shell
+
+### 方法一：使用chsh命令（推荐）
+
+1. 首先确认Fish Shell已经安装并添加到系统Shell列表中：
+
+```bash
+cat /etc/shells
+```
+
+2. 如果Fish Shell路径不在列表中，需要添加：
+
+```bash
+which fish  # 查看Fish Shell的路径
+sudo sh -c 'echo $(which fish) >> /etc/shells'  # 将路径添加到/etc/shells
+```
+
+3. 使用chsh命令更改默认Shell：
+
+```bash
+chsh -s $(which fish)
+```
+
+4. 输入你的用户密码确认更改。
+
+5. 注销并重新登录，或重启系统，使更改生效。
+
+### 方法二：使用usermod命令
+
+如果chsh命令不起作用，可以使用usermod命令（需要root权限）：
+
+```bash
+sudo usermod -s $(which fish) 你的用户名
+```
+
+## 验证默认Shell
+
+重新登录后，可以通过以下命令验证当前Shell：
+
+```bash
+echo $SHELL
+```
+
+输出应该显示Fish Shell的路径，例如：`/usr/bin/fish`
+
+## 配置Fish Shell
+
+### 基本配置
+
+Fish Shell的配置文件位于`~/.config/fish/config.fish`，如果该文件不存在，可以创建它：
+
+```bash
+mkdir -p ~/.config/fish
+touch ~/.config/fish/config.fish
+```
+
+### 使用Web界面配置
+
+Fish Shell提供了一个基于Web的配置界面，可以通过以下命令启动：
+
+```bash
+fish_config
+```
+
+这将打开一个Web浏览器，你可以在其中设置颜色、提示符、函数等。
+
+## 恢复默认Shell
+
+如果你想恢复到之前的Shell（例如Bash），可以使用以下命令：
+
+```bash
+# 在Fish Shell中
+chsh -s (which bash)
+
+# 或者在其他Shell中
+chsh -s $(which bash)
+```
+
+## 常见问题解决
+
+### 1. "non-standard shell"错误
+
+如果遇到`non-standard shell`错误，确保Fish Shell的路径已添加到`/etc/shells`文件中。
+
+### 2. 某些程序不兼容Fish Shell
+
+某些脚本或程序可能假设你使用的是Bash，并使用了Bash特有的语法。在这种情况下，你可以临时切换到Bash：
+
+```bash
+bash
+```
+
+或者在Fish Shell中使用`bash -c`执行特定命令：
+
+```bash
+bash -c 'echo $BASH_VERSION'
+```
+
+## 结论
+
+Fish Shell是一个现代化、用户友好的命令行Shell，提供了许多有用的功能，如语法高亮、智能自动补全和基于历史的建议。通过本文的步骤，你可以在Ubuntu系统上安装最新版的Fish Shell并将其设置为默认Shell，享受更高效的命令行体验。
