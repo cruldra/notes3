@@ -1,0 +1,7 @@
+## 删除本地所有非`main`分支
+
+```powershell
+git branch | Where-Object { $_ -notmatch "main" -and $_ -notmatch "^\*" } | ForEach-Object { git branch -D $_.Trim() }
+```
+
+
