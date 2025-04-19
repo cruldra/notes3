@@ -1,0 +1,31 @@
+Gitea文档中关于集成PlantUML的说明如下：
+
+需要搭建PlantUML服务器：
+
+可以使用公共服务器：http://www.plantuml.com/plantuml
+或者搭建自己的私有服务器（适合敏感数据）
+下载必要的JavaScript文件：
+
+从 https://gitea.com/davidsvantesson/plantuml-code-highlight 获取：
+deflate.js
+encode.js
+plantuml_codeblock_parse.js
+将这些文件放到Gitea的 $GITEA_CUSTOM/public/assets/ 目录下
+在 custom/footer.tmpl 中添加以下脚本：
+
+<script>
+  $(async () => {
+    if (!$('.language-plantuml').length) return;
+    await Promise.all([
+      $.getScript('https://你的gitea服务器地址/assets/deflate.js'),
+      $.getScript('https://你的gitea服务器地址/assets/encode.js'),
+      $.getScript('https://你的gitea服务器地址/assets/plantuml_codeblock_parse.js'),
+    ]);
+    // 替换为你的plantuml服务器地址
+    parsePlantumlCodeBlocks("https://www.plantuml.com/plantuml"); 
+  });
+</script>
+在markdown中使用PlantUML代码块：
+Alice -> Bob: 认证请求
+Bob --> Alice: 认证响应
+配置完成后，Gitea会自动识别并渲染PlantUML图表。

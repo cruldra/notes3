@@ -5,3 +5,16 @@ git branch | Where-Object { $_ -notmatch "main" -and $_ -notmatch "^\*" } | ForE
 ```
 
 
+## 不用每次输密码
+
+```bash
+
+git config --global credential.helper store
+```
+
+
+## 将某个文件重置成仓库版本
+
+```bash
+git checkout -- <file>
+```
