@@ -13,6 +13,7 @@ plantuml_codeblock_parse.js
 将这些文件放到Gitea的 $GITEA_CUSTOM/public/assets/ 目录下
 在 custom/footer.tmpl 中添加以下脚本：
 
+```html
 <script>
   $(async () => {
     if (!$('.language-plantuml').length) return;
@@ -25,6 +26,8 @@ plantuml_codeblock_parse.js
     parsePlantumlCodeBlocks("https://www.plantuml.com/plantuml"); 
   });
 </script>
+```
+
 在markdown中使用PlantUML代码块：
 Alice -> Bob: 认证请求
 Bob --> Alice: 认证响应
