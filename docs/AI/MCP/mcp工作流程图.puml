@@ -1,0 +1,27 @@
+@startuml
+participant 用户
+participant "Claude/AI"
+participant "MCP客户端"
+participant "MCP服务器"
+participant "外部系统"
+
+note over "MCP客户端", "MCP服务器": 连接与能力发现（启动阶段）
+
+"MCP客户端" -> "MCP服务器": 初始化连接
+"MCP服务器" --> "MCP客户端": 返回可用能力
+
+用户 -> "Claude/AI": "旧金山的天气怎么样？"
+
+"Claude/AI" -> "Claude/AI": 识别需要外部数据
+"Claude/AI" -> "MCP客户端": 请求使用MCP能力
+"MCP客户端" -> 用户: 显示权限请求
+用户 -> "MCP客户端": 授予权限
+
+"MCP客户端" -> "MCP服务器": 发送标准化请求
+"MCP服务器" -> "外部系统": 查询外部系统
+"外部系统" --> "MCP服务器": 返回请求的数据
+"MCP服务器" --> "MCP客户端": 返回格式化结果
+"MCP客户端" -> "Claude/AI": 提供外部数据
+"Claude/AI" -> 用户: 回复上下文相关的答案
+
+@enduml
