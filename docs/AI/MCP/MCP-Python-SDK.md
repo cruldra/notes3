@@ -604,7 +604,7 @@ MCP服务器在初始化期间声明能力：
 
 ## 贡献
 
-我们热衷于支持各种经验水平的贡献者，并希望看到你参与到项目中。请参阅[贡献指南](CONTRIBUTING.md)开始。
+我们热衷于支持各种经验水平的贡献者，并希望看到你参与到项目中。请参阅[贡献指南](https://github.com/modelcontextprotocol/python-sdk/blob/main/CONTRIBUTING.md)开始。
 
 ## 许可证
 
