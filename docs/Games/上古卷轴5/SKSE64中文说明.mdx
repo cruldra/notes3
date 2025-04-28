@@ -1,0 +1,86 @@
+# SKSE(Skyrim Script Extender 64)
+
+作者：Ian Patterson 和 Stephen Abel (ianpatt 和 behippo)  
+鸣谢：Paul Connelly (scruggsywuggsy the ferret), gibbed, Purple Lunchbox, snakster  
+特别感谢 eternity 帮助完成这个项目。感激之情无以言表。
+
+Skyrim Script Extender 64，简称SKSE64，是一个扩展《上古卷轴5：天际特别版》脚本功能的模组开发资源。它不会修改磁盘上的可执行文件，因此不会产生永久性的副作用。
+
+## 兼容性：
+
+SKSE64支持Steam和GOG平台上最新版本的《天际》。请确保下载与您商店版本相对应的正确版本。
+- Steam版本：1.6.1170
+- GOG版本：1.6.1170
+
+如有需要，更新将尽快提供。请勿发送邮件告知我们新版本已发布；我们已经知道了。请耐心等待。
+
+Epic商店、Windows商店（Xbox Game Pass）和主机版本不受支持。
+
+## 【安装】
+
+1. 将.dll和.exe文件复制到您的Skyrim SE目录。这通常位于Program Files文件夹下的Steam\SteamApps\common\Skyrim Special Edition\。如果您看到名为SkyrimSE和SkyrimSELauncher的文件，则说明这是正确的文件夹。不要像普通mod那样将这些文件复制到Data文件夹中。"src"文件夹仅对程序员有用，大多数用户可以忽略它。
+
+2. 将Data\Scripts\中的.pex文件复制到您安装目录的Data\Scripts\文件夹中。所有SKSE用户都需要这些.pex文件。
+
+3. 如果您创建mod，请将Data\Scripts\Source\中的.psc文件复制到您安装目录的Data\Scripts\Source\文件夹中。只有当您安装了CreationKit并打算创建或编译Papyrus脚本时，才需要这些.psc文件。确保将它们添加到您的包含路径中。
+
+4. 运行skse64_loader.exe来启动游戏。您或您的mod管理器必须继续使用这个加载器才能使SKSE64正常工作。
+
+## 【给Mod制作者的建议】
+
+如果您的mod需要SKSE64，请提供SKSE主网站的链接 `<https://skse.silverlock.org/>` ，而不是将其打包在您的mod安装包中。未来版本的SKSE64将向后兼容，因此包含可能过时的版本可能会导致混淆和/或破坏需要较新版本的其他mod。
+
+## 【故障排除/常见问题】
+
+* 崩溃或奇怪的行为：
+  - 让我们知道您是如何使其崩溃的，我们将研究修复它。
+
+* 有Xbox One或PS4版本吗？
+  - 没有。由于制造商施加的限制，我们做的事情在主机上无法实现。
+
+* 我的病毒扫描程序报告skse64_loader有问题！
+  - 它不是病毒。为了扩展Skyrim和编辑器，我们使用一种称为DLL注入的技术来加载我们的代码。由于这种技术也可以被病毒使用，一些编写不良的病毒扫描程序会假设任何使用此技术的程序都是病毒。可能需要在扫描程序的规则中添加例外。
+
+* 我已按照说明操作，但Skyrim SE似乎仍然在没有SKSE64的情况下启动！
+  - 尝试以管理员身份运行skse64_loader.exe，方法是右键单击skse64_loader.exe并选择"以管理员身份运行"。这可以在程序的属性窗口中作为兼容性选项启用。请注意，这可能会以不同用户身份运行游戏，因此您的加载顺序需要复制到新用户的配置文件中。
+ 
+* 我可以基于包含的源代码修改并发布自己的SKSE版本吗？
+  - 不可以；扩展SKSE的建议方法是编写插件。如果这不能满足您的需求，请发送电子邮件至下面列出的联系地址。
+
+* 如何使用SKSE扩展编写Papyrus脚本？
+  - 如果您已正确安装了Data\Scripts\Source中的.psc文件，您可以直接使用列出的新函数。
+ 
+* 如何知道添加了哪些SKSE函数？
+  - 查看Data\Scripts\Source\中包含的.psc文件。在每个.psc文件的底部有一个标签，显示已添加的SKSE函数。大多数函数都有描述其用途的注释，如果名称不够明显的话。
+
+* 如何为SKSE编写插件？
+  - 请参阅PluginAPI.h中的说明，以及与其余源代码一起包含的示例插件项目。如果您包含任何SKSE源代码，您必须公开您的源代码。
+
+* 我可以将SKSE作为mod包/集合的一部分包含或以其他方式重新托管文件吗？
+  - 不可以。建议的分发方法是提供链接到https://skse.silverlock.org/。在适用情况下可能会给予例外；请通过下面的电子邮件地址联系我们。这意味着，如果您在https://skse.silverlock.org、https://www.github.com/ianpatt/skse64或Nexus上除https://www.nexusmods.com/users/2166624以外的任何用户处看到此文件可供下载，则该服务正在侵犯版权。我不喜欢必须明确说明这一点，但我别无选择。
+
+* 我需要保留旧的SKSE DLL以保持向后兼容性吗？
+  - 不需要，它们只有在您想要使用为该版本发布的最后一个SKSE版本运行旧版本的运行时时才需要。随时可以删除任何不包含在主存档中的skse_*.dll文件。
+
+* 日志文件去哪了？
+  - 为了支持在没有Program Files文件夹写入权限的机器上的用户，它们已移至`<我的文档>\My Games\Skyrim Special Edition\SKSE\`文件夹。
+
+* skse.ini文件在哪里？
+  - SKSE默认不包含此文件。在`<skyrim根目录>\Data\SKSE\`中创建一个名为skse.ini的空文本文件。如果SKSE文件夹不存在，请创建它。
+
+* 如何卸载SKSE64？
+  - 从您的Skyrim文件夹中删除以skse64_开头的.dll和.exe文件。
+
+## 【联系SKSE团队】
+
+在联系我们之前，请确保您的游戏首先可以在没有SKSE64的情况下正常启动。如果SKSE64似乎不能正常工作，请先按照常见问题解答中的步骤操作，然后将skse64.log和skse64_loader.log作为附件发送给我们。这些文件可以在`<我的文档>\My Games\Skyrim Special Edition\SKSE\`中找到。确保您已启用"显示文件扩展名"。
+
+### 确保将您的日志文件作为附件包含 ###
+我们无法帮助您解决加载顺序问题。当游戏发布新版本时，请勿发送电子邮件。
+
+Ian (ianpatt)  
+发送电子邮件至 ianpatt+skse64 [at] gmail [dot] com
+
+## 【标准免责声明】
+
+本软件"按原样"提供，不提供任何形式的明示或暗示保证，包括但不限于对适销性、特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何索赔、损害或其他责任负责，无论是在合同诉讼、侵权行为或其他方面，由软件或软件的使用或其他交易引起或与之相关。

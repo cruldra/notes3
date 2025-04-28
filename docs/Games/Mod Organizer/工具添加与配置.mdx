@@ -1,0 +1,120 @@
+---
+title: '工具添加与配置'
+description: '详细介绍如何在Mod Organizer 2中添加和配置外部工具'
+---
+
+# 工具添加与配置
+
+> 原文链接：[【Skyrim SE】Mod Organizer 2 使用教學（新手必看）](https://nokgaming.blogspot.com/2019/01/skyrim-semod-organizer-2.html)
+
+## 添加外部工具
+
+我们先看右上角这里：
+
+![工具下拉菜单](https://i.imgur.com/j1GSLH2.png)
+
+这里是可以添加小工具的地方，基本上会自动侦测的有SKSE、游戏本体两个程序文件、和Creation Kit (CK)，如果你有安装LOOT那也会自动显示在这里。
+
+那其他小工具如SSEEdit、FNIS、Bodyslide就要自己手动添加了，添加程序有两个方式：
+
+### 方式一：通过编辑按钮添加
+
+第一个是按编辑：
+
+![编辑按钮](https://i.imgur.com/VPjKa9k.png)
+
+基本上我们要输入的只有名称和程序，这里用SSEEdit示范：
+
+![添加SSEEdit](https://i.imgur.com/ERl9EZT.png)
+
+- 名称：就是它会显示在列表上的名称
+- 程序：就是执行的程序文件，按旁边三个点会跳出引导
+- 开始在：这个就是这个程序会从哪里执行，基本上可以空白
+- 参数：这个就是你想要程序启动时自带什么参数启动就可以添加，像我添加的这串，第一个是以utf-8编码启动，第二个则是过滤出可以转ESL的参数，新手看不懂就别加了，之后写SSEEdit的时候会详细说，现在这些参数有些也没必要了
+- 复写Steam AppID：我还真的不知道是干嘛的，别动就对了
+
+下面这个Create Files in Mod instead of Overwrite，这个就是有些程序会导出一些文件，如果你没特别设定的话就会跑到这个Overwrite文件夹，里面没文件就会是灰色斜体：
+
+![Overwrite空](https://i.imgur.com/9valh0D.png)
+
+如果里面有文件的话就会变成红色正体并右上角红色三角形跳出警告：
+
+![Overwrite有文件](https://i.imgur.com/8hlVTES.png)
+
+一方面其实如果你没有大爆装Mod，把资料放在里面没什么问题，但是如果你有装很多Mod，那我建议还是保持在清空状态好点，想要清空Overwrite有两种：
+
+1. 一种是右键->建立Mod
+2. 或是直接Clear
+
+新手建议使用建立Mod并将名称命名为当前日期，如20190121之类的方便管理。
+
+如果你在上面刚刚"Create Files in Mod instead of Overwrite"这边有设定的话那它产出的文件就不会被放到这里而是你指定的模组去，通常我会创造一个空Mod，命名为"[00 Overwrite]程序名"这里的话就是[00 Overwrite]SSEEdit：
+
+![创建空Mod](https://i.imgur.com/6tPwHcb.png)
+
+然后因为里面没资料也会变成灰色斜体，只要右键，忽略遗失的资料就可以了：
+
+![忽略遗失资料](https://i.imgur.com/Vml1Km4.png)
+
+之后只要在Create Files in Mod instead of Overwrite右边那个选单选择那个刚刚创建的空Mod就好，以后它导出的文件都会放到那里去：
+
+![选择输出Mod](https://i.imgur.com/NBKutek.png)
+
+最后一个"Use Application's Icon for shortcuts"基本上特殊状况才会勾，这边不谈。
+
+### 方式二：通过右键添加
+
+这是第一种添加Mod工具的方式，第二种我们切到资料这边：
+
+![切换到资料](https://i.imgur.com/XrL58p6.png)
+
+然后找到你想要添加的程序，以FNIS作范例：
+
+![FNIS](https://i.imgur.com/LSYuyiU.png)
+
+上面按右键添加为可执行程序即可：
+
+![添加为可执行程序](https://i.imgur.com/kyV1fzn.png)
+
+这种添加方式只适用于被视为Mod的程序，也就是是存在于你Data文件夹内的。
+
+添加完在右上选单就可以看到了，基本上所有有关的Mod程序都是这两种方法添加。
+
+## ESP排序
+
+在来说说ESP排序，基本上新手都是用LOOT做排序这样，但如果要手动的话就切到右下外挂程序这里排序：
+
+![ESP排序](https://i.imgur.com/RklabLN.png)
+
+这里简单说一下ESP，目前有分三种格式"ESM"、"ESP"、"ESL"真要说还有第四个ESPFE：
+
+- ESM：MOD核心插件，基本上大MOD才会有
+- ESP：一般MOD自带插件，和ESM合并计算最多只能装255个
+- ESL：跟ESP差不多，只是能容纳的资料数较少，但是能装到4096个，且无法做排序
+- ESPFE：跟ESL一样，只是它的格式是ESP，这代表它可以排序，但是同样能容纳资料较少
+
+ESP排序新手就交给LOOT，除非有些Mod特定跟你说要拉到最下面 (RW2；XPMSSE)，老手的话建议学下手动排序，LOOT到后面装太多模组也只能辅助用了，我的印象是大概装到120个ESP左右我就开始觉得手动排好点了。
+
+## 设定文件管理
+
+接下来说说设定文件的部分：
+
+![设定文件](https://i.imgur.com/U2PanCX.png)
+
+上面那个看起来像身份证的和设定文件这边的`<管理...>` 这两个选项是一样的东西，两个按下去都会跳这个窗口：
+
+![设定文件管理](https://i.imgur.com/2tsjvAV.png)
+
+在这里你可以建立编辑设定文件，每个设定文件启用和关闭的模组都会是独立的；ESP排序、游戏设定也是，如果你有勾选局部游戏存档的话那连存档也会是独立的，通常新手用一个设定文件就够了，老手的话我看过最多的是会有一个专门拿来拍照的、专门拿来玩上古卷轴的、专门拿来夜战的，当然我也是。
+
+这个设定文件在排除CTD时也有用，如果你现在用这个设定文件会CTD，那你先复制一个一模一样的，然后把Mod从下到上取消勾选，这样就可以找出哪个Mod害你CTD了，例如我现在装了五个Mod，游戏会跳出，那我就先从最后一个取消勾选在一个一个进游戏，就会找到是哪个Mod出问题了。
+
+题外话：有时候CTD原因很迷，我也遇过那种全部取消勾选还是跳的情形，如果全部取消勾选还是跳，我建议你可以重新开机试试看，我认真的。
+
+## INI文件设定
+
+最后说说ini文件设定，游戏本体的ini有分两个：skyrim.ini、skyrimprefs.ini，有些Mod会要求你调这两个文件的一些参数，NMM用户可以直接到我的文件里编辑，MO就比较麻烦，因为它每个设定文件都有独立参数，设定的话要从这里设定，左上方工具列右边数来第二个那个拼图的图示按下去，有个ini editor，点下去就会跑出这个：
+
+![INI编辑器](https://i.imgur.com/TRnKDKK.png)
+
+就可以修改了，修改完记得save存档，另外可以按"Ctrl+F"搜寻参数。

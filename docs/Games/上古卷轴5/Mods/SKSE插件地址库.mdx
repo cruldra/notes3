@@ -1,0 +1,242 @@
+---
+title: 'SKSE插件地址库'
+description: '为SKSE DLL插件提供版本独立支持的地址库'
+---
+
+# SKSE插件地址库
+
+> 原文链接：[Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
+
+包含头文件和数据库，使SKSE DLL插件能够轻松实现版本独立。
+
+## 关于此模组
+
+### 文件信息
+
+**最后更新**：2024年2月14日 9:19 AM
+
+**原始上传**：2020年2月7日 11:02 AM
+
+**创建者**：meh321
+
+**上传者**：[meh321](https://www.nexusmods.com/skyrimspecialedition/users/2964753)
+
+**病毒扫描**：安全可用
+
+## 要求
+
+此模组除了基础游戏外没有其他已知依赖项。
+
+## 描述
+
+**重要提示！** 现在分为两个版本：特别版(1.5.x)和周年纪念版(1.6.x)。指向地址的ID在这两个版本之间不会匹配（游戏可执行文件差异太大无法匹配，即使它们匹配，这些函数内的代码也不同）。
+
+### 对于普通模组用户
+
+从文件部分下载并安装"all-in-one"包。您可以使用模组管理器或手动安装。.bin文件应该放在这里：
+**Data/SKSE/Plugins/**
+您不需要阅读本文的其余部分。
+
+### 对于SKSE DLL插件作者
+
+这是一个模组资源（头文件）。您可以加载存储偏移量的数据库，这样您的DLL插件可以不依赖版本而无需重新编译。头文件可以从文件的可选部分下载。对于周年纪念版，头文件名为versionlibdb.h而不是versiondb.h！如果您使用CommonLib，那么所有这些都已经内置，您不需要从这里获取任何东西。
+
+### 如何使用
+
+最快的方法：
+
+```cpp
+#include "versiondb.h"
+
+void * MyAddress = NULL;
+unsigned long long MyOffset = 0;
+
+bool InitializeOffsets()
+{
+    // 在栈上分配，这样当我们退出此函数时它将被卸载。
+    // 没有理由让整个数据库加载并占用内存而没有任何原因。
+    VersionDb db;
+
+    // 加载当前可执行文件版本的数据库。
+    if (!db.Load())
+    {
+        _FATALERROR("Failed to load version database for current executable!");
+        return false;
+    }
+    else
+    {
+        // "SkyrimSE.exe", "1.5.97.0"
+        _MESSAGE("Loaded database for %s version %s.", db.GetModuleName().c_str(), db.GetLoadedVersionString().c_str());
+    }
+
+    // 此地址已包含模块的基地址，因此我们可以直接使用该地址。
+    MyAddress = db.FindAddressById(123);
+    if (MyAddress == NULL)
+    {
+        _FATALERROR("Failed to find address!");
+        return false;
+    }
+
+    // 此偏移量不包括基地址。实际地址为ModuleBase + MyOffset。
+    if (!db.FindOffsetById(123, MyOffset))
+    {
+        _FATALERROR("Failed to find offset for my thing!");
+        return false;
+    }
+
+    // 一切成功。
+    return true;
+}
+```
+
+现在您可能想知道那个"123"值是什么。这是地址的ID。不同版本的数据库对同一个地址会有相同的ID，但它可能指向不同的值。要获取特定版本的所有ID和值对的列表，请执行以下操作：
+
+```cpp
+#include "versiondb.h"
+
+bool DumpSpecificVersion()
+{
+    VersionDb db;
+
+    // 尝试加载版本1.5.62.0的数据库，无论运行的可执行文件版本如何。
+    if (!db.Load(1, 5, 62, 0))
+    {
+        _FATALERROR("Failed to load database for 1.5.62.0!");
+        return false;
+    }
+
+    // 写出一个名为offsets-1.5.62.0.txt的文件，其中每行是ID和偏移量。
+    db.Dump("offsets-1.5.62.0.txt");
+    _MESSAGE("Dumped offsets for 1.5.62.0");
+    return true;
+}
+```
+
+用您正在逆向工程和熟悉的版本替换1, 5, 62, 0。您必须首先在/Data/SKSE/Plugins目录中有相应的数据库文件。
+
+调用此函数后，您应该在Skyrim主目录中有一个名为"offsets-1.5.62.0.txt"的新文件，或者您放入的任何文件名。它的格式是每行：
+十进制ID `制表符` 十六进制偏移量 `换行`
+
+例如，如果您在1.5.62.0中有一个地址142F4DEF8（玩家角色静态指针），想要使其版本独立，您可以这样做：
+1. 在偏移量文件中查找2F4DEF8。因为这是没有基地址140000000的偏移量
+2. 看到ID是517014（十进制！）
+3. 如果您想在运行时在DLL中使用此地址，请执行以下操作：
+
+```cpp
+void* addressOf142F4DEF8 = db.FindAddressById(517014);
+```
+
+就是这样。
+
+VersionDb结构有以下函数：
+
+```cpp
+bool Dump(const std::string& path); // 将当前加载的数据库转储到文件
+bool Load(int major, int minor, int revision, int build); // 如果Data/SKSE/Plugins目录中存在db-major-minor-revision-build.bin，则加载特定版本
+bool Load(); // 加载当前应用程序的版本
+void Clear(); // 清除当前加载的数据库
+void GetLoadedVersion(int& major, int& minor, int& revision, int& build) const; // 获取我们现在加载的数据库文件的版本
+bool GetExecutableVersion(int& major, int& minor, int& revision, int& build) const; // 获取当前执行应用程序的版本
+const std::string& GetModuleName() const; // 获取当前加载的数据库模块的名称，这应该显示"SkyrimSE.exe"
+const std::string& GetLoadedVersionString() const; // 获取当前加载的版本作为字符串，例如"1.5.62.0"
+const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const; // 获取ID到偏移量的映射，如果您需要手动迭代它
+void* FindAddressById(unsigned long long id) const; // 通过ID查找地址，这将已经包含基地址并且是正确的地址。如果未找到，它将返回NULL！
+bool FindOffsetById(unsigned long long id, unsigned long long& result) const; // 通过ID查找偏移量，这只是偏移量，不包括基地址。
+bool FindIdByAddress(void* ptr, unsigned long long& result) const; // 通过地址查找ID，这将尝试反向查找以将地址转换为ID
+bool FindIdByOffset(unsigned long long offset, unsigned long long& result) const; // 通过偏移量查找ID，这将尝试反向查找以将偏移量转换为ID
+```
+
+您应该知道并牢记的事项：
+
+1. 您可以在插件中包含任何（或全部）数据库文件，但这可能会大大增加文件大小（约2.5 MB）。到目前为止，将此模组标记为依赖项是常见做法。
+
+2. 您应该始终只在启动时加载一次数据库，初始化/缓存您需要的地址，然后让它卸载。卸载只是意味着VersionDb结构被删除或丢失（如果您在栈上分配）。这将确保您在游戏运行时不会使用不必要的内存量。在游戏过程中没有必要保持数据库加载。如果您使用CommonLib，这一点就无关紧要，因为它只加载一次，而不是为每个DLL加载。
+
+3. 数据库包含函数、全局变量、RTTI、虚表和可能有引用的任何其他内容的地址。它不包含函数中间或全局变量中间的地址。如果您需要函数中间的地址，您应该查找函数基地址并自己添加额外的偏移量。它也不包含无用的内容，如函数周围的对齐（在rdata中引用），pdata部分被丢弃，rdata中的一些编译器生成的SEH信息被丢弃。
+
+4. 您应该始终检查结果，以确保数据库成功加载（bool Load返回true）并且查询的地址实际上返回了有效结果（不是NULL）。如果加载失败，这意味着文件很可能丢失或版本错误（例如，尝试在AE中使用SE头文件）。如果查询失败，这意味着在该版本中找不到地址。这可能意味着游戏代码已经改变到足以使该地址对该版本不再有效，或者数据库本身未能检测到正确的地址。如果发生这些情况，您应该使插件初始化失败，让SKSE知道您没有正确加载。或者手动显示错误消息。
+
+5. 在发布DLL插件之前，最好检查地址是否存在于游戏的所有版本中。为此，加载每个版本的数据库文件，并在每个版本中查询相同的地址ID，以确保它存在：
+
+```cpp
+bool LoadAll(std::vector<VersionDb*>& all)
+{
+    static int versions[] = { 3, 16, 23, 39, 50, 53, 62, 73, 80, 97, -1 };
+    for (int i = 0; versions[i] >= 0; i++)
+    {
+        VersionDb * db = new VersionDb();
+        if (!db->Load(1, 5, versions[i], 0))
+        {
+            delete db;
+            return false;
+        }
+        all.push_back(db);
+    }
+    return true;
+}
+
+bool ExistsInAll(std::vector<VersionDb*>& all, unsigned long long id)
+{
+    unsigned long long result = 0;
+    for (auto db : all)
+    {
+        if (!db->FindOffsetById(id, result))
+            return false;
+    }
+    return true;
+}
+
+void FreeAll(std::vector<VersionDb*>& all)
+{
+    for (auto db : all)
+        delete db;
+    all.clear();
+}
+
+bool IsOk()
+{
+    std::vector<VersionDb*> all;
+    if (!LoadAll(all))
+    {
+        _FATALERROR("Failed to load one or more version databases for current executable!");
+        FreeAll(all);
+        return false;
+    }
+
+    if (!ExistsInAll(all, 517014))
+    {
+        _FATALERROR("517014 does not exist in all versions of the database!");
+        FreeAll(all);
+        return false;
+    }
+
+    FreeAll(all);
+    // Ok!
+    return true;
+}
+```
+
+这样，您可以确保您的DLL模组将在所有版本中工作，或者如果它在某些版本中不工作，您可以在模组页面上写明。
+
+6. 有时您需要根据运行的游戏版本做不同的事情。您可以使用以下代码片段：
+
+```cpp
+int major = 0, minor = 0, revision = 0, build = 0;
+if (!db.GetExecutableVersion(major, minor, revision, build))
+{
+    _FATALERROR("Something went wrong!");
+    return false;
+}
+
+// 运行的游戏是1.5.x并且至少是版本1.5.39.0
+if (major == 1 && minor == 5 && revision >= 39)
+{
+    // 做一些事情... ?
+}
+```
+
+7. 请记住：如果您在调试模式下编译SKSE DLL，数据库的加载时间可能约为14秒！在发布模式下，这约为0.2秒。这是因为标准库容器在该模式下非常慢（std map）。
+
+### 权限
+
+随意使用。
