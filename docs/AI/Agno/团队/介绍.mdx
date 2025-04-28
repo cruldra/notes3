@@ -1,0 +1,375 @@
+---
+title: '介绍'
+description: 'Agno代理团队的介绍'
+---
+
+# 介绍
+
+## 什么是代理团队？
+
+代理团队是一组共同工作以完成任务的代理（或其他子团队）的集合。代理团队可以通过 **"协调"** 、**"协作"** 或 **"路由"** 来解决任务。
+
+* [**路由模式**](https://docs.agno.com/teams/route)：团队领导根据请求的内容将用户的请求路由到最合适的团队成员。
+* [**协调模式**](https://docs.agno.com/teams/coordinate)：团队领导将任务委派给团队成员，并将他们的输出合成为一个连贯的响应。
+* [**协作模式**](https://docs.agno.com/teams/collaborate)：所有团队成员都被赋予相同的任务，团队协调员将他们的输出合成为一个连贯的响应。
+
+## 示例
+
+让我们通过一个简单的示例，使用不同的模型来用不同的语言回答问题。团队由三个专业代理和团队领导组成，团队领导将用户的问题路由到适当的语言代理。
+
+```python
+from agno.agent import Agent
+from agno.models.deepseek import DeepSeek
+from agno.models.mistral.mistral import MistralChat
+from agno.models.openai import OpenAIChat
+from agno.team.team import Team
+
+english_agent = Agent(
+    name="English Agent",
+    role="You only answer in English",
+    model=OpenAIChat(id="gpt-4o"),
+)
+chinese_agent = Agent(
+    name="Chinese Agent",
+    role="You only answer in Chinese",
+    model=DeepSeek(id="deepseek-chat"),
+)
+french_agent = Agent(
+    name="French Agent",
+    role="You can only answer in French",
+    model=MistralChat(id="mistral-large-latest"),
+)
+
+multi_language_team = Team(
+    name="Multi Language Team",
+    mode="route",
+    model=OpenAIChat("gpt-4o"),
+    members=[english_agent, chinese_agent, french_agent],
+    show_tool_calls=True,
+    markdown=True,
+    description="You are a language router that directs questions to the appropriate language agent.",
+    instructions=[\
+        "Identify the language of the user's question and direct it to the appropriate language agent.",\
+        "If the user asks in a language whose agent is not a team member, respond in English with:",\
+        "'I can only answer in the following languages: English, Chinese, French. Please ask your question in one of these languages.'",\
+        "Always check the language of the user's input before routing to an agent.",\
+        "For unsupported languages like Italian, respond in English with the above message.",\
+    ],
+    show_members_responses=True,
+)
+
+
+if __name__ == "__main__":
+    # 用所有支持的语言问"你好吗？"
+    multi_language_team.print_response("Comment allez-vous?", stream=True)  # 法语
+    multi_language_team.print_response("How are you?", stream=True)  # 英语
+    multi_language_team.print_response("你好吗？", stream=True)  # 中文
+    multi_language_team.print_response("Come stai?", stream=True)  # 意大利语
+```
+
+## 代理团队上下文
+
+团队领导维护一个由代理更新的共享上下文（即由团队领导更新），并在需要时发送给团队成员。
+
+**代理上下文对于代理之间的有效信息共享和协作至关重要，团队响应的质量取决于团队领导如何管理这个共享的代理上下文。** 这意味着我们应该为团队领导使用更好的模型，以确保团队响应的质量。
+
+团队成员的任务和响应会自动添加到团队上下文中，但代理上下文需要由开发者启用。
+
+### 启用代理上下文
+
+要使团队领导能够维护代理上下文，请设置`enable_agentic_context=True`。
+
+这将允许团队领导在运行期间维护和更新团队上下文。
+
+```python
+team = Team(
+    members=[agent1, agent2, agent3],
+    enable_agentic_context=True,  # 启用团队领导维护代理上下文
+)
+```
+
+### 团队成员交互
+
+代理团队可以在成员之间共享交互，使代理能够从彼此的输出中学习：
+
+```python
+team = Team(
+    members=[agent1, agent2, agent3],
+    share_member_interactions=True,  # 共享交互
+)
+```
+
+## 团队记忆和历史
+
+团队可以维护之前交互的记忆，实现上下文感知：
+
+```python
+from agno.team import Team
+
+team_with_memory = Team(
+    name="Team with Memory",
+    members=[agent1, agent2],
+    enable_team_history=True,
+    num_of_interactions_from_history=5,
+)
+
+# 团队将记住之前的交互
+team_with_memory.print_response("量子计算的关键挑战是什么？")
+team_with_memory.print_response("详细说明你提到的第二个挑战")
+```
+
+团队还可以管理用户记忆：
+
+```python
+from agno.team import Team
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+
+# 创建具有持久存储的记忆实例
+memory_db = SqliteMemoryDb(table_name="memory", db_file="memory.db")
+memory = Memory(db=memory_db)
+
+team_with_memory = Team(
+    name="Team with Memory",
+    members=[agent1, agent2],
+    memory=memory,
+    enable_agentic_memory=True,
+)
+
+team_with_memory.print_response("嗨！我叫John Doe。")
+team_with_memory.print_response("我叫什么名字？")
+```
+
+## 团队知识
+
+团队可以使用知识库来存储和检索信息：
+
+```python
+from pathlib import Path
+
+from agno.agent import Agent
+from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.models.openai import OpenAIChat
+from agno.team import Team
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.vectordb.lancedb import LanceDb, SearchType
+
+# 设置路径
+cwd = Path(__file__).parent
+tmp_dir = cwd.joinpath("tmp")
+tmp_dir.mkdir(parents=True, exist_ok=True)
+
+# 初始化知识库
+agno_docs_knowledge = UrlKnowledge(
+    urls=["https://docs.agno.com/llms-full.txt"],
+    vector_db=LanceDb(
+        uri=str(tmp_dir.joinpath("lancedb")),
+        table_name="agno_docs",
+        search_type=SearchType.hybrid,
+        embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+    ),
+)
+
+web_agent = Agent(
+    name="Web Search Agent",
+    role="Handle web search requests",
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    instructions=["Always include sources"],
+)
+
+team_with_knowledge = Team(
+    name="Team with Knowledge",
+    members=[web_agent],
+    model=OpenAIChat(id="gpt-4o"),
+    knowledge=agno_docs_knowledge,
+    show_members_responses=True,
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    # 在知识库加载后设置为False
+    load_knowledge = True
+    if load_knowledge:
+        agno_docs_knowledge.load()
+
+    team_with_knowledge.print_response("告诉我关于Agno框架的信息", stream=True)
+```
+
+团队还可以管理用户记忆：
+
+```python
+from agno.team import Team
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+
+# 创建具有持久存储的记忆实例
+memory_db = SqliteMemoryDb(table_name="memory", db_file="memory.db")
+memory = Memory(db=memory_db)
+
+team_with_memory = Team(
+    name="Team with Memory",
+    members=[agent1, agent2],
+    memory=memory,
+    enable_user_memories=True,
+)
+
+team_with_memory.print_response("嗨！我叫John Doe。")
+team_with_memory.print_response("我叫什么名字？")
+```
+
+## 运行团队
+
+团队支持同步和异步执行，可选流式传输：
+
+```python
+# 同步执行
+result = team.run("创建关于最近AI发展的分析")
+
+# 异步执行
+result = await team.arun("创建关于最近AI发展的分析")
+
+# 流式响应
+for chunk in team.run("创建关于最近AI发展的分析", stream=True):
+    print(chunk.content, end="", flush=True)
+
+# 异步流式传输
+async for chunk in await team.arun("创建关于最近AI发展的分析", stream=True):
+    print(chunk.content, end="", flush=True)
+```
+
+## 示例
+
+### 内容团队
+
+让我们通过另一个示例，使用两个专业代理来撰写博客文章。团队领导协调代理撰写博客文章。
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.team import Team
+from agno.tools.duckduckgo import DuckDuckGoTools
+
+# 创建单独的专业代理
+researcher = Agent(
+    name="Researcher",
+    role="Expert at finding information",
+    tools=[DuckDuckGoTools()],
+    model=OpenAIChat("gpt-4o"),
+)
+
+writer = Agent(
+    name="Writer",
+    role="Expert at writing clear, engaging content",
+    model=OpenAIChat("gpt-4o"),
+)
+
+# 用这些代理创建一个团队
+content_team = Team(
+    name="Content Team",
+    mode="coordinate",
+    members=[researcher, writer],
+    instructions="You are a team of researchers and writers that work together to create high-quality content.",
+    model=OpenAIChat("gpt-4o"),
+    markdown=True,
+)
+
+# 用任务运行团队
+content_team.print_response("创建一篇关于量子计算的短文")
+```
+
+### 研究团队
+
+这是一个结合多个专业代理的研究团队示例：
+
+#### 1. 创建HackerNews团队
+
+创建一个文件`hackernews_team.py`
+
+```python
+from typing import List
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.team import Team
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.hackernews import HackerNewsTools
+from agno.tools.newspaper4k import Newspaper4kTools
+from pydantic import BaseModel
+
+class Article(BaseModel):
+    title: str
+    summary: str
+    reference_links: List[str]
+
+
+hn_researcher = Agent(
+    name="HackerNews Researcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Gets top stories from hackernews.",
+    tools=[HackerNewsTools()],
+)
+
+web_searcher = Agent(
+    name="Web Searcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Searches the web for information on a topic",
+    tools=[DuckDuckGoTools()],
+    add_datetime_to_instructions=True,
+)
+
+article_reader = Agent(
+    name="Article Reader",
+    role="Reads articles from URLs.",
+    tools=[Newspaper4kTools()],
+)
+
+hackernews_team = Team(
+    name="HackerNews Team",
+    mode="coordinate",
+    model=OpenAIChat("gpt-4o"),
+    members=[hn_researcher, web_searcher, article_reader],
+    instructions=[\
+        "First, search hackernews for what the user is asking about.",\
+        "Then, ask the article reader to read the links for the stories to get more information.",\
+        "Important: you must provide the article reader with the links to read.",\
+        "Then, ask the web searcher to search for each story to get more information.",\
+        "Finally, provide a thoughtful and engaging summary.",\
+    ],
+    response_model=Article,
+    show_tool_calls=True,
+    markdown=True,
+    debug_mode=True,
+    show_members_responses=True,
+)
+
+# 运行团队
+report = hackernews_team.run(
+    "What are the top stories on hackernews?"
+).content
+
+print(f"Title: {report.title}")
+print(f"Summary: {report.summary}")
+print(f"Reference Links: {report.reference_links}")
+```
+
+#### 2. 运行团队
+
+安装库
+
+```bash
+pip install openai duckduckgo-search newspaper4k lxml_html_clean agno
+```
+
+运行团队
+
+```bash
+python hackernews_team.py
+```
+
+## 开发者资源
+
+* 查看[用例](https://docs.agno.com/examples/teams)
+* 查看[示例](https://docs.agno.com/examples/concepts/storage/team_storage)
+* 查看[Cookbook](https://github.com/agno-agi/agno/tree/main/cookbook/examples/teams)

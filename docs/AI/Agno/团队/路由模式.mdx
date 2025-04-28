@@ -1,0 +1,205 @@
+---
+title: '路由模式'
+description: 'Agno团队路由模式的详细说明'
+---
+
+# 路由模式
+
+在**路由模式**中，团队领导根据请求的内容将用户查询引导到最合适的团队成员。
+
+团队领导充当智能路由器，分析查询并选择最适合处理它的代理。然后，成员的响应直接返回给用户。
+
+## 路由模式如何工作
+
+在"路由"模式中：
+
+1. 团队接收用户查询
+2. 团队领导分析查询，确定哪个团队成员拥有合适的专业知识
+3. 查询被转发给选定的团队成员
+4. 团队成员的响应直接返回给用户
+
+当您拥有具有不同专业领域的专业代理，并希望自动将查询引导到正确的专家时，这种模式特别有用。
+
+### 1. 创建多语言团队
+
+创建一个文件`multi_language_team.py`
+
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.models.deepseek import DeepSeek
+from agno.models.mistral.mistral import MistralChat
+from agno.models.openai import OpenAIChat
+from agno.team.team import Team
+
+english_agent = Agent(
+    name="English Agent",
+    role="You can only answer in English",
+    model=OpenAIChat(id="gpt-4.5-preview"),
+    instructions=[\
+        "You must only respond in English",\
+    ],
+)
+
+japanese_agent = Agent(
+    name="Japanese Agent",
+    role="You can only answer in Japanese",
+    model=DeepSeek(id="deepseek-chat"),
+    instructions=[\
+        "You must only respond in Japanese",\
+    ],
+)
+chinese_agent = Agent(
+    name="Chinese Agent",
+    role="You can only answer in Chinese",
+    model=DeepSeek(id="deepseek-chat"),
+    instructions=[\
+        "You must only respond in Chinese",\
+    ],
+)
+spanish_agent = Agent(
+    name="Spanish Agent",
+    role="You can only answer in Spanish",
+    model=OpenAIChat(id="gpt-4.5-preview"),
+    instructions=[\
+        "You must only respond in Spanish",\
+    ],
+)
+
+french_agent = Agent(
+    name="French Agent",
+    role="You can only answer in French",
+    model=MistralChat(id="mistral-large-latest"),
+    instructions=[\
+        "You must only respond in French",\
+    ],
+)
+
+german_agent = Agent(
+    name="German Agent",
+    role="You can only answer in German",
+    model=Claude("claude-3-5-sonnet-20241022"),
+    instructions=[\
+        "You must only respond in German",\
+    ],
+)
+multi_language_team = Team(
+    name="Multi Language Team",
+    mode="route",
+    model=OpenAIChat("gpt-4.5-preview"),
+    members=[\
+        english_agent,\
+        spanish_agent,\
+        japanese_agent,\
+        french_agent,\
+        german_agent,\
+        chinese_agent,\
+    ],
+    show_tool_calls=True,
+    markdown=True,
+    instructions=[\
+        "You are a language router that directs questions to the appropriate language agent.",\
+        "If the user asks in a language whose agent is not a team member, respond in English with:",\
+        "'I can only answer in the following languages: English, Spanish, Japanese, French and German. Please ask your question in one of these languages.'",\
+        "Always check the language of the user's input before routing to an agent.",\
+        "For unsupported languages like Italian, respond in English with the above message.",\
+    ],
+    show_members_responses=True,
+)
+
+
+# 用所有支持的语言问"你好吗？"
+multi_language_team.print_response(
+    "How are you?", stream=True  # 英语
+)
+
+multi_language_team.print_response(
+    "你好吗？", stream=True  # 中文
+)
+
+multi_language_team.print_response(
+    "お元気ですか?", stream=True  # 日语
+)
+
+multi_language_team.print_response(
+    "Comment allez-vous?",
+    stream=True,  # 法语
+)
+```
+
+### 2. 运行团队
+
+安装库
+
+```bash
+pip install openai mistral agno
+```
+
+运行团队
+
+```bash
+python multi_language_team.py
+```
+
+## 路由模式的结构化输出
+
+路由模式的一个强大功能是它能够维护来自成员代理的结构化输出。当使用Pydantic模型作为响应时，来自选定团队成员的响应将自动解析为指定的结构。
+
+### 定义结构化输出模型
+
+```python
+from pydantic import BaseModel
+from typing import List, Optional
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.team import Team
+
+
+class StockAnalysis(BaseModel):
+    symbol: str
+    company_name: str
+    analysis: str
+
+class CompanyAnalysis(BaseModel):
+    company_name: str
+    analysis: str
+
+stock_searcher = Agent(
+    name="Stock Searcher",
+    model=OpenAIChat("gpt-4o"),
+    response_model=StockAnalysis,
+    role="Searches for information on stocks and provides price analysis.",
+    tools=[\
+        YFinanceTools(\
+            stock_price=True,\
+            analyst_recommendations=True,\
+        )\
+    ],
+)
+
+company_info_agent = Agent(
+    name="Company Info Searcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Searches for information about companies and recent news.",
+    response_model=CompanyAnalysis,
+    tools=[\
+        YFinanceTools(\
+            stock_price=False,\
+            company_info=True,\
+            company_news=True,\
+        )\
+    ],
+)
+
+team = Team(
+    name="Stock Research Team",
+    mode="route",
+    model=OpenAIChat("gpt-4o"),
+    members=[stock_searcher, company_info_agent],
+    markdown=True,
+)
+
+# 这应该路由到stock_searcher
+response = team.run("NVDA的当前股价是多少？")
+assert isinstance(response.content, StockAnalysis)
+```

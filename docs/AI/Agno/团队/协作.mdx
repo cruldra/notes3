@@ -1,0 +1,155 @@
+---
+title: '协作'
+description: 'Agno团队协作模式的详细说明'
+---
+
+# 协作
+
+在**协作模式**中，所有团队成员同时响应用户查询。这使团队协调员能够审查团队是否已就特定主题达成共识，然后将所有团队成员的响应合成为单一响应。
+
+这在与`async await`一起使用时特别有用，因为它允许各个成员同时响应，并且协调员可以异步合成响应。
+
+## 协作模式如何工作
+
+在"协作"模式中：
+
+1. 团队接收用户查询
+2. 所有团队成员都会收到查询。当同步运行时，这会一个接一个地发生。当异步运行时，这会同时发生。
+3. 每个团队成员产生一个输出
+4. 协调员审查输出并将它们合成为单一响应
+
+### 1. 创建协作模式团队
+
+创建一个文件`discussion_team.py`
+
+```python
+import asyncio
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.team.team import Team
+from agno.tools.arxiv import ArxivTools
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.googlesearch import GoogleSearchTools
+from agno.tools.hackernews import HackerNewsTools
+
+reddit_researcher = Agent(
+    name="Reddit Researcher",
+    role="Research a topic on Reddit",
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    add_name_to_instructions=True,
+    instructions=dedent("""
+    You are a Reddit researcher.
+    You will be given a topic to research on Reddit.
+    You will need to find the most relevant posts on Reddit.
+    """),
+)
+
+hackernews_researcher = Agent(
+    name="HackerNews Researcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Research a topic on HackerNews.",
+    tools=[HackerNewsTools()],
+    add_name_to_instructions=True,
+    instructions=dedent("""
+    You are a HackerNews researcher.
+    You will be given a topic to research on HackerNews.
+    You will need to find the most relevant posts on HackerNews.
+    """),
+)
+
+academic_paper_researcher = Agent(
+    name="Academic Paper Researcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Research academic papers and scholarly content",
+    tools=[GoogleSearchTools(), ArxivTools()],
+    add_name_to_instructions=True,
+    instructions=dedent("""
+    You are a academic paper researcher.
+    You will be given a topic to research in academic literature.
+    You will need to find relevant scholarly articles, papers, and academic discussions.
+    Focus on peer-reviewed content and citations from reputable sources.
+    Provide brief summaries of key findings and methodologies.
+    """),
+)
+
+twitter_researcher = Agent(
+    name="Twitter Researcher",
+    model=OpenAIChat("gpt-4o"),
+    role="Research trending discussions and real-time updates",
+    tools=[DuckDuckGoTools()],
+    add_name_to_instructions=True,
+    instructions=dedent("""
+    You are a Twitter/X researcher.
+    You will be given a topic to research on Twitter/X.
+    You will need to find trending discussions, influential voices, and real-time updates.
+    Focus on verified accounts and credible sources when possible.
+    Track relevant hashtags and ongoing conversations.
+    """),
+)
+
+
+agent_team = Team(
+    name="Discussion Team",
+    mode="collaborate",
+    model=OpenAIChat("gpt-4o"),
+    members=[\
+        reddit_researcher,\
+        hackernews_researcher,\
+        academic_paper_researcher,\
+        twitter_researcher,\
+    ],
+    instructions=[\
+        "You are a discussion master.",\
+        "You have to stop the discussion when you think the team has reached a consensus.",\
+    ],
+    success_criteria="The team has reached a consensus.",
+    enable_agentic_context=True,
+    show_tool_calls=True,
+    markdown=True,
+    show_members_responses=True,
+)
+
+if __name__ == "__main__":
+    asyncio.run(
+        agent_team.print_response(
+            message="Start the discussion on the topic: 'What is the best way to learn to code?'",
+            stream=True,
+            stream_intermediate_steps=True,
+        )
+    )
+```
+
+### 2. 运行团队
+
+安装库
+
+```bash
+pip install openai duckduckgo-search arxiv pypdf googlesearch-python pycountry
+```
+
+运行团队
+
+```bash
+python discussion_team.py
+```
+
+## 定义成功标准
+
+您可以通过为团队协调员指定成功标准来指导协作团队：
+
+```python
+strategy_team = Team(
+    members=[hackernews_researcher, academic_paper_researcher, twitter_researcher],
+    mode="collaborate",
+    name="Research Team",
+    description="A team that researches a topic",
+    success_criteria="The team has reached a consensus on the topic",
+)
+
+response = strategy_team.run(
+    "学习编程的最佳方式是什么？"
+)
+```
