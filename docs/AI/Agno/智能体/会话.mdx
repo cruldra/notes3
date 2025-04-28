@@ -1,0 +1,83 @@
+---
+title: '会话'
+description: 'Agno代理会话管理的详细说明'
+---
+
+# 会话
+
+当我们调用`Agent.run()`时，它会创建一个无状态的单次代理运行。
+
+但如果我们想继续这个运行，即进行多轮对话怎么办？这就是`sessions`（会话）的用途。会话是连续运行的集合。
+
+实际上，会话是用户与代理之间的多轮对话。使用`session_id`，我们可以在多次运行之间连接对话历史和状态。
+
+让我们概述一些关键概念：
+
+* **会话（Session）：** 会话是连续运行的集合，如用户与代理之间的多轮对话。会话由`session_id`标识，每一轮是一次**运行**。
+* **运行（Run）：** 与代理的每次交互（即聊天或轮次）称为**运行**。运行由`run_id`标识，调用`Agent.run()`时会创建一个新的`run_id`。
+* **消息（Messages）：** 是模型和代理之间发送的单个消息。消息是代理和模型之间的通信协议。
+
+让我们从一个使用代理创建单次运行的示例开始。自动生成一个`run_id`，以及一个`session_id`（因为我们没有提供一个来继续对话）。这次运行尚未与用户关联。
+
+```python
+from typing import Iterator
+from agno.agent import Agent, RunResponse
+from agno.models.openai import OpenAIChat
+from agno.utils.pprint import pprint_run_response
+
+agent = Agent(model=OpenAIChat(id="gpt-4o-mini"))
+
+# 运行代理并将响应作为变量返回
+agent.print_response("Tell me a 5 second short story about a robot")
+```
+
+## 多用户、多会话代理
+
+与代理交互的每个用户都会获得一组唯一的会话，您可以同时让多个用户与同一个代理交互。
+
+设置`user_id`将用户连接到他们与代理的会话。
+
+在下面的示例中，我们设置了一个`session_id`来演示如何同时与多个用户进行多轮对话。在生产环境中，`session_id`是自动生成的。
+
+注意：多用户、多会话目前仅适用于`Memory.v2`，它将在下一个版本中成为默认的内存实现。
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.memory.v2 import Memory
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 多用户、多会话仅适用于Memory.v2
+    memory=Memory(),
+    add_history_to_messages=True,
+    num_history_runs=3,
+)
+
+user_1_id = "user_101"
+user_2_id = "user_102"
+
+user_1_session_id = "session_101"
+user_2_session_id = "session_102"
+
+# 开始与用户1的会话
+agent.print_response(
+    "Tell me a 5 second short story about a robot.",
+    user_id=user_1_id,
+    session_id=user_1_session_id,
+)
+# 继续与用户1的会话
+agent.print_response("Now tell me a joke.", user_id=user_1_id, session_id=user_1_session_id)
+
+# 开始与用户2的会话
+agent.print_response("Tell me about quantum physics.", user_id=user_2_id, session_id=user_2_session_id)
+# 继续与用户2的会话
+agent.print_response("What is the speed of light?", user_id=user_2_id, session_id=user_2_session_id)
+
+# 要求代理提供对话摘要，这将使用之前消息的历史记录
+agent.print_response(
+    "Give me a summary of our conversation.",
+    user_id=user_1_id,
+    session_id=user_1_session_id,
+)
+```

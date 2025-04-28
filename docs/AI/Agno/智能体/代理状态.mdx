@@ -1,0 +1,213 @@
+---
+title: '代理状态'
+description: 'Agno代理状态管理的详细说明'
+---
+
+# 代理状态
+
+**状态**是代理在整个运行过程中需要维护的任何类型的数据。
+
+代理的一个简单但常见的用例是为用户管理列表、项目和其他"信息"。例如，购物清单、待办事项列表、愿望清单等。
+
+这可以通过使用`session_state`轻松管理。代理在工具调用中更新`session_state`，并在`description`和`instructions`中将其暴露给模型。
+
+Agno提供了一个强大而优雅的状态管理系统，它的工作原理如下：
+
+* `Agent`有一个`session_state`参数。
+* 我们将状态变量添加到这个`session_state`字典中。
+* 我们在工具调用或其他函数中更新`session_state`字典。
+* 我们在`description`和`instructions`中与模型共享当前的`session_state`。
+* `session_state`与代理会话一起存储，并保存在数据库中。这意味着它在执行周期之间可用。
+
+以下是一个管理购物清单的代理示例：
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+# 定义一个工具，将项目添加到我们的购物清单并返回新值
+def add_item(agent: Agent, item: str) -> str:
+    """将项目添加到购物清单。"""
+    agent.session_state["shopping_list"].append(item)
+    return f"购物清单现在是 {agent.session_state['shopping_list']}"
+
+
+# 创建一个维护状态的代理
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 初始化会话状态，包含一个空的购物清单
+    session_state={"shopping_list": []},
+    tools=[add_item],
+    # 您可以在指令中使用会话状态中的变量
+    instructions="当前状态（购物清单）是：{shopping_list}",
+    # 重要：将状态添加到消息中
+    add_state_in_messages=True,
+    markdown=True,
+)
+
+# 使用示例
+agent.print_response("将牛奶、鸡蛋和面包添加到购物清单", stream=True)
+print(f"最终会话状态：{agent.session_state}")
+```
+
+这就是状态管理的优雅之处。
+
+## 在多次运行中维护状态
+
+**会话**的一个重要优势是能够在多次运行中维护状态。例如，假设代理正在帮助用户跟踪他们的购物清单。
+
+通过设置`add_state_in_messages=True`，`session_state`字典的键在`description`和`instructions`中作为变量可用。
+
+使用这种模式将购物清单直接添加到指令中。
+
+```python
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+
+# 定义工具来管理我们的购物清单
+def add_item(agent: Agent, item: str) -> str:
+    """将项目添加到购物清单并返回确认信息。"""
+    # 如果项目尚未在列表中，则添加它
+    if item.lower() not in [i.lower() for i in agent.session_state["shopping_list"]]:
+        agent.session_state["shopping_list"].append(item)
+        return f"已将'{item}'添加到购物清单"
+    else:
+        return f"'{item}'已经在购物清单中"
+
+
+def remove_item(agent: Agent, item: str) -> str:
+    """按名称从购物清单中删除项目。"""
+    # 不区分大小写搜索
+    for i, list_item in enumerate(agent.session_state["shopping_list"]):
+        if list_item.lower() == item.lower():
+            agent.session_state["shopping_list"].pop(i)
+            return f"已从购物清单中删除'{list_item}'"
+
+    return f"在购物清单中找不到'{item}'"
+
+
+def list_items(agent: Agent) -> str:
+    """列出购物清单中的所有项目。"""
+    shopping_list = agent.session_state["shopping_list"]
+
+    if not shopping_list:
+        return "购物清单是空的。"
+
+    items_text = "\n".join([f"- {item}" for item in shopping_list])
+    return f"当前购物清单：\n{items_text}"
+
+
+# 创建一个维护状态的购物清单管理代理
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 初始化会话状态，包含一个空的购物清单
+    session_state={"shopping_list": []},
+    tools=[add_item, remove_item, list_items],
+    # 您可以在指令中使用会话状态中的变量
+    instructions=dedent("""\
+        您的工作是管理购物清单。
+
+        购物清单开始为空。您可以添加项目、按名称删除项目和列出所有项目。
+
+        当前购物清单：{shopping_list}
+    """),
+    show_tool_calls=True,
+    add_state_in_messages=True,
+    markdown=True,
+)
+
+# 使用示例
+agent.print_response("将牛奶、鸡蛋和面包添加到购物清单", stream=True)
+print(f"会话状态：{agent.session_state}")
+
+agent.print_response("我已经买了面包", stream=True)
+print(f"会话状态：{agent.session_state}")
+
+agent.print_response("我需要苹果和橙子", stream=True)
+print(f"会话状态：{agent.session_state}")
+
+agent.print_response("我的清单上有什么？", stream=True)
+print(f"会话状态：{agent.session_state}")
+
+agent.print_response("清空我的清单，重新开始，只添加香蕉和酸奶", stream=True)
+print(f"会话状态：{agent.session_state}")
+```
+
+我们喜欢这种在多次运行中优雅地维护和传递状态的方式。
+
+## 在指令中使用状态
+
+通过设置`add_state_in_messages=True`，您可以在指令中使用会话状态中的变量。
+
+不要在指令中使用f-string语法。直接使用`{key}`语法，Agno会为您替换值。
+
+```python
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 初始化会话状态，包含一个变量
+    session_state={"user_name": "John"},
+    # 您可以在指令中使用会话状态中的变量
+    instructions="用户名是 {user_name}",
+    show_tool_calls=True,
+    add_state_in_messages=True,
+    markdown=True,
+)
+
+agent.print_response("我的名字是什么？", stream=True)
+```
+
+## 在数据库中持久化状态
+
+如果提供了`storage`驱动程序，`session_state`作为代理会话的一部分，在每次运行后保存到数据库中。
+
+以下是一个维护购物清单并在数据库中持久化状态的代理示例。多次运行此脚本，查看状态如何被持久化。
+
+```python
+"""运行 `pip install agno openai sqlalchemy` 安装依赖项。"""
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.storage.sqlite import SqliteStorage
+
+
+# 定义一个将项目添加到购物清单的工具
+def add_item(agent: Agent, item: str) -> str:
+    """将项目添加到购物清单。"""
+    if item not in agent.session_state["shopping_list"]:
+        agent.session_state["shopping_list"].append(item)
+    return f"购物清单现在是 {agent.session_state['shopping_list']}"
+
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 固定会话ID以在执行周期之间继续同一会话
+    session_id="fixed_id_for_demo",
+    # 初始化会话状态，包含一个空的购物清单
+    session_state={"shopping_list": []},
+    # 添加一个将项目添加到购物清单的工具
+    tools=[add_item],
+    # 将会话状态存储在SQLite数据库中
+    storage=SqliteStorage(table_name="agent_sessions", db_file="tmp/data.db"),
+    # 在指令中添加来自状态的当前购物清单
+    instructions="当前购物清单是：{shopping_list}",
+    # 重要：设置 `add_state_in_messages=True`
+    # 使 `{shopping_list}` 在指令中可用
+    add_state_in_messages=True,
+    markdown=True,
+)
+
+# 使用示例
+agent.print_response("我的购物清单上有什么？", stream=True)
+print(f"会话状态：{agent.session_state}")
+agent.print_response("添加牛奶、鸡蛋和面包", stream=True)
+print(f"会话状态：{agent.session_state}")
+```

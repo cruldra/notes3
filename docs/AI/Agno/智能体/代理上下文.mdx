@@ -1,0 +1,130 @@
+---
+title: '代理上下文'
+description: 'Agno代理上下文的详细说明'
+---
+
+# 代理上下文
+
+代理上下文是Agno的另一个令人惊叹的功能。`context`是一个包含在代理运行前解析的一组函数（或依赖项）的字典。
+
+上下文是一种将依赖项注入到代理的描述和指令中的方式。
+
+您可以使用上下文注入记忆、动态少样本示例、"检索"的文档等。
+
+```python
+import json
+from textwrap import dedent
+
+import httpx
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+
+def get_top_hackernews_stories(num_stories: int = 5) -> str:
+    """获取并返回HackerNews的热门故事。
+
+    Args:
+        num_stories: 要检索的热门故事数量（默认：5）
+    Returns:
+        包含故事详情（标题、URL、分数等）的JSON字符串
+    """
+    # 获取热门故事
+    stories = [\
+        {\
+            k: v\
+            for k, v in httpx.get(\
+                f"https://hacker-news.firebaseio.com/v0/item/{id}.json"\
+            )\
+            .json()\
+            .items()\
+            if k != "kids"  # 排除讨论线程\
+        }\
+        for id in httpx.get(\
+            "https://hacker-news.firebaseio.com/v0/topstories.json"\
+        ).json()[:num_stories]\
+    ]
+    return json.dumps(stories, indent=4)
+
+
+# 创建一个可以访问实时HackerNews数据的上下文感知代理
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    # 上下文中的每个函数在代理运行时都会被评估，
+    # 将其视为代理的依赖注入
+    context={"top_hackernews_stories": get_top_hackernews_stories},
+    # 或者，您可以手动将上下文添加到指令中
+    instructions=dedent("""\
+        您是一位有洞察力的科技趋势观察者！📰
+
+        以下是HackerNews上的热门故事：
+        {top_hackernews_stories}\
+    """),
+    # add_state_in_messages将使`top_hackernews_stories`变量
+    # 在指令中可用
+    add_state_in_messages=True,
+    markdown=True,
+)
+
+# 使用示例
+agent.print_response(
+    "总结HackerNews上的热门故事并识别任何有趣的趋势。",
+    stream=True,
+)
+```
+
+## 将整个上下文添加到用户消息
+
+设置`add_context=True`将整个上下文添加到用户消息中。这样您就不必手动将上下文添加到指令中。
+
+```python
+import json
+from textwrap import dedent
+
+import httpx
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+
+def get_top_hackernews_stories(num_stories: int = 5) -> str:
+    """获取并返回HackerNews的热门故事。
+
+    Args:
+        num_stories: 要检索的热门故事数量（默认：5）
+    Returns:
+        包含故事详情（标题、URL、分数等）的JSON字符串
+    """
+    # 获取热门故事
+    stories = [\
+        {\
+            k: v\
+            for k, v in httpx.get(\
+                f"https://hacker-news.firebaseio.com/v0/item/{id}.json"\
+            )\
+            .json()\
+            .items()\
+            if k != "kids"  # 排除讨论线程\
+        }\
+        for id in httpx.get(\
+            "https://hacker-news.firebaseio.com/v0/topstories.json"\
+        ).json()[:num_stories]\
+    ]
+    return json.dumps(stories, indent=4)
+
+
+# 创建一个可以访问实时HackerNews数据的上下文感知代理
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    # 上下文中的每个函数在代理运行时都会被解析，
+    # 将其视为代理的依赖注入
+    context={"top_hackernews_stories": get_top_hackernews_stories},
+    # 我们可以将整个上下文字典添加到指令中
+    add_context=True,
+    markdown=True,
+)
+
+# 使用示例
+agent.print_response(
+    "总结HackerNews上的热门故事并识别任何有趣的趋势。",
+    stream=True,
+)
+```

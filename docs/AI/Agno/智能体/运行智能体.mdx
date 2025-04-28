@@ -1,0 +1,60 @@
+---
+title: '运行智能体'
+description: 'Agno代理运行方法的详细说明'
+---
+
+# Agent.run()
+
+`Agent.run()`函数运行代理并生成响应，可以是一个`RunResponse`对象或一个`RunResponse`对象流。
+
+我们的许多示例使用`agent.print_response()`，这是一个在终端中打印响应的辅助工具。它在底层使用`agent.run()`。
+
+以下是如何运行您的代理。响应被捕获在`response`和`response_stream`变量中。
+
+```python
+from typing import Iterator
+from agno.agent import Agent, RunResponse
+from agno.models.openai import OpenAIChat
+from agno.utils.pprint import pprint_run_response
+
+agent = Agent(model=OpenAIChat(id="gpt-4o-mini"))
+
+# 运行代理并将响应作为变量返回
+response: RunResponse = agent.run("Tell me a 5 second short story about a robot")
+# 运行代理并将响应作为流返回
+response_stream: Iterator[RunResponse] = agent.run("Tell me a 5 second short story about a lion", stream=True)
+
+# 以markdown格式打印响应
+pprint_run_response(response, markdown=True)
+# 以markdown格式打印响应流
+pprint_run_response(response_stream, markdown=True)
+```
+
+设置`stream=True`以返回`RunResponse`对象流。
+
+## RunResponse
+
+`Agent.run()`函数返回一个`RunResponse`对象，或者当`stream=True`时返回一个`Iterator[RunResponse]`。它具有以下属性：
+
+### RunResponse属性
+
+| 属性 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `content` | `Any` | `None` | 响应的内容。 |
+| `content_type` | `str` | `"str"` | 指定内容的数据类型。 |
+| `context` | `List[MessageContext]` | `None` | 为RAG添加到响应中的上下文。 |
+| `event` | `str` | `RunEvent.run_response.value` | 响应的事件类型。 |
+| `event_data` | `Dict[str, Any]` | `None` | 与事件相关的数据。 |
+| `messages` | `List[Message]` | `None` | 响应中包含的消息列表。 |
+| `metrics` | `Dict[str, Any]` | `None` | 运行的使用指标。 |
+| `model` | `str` | `None` | 运行中使用的模型。 |
+| `run_id` | `str` | `None` | 运行ID。 |
+| `agent_id` | `str` | `None` | 运行的代理ID。 |
+| `session_id` | `str` | `None` | 运行的会话ID。 |
+| `tools` | `List[Dict[str, Any]]` | `None` | 提供给模型的工具列表。 |
+| `images` | `List[Image]` | `None` | 模型生成的图像列表。 |
+| `videos` | `List[Video]` | `None` | 模型生成的视频列表。 |
+| `audio` | `List[Audio]` | `None` | 模型生成的音频片段列表。 |
+| `response_audio` | `ModelResponseAudio` | `None` | 模型以音频形式的原始响应。 |
+| `created_at` | `int` | - | 响应创建的Unix时间戳。 |
+| `extra_data` | `RunResponseExtraData` | `None` | 包含可选字段的额外数据，如`references`、`add_messages`、`history`、`reasoning_steps`和`reasoning_messages`。 |

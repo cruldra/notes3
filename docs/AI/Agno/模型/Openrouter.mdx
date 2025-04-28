@@ -1,0 +1,52 @@
+---
+title: 'OpenRouter模型'
+description: '如何在Agno中使用OpenRouter模型'
+---
+
+# OpenRouter
+
+OpenRouter是一个提供大型语言模型端点的平台。
+
+## 认证
+
+设置您的`OPENROUTER_API_KEY`环境变量。从[这里](https://openrouter.ai/settings/keys)获取您的密钥。
+
+Mac:
+```bash
+export OPENROUTER_API_KEY=***
+```
+
+Windows:
+```powershell
+# Windows命令行设置方式
+```
+
+## 示例
+
+将`OpenRouter`与您的`Agent`一起使用：
+
+```python
+from agno.agent import Agent, RunResponse
+from agno.models.openrouter import OpenRouter
+
+agent = Agent(
+    model=OpenRouter(id="gpt-4o"),
+    markdown=True
+)
+
+# 在终端中打印响应
+agent.print_response("Share a 2 sentence horror story.")
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `id` | `str` | `"gpt-4o"` | 用于生成响应的特定模型ID。 |
+| `name` | `str` | `"OpenRouter"` | OpenRouter代理的名称标识符。 |
+| `provider` | `str` | `"OpenRouter:"+id` | 模型的提供者，将"OpenRouter"与模型ID组合。 |
+| `api_key` | `Optional[str]` | - | 用于向OpenRouter服务验证请求的API密钥。从环境变量`OPENROUTER_API_KEY`中获取。 |
+| `base_url` | `str` | `"https://openrouter.ai/api/v1"` | 向OpenRouter服务发出API请求的基本URL。 |
+| `max_tokens` | `int` | `1024` | 在响应中生成的最大令牌数。 |
+
+`OpenRouter`还支持[OpenAI](https://docs.agno.com/reference/models/openai)的参数。

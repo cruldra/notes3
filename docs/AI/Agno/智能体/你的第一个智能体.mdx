@@ -1,0 +1,487 @@
+# 你的第一个智能体
+
+## 什么是智能体？
+
+**智能体**是自主运行的AI程序。
+
+智能体的核心由**模型**、**工具**和**指令**组成：
+
+* **模型：** 是智能体的大脑，帮助它推理、行动并回应用户。
+* **工具：** 是智能体的身体，使其能够与现实世界交互。
+* **指令：** 引导智能体的行为。模型越好，它遵循指令的能力就越强。
+
+智能体还具有**推理能力**、**知识库**、**存储**和**记忆**：
+
+* **推理能力：** 使智能体能够在回应前"思考"并"分析"其行动结果（即工具调用），这提高了智能体解决需要连续工具调用问题的能力。
+* **知识库：** 是特定领域的信息，智能体可以**按需搜索**以做出更好的决策并提供准确的回应。知识存储在向量数据库中，这种**按需搜索**模式被称为智能体增强检索生成（Agentic RAG）。
+* **存储：** 用于在数据库中保存会话历史和状态。模型API本身是无状态的，存储使我们能够从上次中断的地方继续对话。这使智能体具有状态，实现多轮对话。
+* **记忆：** 赋予智能体存储和回忆先前交互信息的能力，使其能够学习用户偏好并个性化其回应。
+
+让我们构建几个智能体来了解它们的工作原理。
+
+## 基础智能体
+
+最简单的智能体只包含一个模型，并调用模型API生成回应。
+
+Agno提供了一个统一的接口连接23+模型提供商，因此您可以测试不同的提供商并根据需要切换模型。
+
+basic_agent.py
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+
+agent = Agent(model=Claude(id="claude-3-7-sonnet-latest"), markdown=True)
+agent.print_response("苹果公司的股价是多少？", stream=True)
+```
+
+要运行智能体，请安装依赖项并导出您的`ANTHROPIC_API_KEY`。
+
+1. 设置虚拟环境
+
+Mac
+```bash
+uv venv --python 3.12
+source .venv/bin/activate
+```
+
+Windows
+```bash
+uv venv --python 3.12
+.venv\Scripts\activate
+```
+
+2. 安装依赖项
+
+Mac/Windows
+```bash
+uv pip install -U agno anthropic
+```
+
+3. 导出Anthropic密钥
+
+Mac
+```bash
+export ANTHROPIC_API_KEY=sk-***
+```
+
+Windows
+```bash
+set ANTHROPIC_API_KEY=sk-***
+```
+
+4. 运行智能体
+
+```shell
+python basic_agent.py
+```
+
+这个智能体无法给您提供最新的股价，因为它无法访问这些信息。
+
+## 带工具的智能体
+
+让我们给智能体一个工具，使用`yfinance`库获取最新的股价。
+
+agent_with_tools.py
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.yfinance import YFinanceTools
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[YFinanceTools(stock_price=True)],
+    markdown=True,
+)
+agent.print_response("苹果公司的股价是多少？", stream=True)
+```
+
+安装依赖项并运行智能体
+
+1. 安装新的依赖项
+
+Mac/Windows
+```bash
+uv pip install -U yfinance
+```
+
+2. 运行智能体
+
+```shell
+python agent_with_tools.py
+```
+
+现在智能体将能够给您提供最新的股价。
+
+## 带指令的智能体
+
+智能体会给您提供最新的股价，但它也会附带一些额外的解释。为了控制智能体的输出，我们可以并且应该添加指令。
+
+agent_with_instructions.py
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.yfinance import YFinanceTools
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[YFinanceTools(stock_price=True)],
+    instructions=[
+        "使用表格显示数据。",
+        "只在回应中包含表格。不要包含其他文本。",
+    ],
+    markdown=True,
+)
+agent.print_response("苹果公司的股价是多少？", stream=True)
+```
+
+运行智能体
+
+```shell
+python agent_with_instructions.py
+```
+
+这将给您一个更简洁的回应。
+
+设置`debug_mode=True`或`export AGNO_DEBUG=true`以查看系统提示、用户消息和工具调用。
+
+## 带推理能力的智能体
+
+智能体还可以**"思考"和"分析"**来解决需要多个步骤的问题。`ReasoningTools`是提高智能体回应质量的最佳"技巧"之一。
+
+agent_with_reasoning.py
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.reasoning import ReasoningTools
+from agno.tools.yfinance import YFinanceTools
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[
+        ReasoningTools(add_instructions=True),
+        YFinanceTools(
+            stock_price=True,
+            analyst_recommendations=True,
+            company_info=True,
+            company_news=True,
+        ),
+    ],
+    instructions=[
+        "使用表格显示数据。",
+        "在回应中包含来源。",
+        "只在回应中包含报告。不要包含其他文本。",
+    ],
+    markdown=True,
+)
+agent.print_response(
+    "撰写关于NVDA的报告",
+    stream=True,
+    show_full_reasoning=True,
+    stream_intermediate_steps=True,
+)
+```
+
+运行智能体
+
+```shell
+python agent_with_reasoning.py
+```
+
+## 带知识库的智能体
+
+虽然模型拥有大量的训练数据，但我们几乎总是需要给它们提供特定领域的信息来帮助它们完成任务。这些知识不仅用于RAG，一个新兴的用例是动态地为模型提供少样本示例。
+
+动态少样本学习：Text2Sql智能体
+
+示例：您正在构建一个Text2Sql智能体，为了获得最佳结果，您需要给智能体提供表结构、列名、数据类型、示例查询、常见"陷阱"等信息。
+
+您不会将所有这些信息放在系统提示中，而是将这些信息存储在向量数据库中，并让智能体在运行时根据用户的问题查询它。
+
+使用这些信息，智能体可以生成最佳的SQL查询。这被称为动态少样本学习。
+
+**Agno智能体默认使用智能体增强检索生成（Agentic RAG）**，这意味着它们会在运行时搜索知识库，获取完成任务所需的特定信息。
+
+以下示例的工作原理：
+
+* `UrlKnowledge`将下载Agno文档并将其加载到LanceDB向量数据库中，使用OpenAI进行嵌入
+* 在运行时，智能体将搜索知识库以获取最相关的信息，并使用`ReasoningTools`对用户的问题进行推理。
+
+agent_with_knowledge.py
+```python
+from agno.agent import Agent
+from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.models.anthropic import Claude
+from agno.tools.reasoning import ReasoningTools
+from agno.vectordb.lancedb import LanceDb, SearchType
+
+# 将Agno文档加载到知识库中
+knowledge = UrlKnowledge(
+    urls=["https://docs.agno.com/introduction/agents.md"],
+    vector_db=LanceDb(
+        uri="tmp/lancedb",
+        table_name="agno_docs",
+        search_type=SearchType.hybrid,
+        # 使用OpenAI进行嵌入
+        embedder=OpenAIEmbedder(id="text-embedding-3-small", dimensions=1536),
+    ),
+)
+
+agent = Agent(
+    name="Agno助手",
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    instructions=[
+        "使用表格显示数据。",
+        "在回应中包含来源。",
+        "在回答问题前搜索你的知识库。",
+        "只在回应中包含输出。不要包含其他文本。",
+    ],
+    knowledge=knowledge,
+    tools=[ReasoningTools(add_instructions=True)],
+    add_datetime_to_instructions=True,
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    # 加载知识库，首次运行后注释掉
+    # 如果需要重新创建知识库，设置recreate为True
+    agent.knowledge.load(recreate=False)
+    agent.print_response(
+        "什么是智能体？",
+        stream=True,
+        show_full_reasoning=True,
+        stream_intermediate_steps=True,
+    )
+```
+
+安装依赖项，导出您的`OPENAI_API_KEY`并运行智能体
+
+1. 安装新的依赖项
+
+Mac/Windows
+```bash
+uv pip install -U lancedb tantivy openai
+```
+
+2. 运行智能体
+
+```shell
+python agent_with_knowledge.py
+```
+
+## 带存储的智能体
+
+`Storage`驱动程序将帮助您在数据库中保存智能体会话和状态。模型API是无状态的，存储使我们能够通过在数据库中存储聊天历史和状态，从上次中断的地方继续对话。
+
+在此示例中，我们将使用`SqliteStorage`驱动程序将智能体的会话历史和状态保存在数据库中。
+
+我们还将`session_id`设置为固定值以演示持久性。多次运行此示例，查看对话从上次中断的地方继续。
+
+agent_with_storage.py
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.storage.sqlite import SqliteStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+from rich.pretty import pprint
+
+agent = Agent(
+    # 这个session_id通常是自动生成的
+    # 但在这个示例中，我们可以将其设置为固定值
+    # 这个会话现在将永远作为一个很长的聊天继续
+    session_id="agent_session_which_is_autogenerated_if_not_set",
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    storage=SqliteStorage(table_name="agent_sessions", db_file="tmp/agents.db"),
+    tools=[DuckDuckGoTools()],
+    add_history_to_messages=True,
+    num_history_runs=3,
+    add_datetime_to_instructions=True,
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    print(f"会话ID: {agent.session_id}")
+    agent.print_response("加拿大有多少人口？")
+    agent.print_response("他们的国歌是什么？")
+    agent.print_response("逐一列出我的消息")
+
+    # 打印此会话中的所有消息
+    messages_in_session = agent.get_messages_for_session()
+    pprint(messages_in_session)
+```
+
+安装依赖项并运行智能体
+
+1. 安装新的依赖项
+
+Mac/Windows
+```bash
+uv pip install -U sqlalchemy duckduckgo-search
+```
+
+2. 运行智能体
+
+```shell
+python agent_with_storage.py
+```
+
+## 带记忆的智能体
+
+`Memory`驱动程序使智能体能够存储和回忆先前交互中的用户信息，使其能够学习用户偏好并个性化其回应。
+
+在此示例中，我们将使用v2 Memory驱动程序在Sqlite数据库中存储用户记忆。
+
+由于记忆与用户相关联，我们将`user_id`设置为固定值，为用户构建一个角色。
+
+agent_with_memory.py
+```python
+from agno.agent import Agent
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.manager import MemoryManager
+from agno.memory.v2.memory import Memory
+from agno.models.anthropic import Claude
+from agno.models.openai import OpenAIChat
+from rich.pretty import pprint
+
+user_id = "peter_rabbit"
+memory = Memory(
+    db=SqliteMemoryDb(table_name="memory", db_file="tmp/memory.db"),
+    model=OpenAIChat(id="gpt-4o-mini"),
+)
+memory.clear()
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    user_id=user_id,
+    memory=memory,
+    # 使智能体能够动态创建和管理用户记忆
+    enable_agentic_memory=True,
+    add_datetime_to_instructions=True,
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    agent.print_response("我叫彼得兔，我喜欢吃胡萝卜。")
+    memories = memory.get_user_memories(user_id=user_id)
+    print(f"关于{user_id}的记忆:")
+    pprint(memories)
+    agent.print_response("我最喜欢的食物是什么？")
+    agent.print_response("我最好的朋友是杰米玛·帕德达克。")
+    print(f"关于{user_id}的记忆:")
+    pprint(memories)
+    agent.print_response("推荐一个好的午餐，我应该邀请谁？")
+```
+
+运行智能体
+
+```shell
+python agent_with_memory.py
+```
+
+## 多智能体团队
+
+当智能体有单一目的、范围狭窄且工具数量少时，效果最佳。当工具数量超出语言模型能处理的范围，或工具属于不同类别时，使用智能体团队来分担负载。
+
+Agno提供了行业领先的多智能体架构，允许您构建推理智能体团队。您可以在3种模式下运行团队：`route`、`coordinate`和`collaborate`。
+
+在此示例中，我们将构建一个由2个智能体组成的团队，逐步推理分析半导体市场表现。
+
+agent_team.py
+```python
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.models.openai import OpenAIChat
+from agno.team.team import Team
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.reasoning import ReasoningTools
+from agno.tools.yfinance import YFinanceTools
+
+web_agent = Agent(
+    name="网络搜索智能体",
+    role="处理网络搜索请求",
+    model=OpenAIChat(id="gpt-4o-mini"),
+    tools=[DuckDuckGoTools()],
+    instructions="始终包含来源。",
+    add_datetime_to_instructions=True,
+)
+
+finance_agent = Agent(
+    name="金融智能体",
+    role="处理金融数据请求",
+    model=OpenAIChat(id="gpt-4o-mini"),
+    tools=[
+        YFinanceTools(stock_price=True, analyst_recommendations=True, company_info=True)
+    ],
+    instructions="使用表格显示数据。",
+    add_datetime_to_instructions=True,
+)
+
+team_leader = Team(
+    name="推理金融团队领导",
+    mode="coordinate",
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    members=[web_agent, finance_agent],
+    tools=[ReasoningTools(add_instructions=True)],
+    instructions=[
+        "使用表格显示数据。",
+        "只回应最终答案，不要包含其他文本。",
+    ],
+    markdown=True,
+    show_members_responses=True,
+    enable_agentic_context=True,
+    add_datetime_to_instructions=True,
+    success_criteria="团队已成功完成任务。",
+)
+
+task = """\
+分析半导体市场表现，重点关注：
+- 英伟达 (NVDA)
+- AMD (AMD)
+- 英特尔 (INTC)
+- 台积电 (TSM)
+比较它们的市场地位、增长指标和未来展望。"""
+
+team_leader.print_response(
+    task,
+    stream=True,
+    stream_intermediate_steps=True,
+    show_full_reasoning=True,
+)
+```
+
+安装依赖项并运行智能体团队
+
+1. 安装依赖项
+
+Mac/Windows
+```bash
+uv pip install -U duckduckgo-search yfinance
+```
+
+2. 运行智能体
+
+```shell
+python agent_team.py
+```
+
+## 调试
+
+想要查看系统提示、用户消息和工具调用吗？
+
+Agno包含一个内置调试器，将在终端中打印调试日志。在任何智能体上设置`debug_mode=True`或在环境中设置`AGNO_DEBUG=true`。
+
+debugging.py
+```python
+from agno.agent import Agent
+
+agent = Agent(markdown=True, debug_mode=True)
+agent.print_response("分享一个两句话的恐怖故事")
+```
+
+运行智能体以在终端中查看调试日志：
+
+```shell
+python debugging.py
+```

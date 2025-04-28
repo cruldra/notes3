@@ -1,0 +1,108 @@
+---
+title: 'ChromaDB代理知识库'
+description: '如何使用ChromaDB作为Agno代理的向量数据库'
+---
+
+# ChromaDB代理知识
+
+## 设置
+
+```bash
+pip install chromadb
+```
+
+## 示例
+
+```python
+import typer
+from rich.prompt import Prompt
+from typing import Optional
+
+from agno.agent import Agent
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.vectordb.chroma import ChromaDb
+
+knowledge_base = PDFUrlKnowledgeBase(
+    urls=["https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"],
+    vector_db=ChromaDb(collection="recipes"),
+)
+
+def pdf_agent(user: str = "user"):
+    run_id: Optional[str] = None
+
+    agent = Agent(
+        run_id=run_id,
+        user_id=user,
+        knowledge_base=knowledge_base,
+        use_tools=True,
+        show_tool_calls=True,
+        debug_mode=True,
+    )
+    if run_id is None:
+        run_id = agent.run_id
+        print(f"Started Run: {run_id}\n")
+    else:
+        print(f"Continuing Run: {run_id}\n")
+
+    while True:
+        message = Prompt.ask(f"[bold] :sunglasses: {user} [/bold]")
+        if message in ("exit", "bye"):
+            break
+        agent.print_response(message)
+
+if __name__ == "__main__":
+    # 首次运行后注释掉
+    knowledge_base.load(recreate=False)
+
+    typer.run(pdf_agent)
+```
+
+## 异步支持 ⚡
+
+ChromaDB还支持异步操作，实现并发并带来更好的性能。
+
+```python
+# 安装chromadb - `pip install chromadb`
+
+import asyncio
+
+from agno.agent import Agent
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.vectordb.chroma import ChromaDb
+
+# 初始化ChromaDB
+vector_db = ChromaDb(collection="recipes", path="tmp/chromadb", persistent_client=True)
+
+# 创建知识库
+knowledge_base = PDFUrlKnowledgeBase(
+    urls=["https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"],
+    vector_db=vector_db,
+)
+
+# 创建并使用代理
+agent = Agent(knowledge=knowledge_base, show_tool_calls=True)
+
+if __name__ == "__main__":
+    # 首次运行后注释掉
+    asyncio.run(knowledge_base.aload(recreate=False))
+
+    # 创建并使用代理
+    asyncio.run(agent.aprint_response("How to make Tom Kha Gai", markdown=True))
+```
+
+在高吞吐量应用中，使用`aload()`和`aprint_response()`方法与`asyncio.run()`进行非阻塞操作。
+
+## ChromaDb参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `collection` | `str` | - | 要使用的集合名称。 |
+| `embedder` | `Embedder` | OpenAIEmbedder() | 用于嵌入文档内容的嵌入器。 |
+| `distance` | `Distance` | cosine | 要使用的距离度量。 |
+| `path` | `str` | "tmp/chromadb" | 存储ChromaDB数据的路径。 |
+| `persistent_client` | `bool` | False | 是否使用持久化ChromaDB客户端。 |
+
+## 开发者资源
+
+* 查看[Cookbook (同步)](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/vector_dbs/chroma_db/chroma_db.py)
+* 查看[Cookbook (异步)](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/vector_dbs/chroma_db/async_chroma_db.py)

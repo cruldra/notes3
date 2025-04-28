@@ -1,0 +1,114 @@
+# Agent 游乐场
+
+所有代理数据都存储在本地的sqlite数据库中，不会发送到 [agno.com](https://app.agno.com/)。
+
+## 在本地运行游乐场
+
+让我们在本地运行游乐场应用程序，这样我们就可以使用Agent UI与我们的代理聊天。创建一个文件 `playground.py`
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.playground import Playground, serve_playground_app
+from agno.storage.sqlite import SqliteStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.yfinance import YFinanceTools
+
+agent_storage: str = "tmp/agents.db"
+
+web_agent = Agent(
+    name="Web Agent",
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    instructions=["Always include sources"],
+    # 在sqlite数据库中存储代理会话
+    storage=SqliteStorage(table_name="web_agent", db_file=agent_storage),
+    # 将当前日期和时间添加到指令中
+    add_datetime_to_instructions=True,
+    # 将对话历史添加到消息中
+    add_history_to_messages=True,
+    # 添加到消息中的历史响应数量
+    num_history_responses=5,
+    # 为消息添加markdown格式
+    markdown=True,
+)
+
+finance_agent = Agent(
+    name="Finance Agent",
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[YFinanceTools(stock_price=True, analyst_recommendations=True, company_info=True, company_news=True)],
+    instructions=["Always use tables to display data"],
+    storage=SqliteStorage(table_name="finance_agent", db_file=agent_storage),
+    add_datetime_to_instructions=True,
+    add_history_to_messages=True,
+    num_history_responses=5,
+    markdown=True,
+)
+
+app = Playground(agents=[web_agent, finance_agent]).get_app()
+
+if __name__ == "__main__":
+    serve_playground_app("playground:app", reload=True)
+```
+
+在运行游乐场应用程序之前，请记得导出您的 `OPENAI_API_KEY`。
+
+确保 `serve_playground_app()` 指向包含您的 `Playground` 应用程序的文件。
+
+## 与Agno进行身份验证
+
+与 [agno.com](https://app.agno.com/) 进行身份验证，以便您的本地应用程序可以让agno知道您正在运行游乐场的端口。运行：
+
+没有数据会发送到agno.com，只是通知您正在端口7777上运行游乐场应用程序。
+
+```
+ag setup
+```
+
+\[或\] 从 [app.agno.com](https://app.agno.com/settings) 导出您的 `AGNO_API_KEY`
+
+Mac:
+```
+export AGNO_API_KEY=ag-***
+```
+
+Windows:
+```
+# Windows命令行设置方式
+```
+
+## 运行游乐场应用程序
+
+安装依赖项并运行您的游乐场应用程序：
+
+```
+pip install openai duckduckgo-search yfinance sqlalchemy 'fastapi[standard]' agno
+
+python playground.py
+```
+
+## 查看游乐场
+
+* 打开提供的链接或导航到 `http://app.agno.com/playground`（需要登录）
+* 选择 `localhost:7777` 端点并开始与您的代理聊天！
+
+## 开源Agent UI
+
+寻找自托管替代方案？查看我们的开源 [Agent UI](https://github.com/agno-agi/agent-ui) - 一个使用Next.js和TypeScript构建的现代Agent界面，其工作方式与Agent游乐场完全相同。
+
+![agent-ui](https://mintlify.s3.us-west-1.amazonaws.com/agno/images/agent-ui.png)
+
+Agent UI界面
+
+### 开始使用Agent UI
+
+```
+# 创建一个新的Agent UI项目
+npx create-agent-ui@latest
+
+# 或者克隆并手动运行
+git clone https://github.com/agno-agi/agent-ui.git
+cd agent-ui && pnpm install && pnpm dev
+```
+
+UI默认将连接到 `localhost:7777`，与上面的游乐场设置相匹配。访问 [GitHub](https://github.com/agno-agi/agent-ui) 获取更多详细信息。

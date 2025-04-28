@@ -1,0 +1,213 @@
+---
+title: '会话存储'
+description: 'Agno代理会话存储的详细说明'
+---
+
+# 会话存储
+
+使用**会话存储**将代理会话和状态持久化到数据库或文件中。
+
+**为什么我们需要会话存储？**
+
+代理是临时的，内置内存仅在当前执行周期内有效。
+
+在生产环境中，我们通过API提供（或触发）代理，并需要在多个请求之间继续同一会话。存储将会话历史和状态保存在数据库中，使我们能够从上次中断的地方继续。
+
+存储还允许我们检查和评估代理会话，提取少样本示例并构建内部监控工具。它让我们**查看数据**，这有助于我们构建更好的代理。
+
+向代理、团队或工作流添加存储就像提供一个`Storage`驱动程序一样简单，Agno会处理其余部分。您可以使用Sqlite、Postgres、Mongo或任何其他您想要的数据库。
+
+以下是一个演示跨执行周期持久性的简单示例：
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.storage.sqlite import SqliteStorage
+from rich.pretty import pprint
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 固定会话ID以在执行周期之间继续同一会话
+    session_id="fixed_id_for_demo",
+    storage=SqliteStorage(table_name="agent_sessions", db_file="tmp/data.db"),
+    add_history_to_messages=True,
+    num_history_runs=3,
+)
+agent.print_response("What was my last question?")
+agent.print_response("What is the capital of France?")
+agent.print_response("What was my last question?")
+pprint(agent.get_messages_for_session())
+```
+
+第一次运行时，"What was my last question?"的答案将不可用。但再次运行时，代理将能够正确回答。因为我们固定了会话ID，所以每次运行脚本时，代理都将从同一会话继续。
+
+## 存储的好处
+
+存储通常是代理工程中讨论较少的部分——但我们认为它是生产代理应用程序的无名英雄。
+
+在生产中，您需要存储来：
+
+* **继续会话**：检索会话历史并从中断处继续。
+* **获取会话列表**：要继续之前的会话，您需要维护该代理可用的会话列表。
+* **在运行之间保存状态**：将代理的状态保存到数据库或文件中，以便稍后检查。
+
+但还有更多：
+
+* 存储保存我们代理的会话数据，用于检查和评估。
+* 存储帮助我们提取少样本示例，可用于改进代理。
+* 存储使我们能够构建内部监控工具和仪表板。
+
+存储是您的代理基础设施中如此关键的部分，以至于它永远不应该被卸载给第三方。您几乎应该始终为您的代理使用自己的存储层。
+
+## 示例：使用Postgres进行存储
+
+### 1. 运行Postgres
+
+安装[docker desktop](https://docs.docker.com/desktop/install/mac-install/)并使用以下命令在端口**5532**上运行**Postgres**：
+
+```bash
+docker run -d \
+  -e POSTGRES_DB=ai \
+  -e POSTGRES_USER=ai \
+  -e POSTGRES_PASSWORD=ai \
+  -e PGDATA=/var/lib/postgresql/data/pgdata \
+  -v pgvolume:/var/lib/postgresql/data \
+  -p 5532:5432 \
+  --name pgvector \
+  agno/pgvector:16
+```
+
+### 2. 创建带有存储的代理
+
+创建一个名为`agent_with_storage.py`的文件，内容如下：
+
+```python
+import typer
+from typing import Optional, List
+from agno.agent import Agent
+from agno.storage.postgres import PostgresStorage
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.vectordb.pgvector import PgVector, SearchType
+
+db_url = "postgresql+psycopg://ai:ai@localhost:5532/ai"
+knowledge_base = PDFUrlKnowledgeBase(
+    urls=["https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"],
+    vector_db=PgVector(table_name="recipes", db_url=db_url, search_type=SearchType.hybrid),
+)
+storage = PostgresStorage(table_name="pdf_agent", db_url=db_url)
+
+def pdf_agent(new: bool = False, user: str = "user"):
+    session_id: Optional[str] = None
+
+    if not new:
+        existing_sessions: List[str] = storage.get_all_session_ids(user)
+        if len(existing_sessions) > 0:
+            session_id = existing_sessions[0]
+
+    agent = Agent(
+        session_id=session_id,
+        user_id=user,
+        knowledge=knowledge_base,
+        storage=storage,
+        # 在响应中显示工具调用
+        show_tool_calls=True,
+        # 使代理能够读取聊天历史
+        read_chat_history=True,
+        # 我们还可以自动将聊天历史添加到发送给模型的消息中
+        # 但给模型聊天历史并不总是有用的，所以我们给它一个工具
+        # 只在需要时使用。
+        # add_history_to_messages=True,
+        # 添加到消息中的历史响应数量。
+        # num_history_responses=3,
+    )
+    if session_id is None:
+        session_id = agent.session_id
+        print(f"Started Session: {session_id}\n")
+    else:
+        print(f"Continuing Session: {session_id}\n")
+
+    # 将代理作为cli应用运行
+    agent.cli_app(markdown=True)
+
+
+if __name__ == "__main__":
+    # 加载知识库：首次运行后注释掉
+    knowledge_base.load(upsert=True)
+
+    typer.run(pdf_agent)
+```
+
+### 3. 运行代理
+
+安装库：
+
+Mac:
+```bash
+pip install -U agno openai pgvector pypdf "psycopg[binary]" sqlalchemy
+```
+
+Windows:
+```powershell
+# Windows安装命令
+```
+
+运行代理：
+
+```bash
+python agent_with_storage.py
+```
+
+现在代理可以跨会话继续。提出一个问题：
+
+```
+How do I make pad thai?
+```
+
+然后发送`bye`退出，再次启动应用并询问：
+
+```
+What was my last message?
+```
+
+### 4. 开始新的运行
+
+使用`--new`标志运行`agent_with_storage.py`文件以开始新的运行。
+
+```bash
+python agent_with_storage.py --new
+```
+
+## 架构升级
+
+使用`AgentStorage`时，基于SQL的存储类具有固定的架构。随着新的Agno功能发布，可能需要更新架构。
+
+升级可以手动或自动完成。
+
+### 自动升级
+
+当在存储类构造函数中将`auto_upgrade_schema`参数设置为`True`时，会进行自动升级。您只需为代理运行设置一次，架构就会被升级。
+
+```python
+db_url = "postgresql+psycopg://ai:ai@localhost:5532/ai"
+storage = PostgresStorage(table_name="agent_sessions", db_url=db_url, auto_upgrade_schema=True)
+```
+
+### 手动升级
+
+通过调用存储类上的`upgrade_schema`方法可以进行手动架构升级。
+
+```python
+db_url = "postgresql+psycopg://ai:ai@localhost:5532/ai"
+storage = PostgresStorage(table_name="agent_sessions", db_url=db_url)
+storage.upgrade_schema()
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `storage` | `Optional[AgentStorage]` | `None` | 代理的存储机制。 |
+
+## 开发者资源
+
+* 查看[Cookbook](https://github.com/agno-agi/agno/tree/main/cookbook/storage)

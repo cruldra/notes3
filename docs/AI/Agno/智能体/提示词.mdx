@@ -1,0 +1,117 @@
+---
+title: '提示词'
+description: 'Agno代理提示词的详细说明'
+---
+
+# 提示词
+
+我们使用`description`和`instructions`以及其他一些设置来提示代理。这些设置用于构建发送给语言模型的**系统**消息。
+
+了解这些提示词是如何创建的将帮助您构建更好的代理。
+
+两个关键参数是：
+
+1. **描述（Description）**：指导代理整体行为的描述。
+2. **指令（Instructions）**：关于如何实现其目标的精确、特定任务的指令列表。
+
+描述和指令只提供格式化好处，我们不会改变或抽象任何信息，您始终可以设置`system_message`来提供自己的系统提示。
+
+## 系统消息
+
+系统消息使用`description`、`instructions`和其他一些设置创建。`description`被添加到系统消息的开头，`instructions`作为列表添加在`Instructions`之后。例如：
+
+```python
+from agno.agent import Agent
+
+agent = Agent(
+    description="你是一位受邀为杂志撰写的著名短篇小说作家",
+    instructions=["你是一名从夏威夷飞往日本的飞机上的飞行员。"],
+    markdown=True,
+    debug_mode=True,
+)
+agent.print_response("给我讲一个两句话的恐怖故事。", stream=True)
+```
+
+将转换为（设置`debug_mode=True`查看日志）：
+
+```
+DEBUG    ============== system ==============
+DEBUG    你是一位受邀为杂志撰写的著名短篇小说作家
+
+         ## Instructions
+         - 你是一名从夏威夷飞往日本的飞机上的飞行员。
+         - 使用markdown格式化你的回答。
+DEBUG    ============== user ==============
+DEBUG    给我讲一个两句话的恐怖故事。
+DEBUG    ============== assistant ==============
+DEBUG    当自动驾驶在太平洋上空莫名其妙地解除时，飞行员瞥了一眼副驾驶座位，
+         却发现它空无一人，尽管他清楚地记得全体机组人员都已登机。双手颤抖，
+         他看向驾驶舱的后视镜，发现自己的倒影正对着他咧嘴笑，眼睛血红，低语道：
+         "在30,000英尺的高空，无处可逃。"
+DEBUG    **************** METRICS START ****************
+DEBUG    * Time to first token:         0.4518s
+DEBUG    * Time to generate response:   1.2594s
+DEBUG    * Tokens per second:           63.5243 tokens/s
+DEBUG    * Input tokens:                59
+DEBUG    * Output tokens:               80
+DEBUG    * Total tokens:                139
+DEBUG    * Prompt tokens details:       {'cached_tokens': 0}
+DEBUG    * Completion tokens details:   {'reasoning_tokens': 0}
+DEBUG    **************** METRICS END ******************
+```
+
+## 直接设置系统消息
+
+您可以使用`system_message`参数手动设置系统消息。
+
+```python
+from agno.agent import Agent
+
+agent = Agent(system_message="分享一个关于以下内容的两句话故事")
+agent.print_response("12000年的爱情。")
+```
+
+一些模型通过某些模型提供商，如Groq上的`llama-3.2-11b-vision-preview`，需要没有系统消息的其他消息。要删除系统消息，请设置`create_default_system_message=False`和`system_message=None`。此外，如果设置了`markdown=True`，它将添加一个系统消息，所以要么删除它，要么明确禁用系统消息。
+
+## 用户消息
+
+发送给`Agent.run()`或`Agent.print_response()`函数的输入`message`被用作用户消息。
+
+## 默认系统消息
+
+代理创建一个可以使用以下参数自定义的默认系统消息：
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `description` | `str` | `None` | 代理的描述，添加到系统消息的开头。 |
+| `goal` | `str` | `None` | 描述代理应该实现的任务。 |
+| `instructions` | `List[str]` | `None` | 在系统提示中添加到`<instructions>`标签中的指令列表。根据`markdown`、`output_model`等值也会创建默认指令。 |
+| `additional_context` | `str` | `None` | 添加到系统消息末尾的额外上下文。 |
+| `expected_output` | `str` | `None` | 提供代理的预期输出。这会添加到系统消息的末尾。 |
+| `markdown` | `bool` | `False` | 添加一条使用markdown格式化输出的指令。 |
+| `add_datetime_to_instructions` | `bool` | `False` | 如果为True，将当前日期时间添加到提示中，使代理有时间感。这允许在提示中使用相对时间，如"明天"。 |
+| `system_message` | `str` | `None` | 系统提示：提供系统提示作为字符串。 |
+| `system_message_role` | `str` | `system` | 系统消息的角色。 |
+| `create_default_system_message` | `bool` | `True` | 如果为True，使用代理设置构建默认系统提示并使用它。 |
+
+通过设置`create_default_system_message=False`禁用默认系统消息。
+
+## 默认用户消息
+
+代理创建一个默认用户消息，它要么是输入消息，要么是带有`context`的消息（如果`enable_rag=True`）。默认用户消息可以使用以下参数自定义：
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `context` | `str` | `None` | 添加到用户消息末尾的额外上下文。 |
+| `add_context` | `bool` | `False` | 如果为True，将上下文添加到用户提示中。 |
+| `resolve_context` | `bool` | `True` | 如果为True，在将上下文添加到用户提示之前解析上下文（即调用上下文中的任何函数）。 |
+| `add_references` | `bool` | `False` | 通过将知识库中的引用添加到提示中来启用RAG。 |
+| `retriever` | `Callable` | `None` | 获取要添加到user_message的引用的函数。当`add_references`为True时，如果提供了此函数，则会调用它。 |
+| `references_format` | `Literal["json", "yaml"]` | `"json"` | 引用的格式。 |
+| `add_history_to_messages` | `bool` | `False` | 如果为True，将聊天历史添加到发送给模型的消息中。 |
+| `num_history_responses` | `int` | `3` | 添加到消息中的历史响应数量。 |
+| `user_message` | `Union[List, Dict, str]` | `None` | 提供用户提示作为字符串。注意：这将忽略发送给run函数的消息。 |
+| `user_message_role` | `str` | `user` | 用户消息的角色。 |
+| `create_default_user_message` | `bool` | `True` | 如果为True，使用引用和聊天历史构建默认用户提示。 |
+
+通过设置`create_default_user_message=False`禁用默认用户消息。

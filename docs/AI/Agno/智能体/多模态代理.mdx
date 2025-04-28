@@ -1,0 +1,188 @@
+---
+title: '多模态代理'
+description: 'Agno多模态代理的详细说明'
+---
+
+# 多模态代理
+
+Agno代理支持文本、图像、音频和视频输入，并可以生成文本、图像、音频和视频输出。有关完整概述，请查看[兼容性矩阵](https://docs.agno.com/models/compatibility)。
+
+## 代理的多模态输入
+
+让我们创建一个能够理解图像并根据需要进行工具调用的代理
+
+### 图像代理
+
+```python
+from agno.agent import Agent
+from agno.media import Image
+from agno.models.openai import OpenAIChat
+from agno.tools.duckduckgo import DuckDuckGoTools
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DuckDuckGoTools()],
+    markdown=True,
+)
+
+agent.print_response(
+    "告诉我关于这张图像的信息，并给我有关它的最新新闻。",
+    images=[\
+        Image(\
+            url="https://upload.wikimedia.org/wikipedia/commons/0/0c/GoldenGateBridge-001.jpg"\
+        )\
+    ],
+    stream=True,
+)
+```
+
+运行代理：
+
+```bash
+python image_agent.py
+```
+
+与图像类似，您也可以使用音频和视频作为输入。
+
+### 音频代理
+
+```python
+import base64
+
+import requests
+from agno.agent import Agent, RunResponse  # noqa
+from agno.media import Audio
+from agno.models.openai import OpenAIChat
+
+# 获取音频文件并将其转换为base64编码的字符串
+url = "https://openaiassets.blob.core.windows.net/$web/API/docs/audio/alloy.wav"
+response = requests.get(url)
+response.raise_for_status()
+wav_data = response.content
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-audio-preview", modalities=["text"]),
+    markdown=True,
+)
+agent.print_response(
+    "这个音频中有什么？", audio=[Audio(content=wav_data, format="wav")]
+)
+```
+
+### 视频代理
+
+目前Agno仅支持Gemini模型的视频输入。
+
+```python
+from pathlib import Path
+
+from agno.agent import Agent
+from agno.media import Video
+from agno.models.google import Gemini
+
+agent = Agent(
+    model=Gemini(id="gemini-2.0-flash-exp"),
+    markdown=True,
+)
+
+# 请使用以下命令下载"GreatRedSpot.mp4"
+# wget https://storage.googleapis.com/generativeai-downloads/images/GreatRedSpot.mp4
+video_path = Path(__file__).parent.joinpath("GreatRedSpot.mp4")
+
+agent.print_response("告诉我关于这个视频的信息", videos=[Video(filepath=video_path)])
+```
+
+## 代理的多模态输出
+
+与提供多模态输入类似，您也可以从代理获取多模态输出。
+
+### 图像生成
+
+以下示例演示如何使用DALL-E通过代理生成图像。
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.dalle import DalleTools
+
+image_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[DalleTools()],
+    description="您是一个可以使用DALL-E生成图像的AI代理。",
+    instructions="当用户要求您创建图像时，使用`create_image`工具创建图像。",
+    markdown=True,
+    show_tool_calls=True,
+)
+
+image_agent.print_response("生成一张白色暹罗猫的图像")
+
+images = image_agent.get_images()
+if images and isinstance(images, list):
+    for image_response in images:
+        image_url = image_response.url
+        print(image_url)
+```
+
+### 音频响应
+
+以下示例演示如何从代理获取文本和音频响应。代理将响应文本和可以保存到文件的音频字节。
+
+```python
+from agno.agent import Agent, RunResponse
+from agno.models.openai import OpenAIChat
+from agno.utils.audio import write_audio_to_file
+
+agent = Agent(
+    model=OpenAIChat(
+        id="gpt-4o-audio-preview",
+        modalities=["text", "audio"],
+        audio={"voice": "alloy", "format": "wav"},
+    ),
+    markdown=True,
+)
+response: RunResponse = agent.run("给我讲一个5秒钟的恐怖故事")
+
+# 将响应音频保存到文件
+if response.response_audio is not None:
+    write_audio_to_file(
+        audio=agent.run_response.response_audio.content, filename="tmp/scary_story.wav"
+    )
+```
+
+## 多模态输入和输出结合
+
+您可以创建能够接受多模态输入并返回多模态输出的代理。以下示例演示如何向代理提供音频和文本输入的组合，并获取文本和音频输出。
+
+### 音频输入和音频输出
+
+```python
+import base64
+
+import requests
+from agno.agent import Agent
+from agno.media import Audio
+from agno.models.openai import OpenAIChat
+from agno.utils.audio import write_audio_to_file
+
+# 获取音频文件并将其转换为base64编码的字符串
+url = "https://openaiassets.blob.core.windows.net/$web/API/docs/audio/alloy.wav"
+response = requests.get(url)
+response.raise_for_status()
+wav_data = response.content
+
+agent = Agent(
+    model=OpenAIChat(
+        id="gpt-4o-audio-preview",
+        modalities=["text", "audio"],
+        audio={"voice": "alloy", "format": "wav"},
+    ),
+    markdown=True,
+)
+
+agent.run("这些录音中有什么？", audio=[Audio(content=wav_data, format="wav")])
+
+if agent.run_response.response_audio is not None:
+    write_audio_to_file(
+        audio=agent.run_response.response_audio.content, filename="tmp/result.wav"
+    )
+```

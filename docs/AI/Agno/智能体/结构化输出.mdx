@@ -1,0 +1,84 @@
+---
+title: '结构化输出'
+description: 'Agno代理结构化输出的详细说明'
+---
+
+# 结构化输出
+
+我们最喜欢的功能之一是使用代理生成结构化数据（即pydantic模型）。使用此功能可以提取特征、分类数据、生成虚假数据等。最好的部分是它们可以与函数调用、知识库和所有其他功能一起工作。
+
+## 示例
+
+让我们创建一个电影代理来为我们编写`MovieScript`。
+
+```python
+from typing import List
+from rich.pretty import pprint
+from pydantic import BaseModel, Field
+from agno.agent import Agent, RunResponse
+from agno.models.openai import OpenAIChat
+
+class MovieScript(BaseModel):
+    setting: str = Field(..., description="为一部大片提供一个好的场景设置。")
+    ending: str = Field(..., description="电影的结局。如果没有提供，提供一个大团圆结局。")
+    genre: str = Field(
+        ..., description="电影的类型。如果没有提供，选择动作片、惊悚片或浪漫喜剧。"
+    )
+    name: str = Field(..., description="给这部电影起个名字")
+    characters: List[str] = Field(..., description="这部电影的角色名称。")
+    storyline: str = Field(..., description="电影的3句话故事情节。让它令人兴奋！")
+
+# 使用JSON模式的代理
+json_mode_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    description="你写电影剧本。",
+    response_model=MovieScript,
+    use_json_mode=True,
+)
+json_mode_agent.print_response("纽约")
+
+# 使用结构化输出的代理
+structured_output_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    description="你写电影剧本。",
+    response_model=MovieScript,
+)
+
+structured_output_agent.print_response("纽约")
+```
+
+运行脚本查看输出。
+
+```bash
+pip install -U agno openai
+
+python movie_agent.py
+```
+
+输出是`MovieScript`类的对象，它看起来像这样：
+
+```python
+# 使用JSON模式
+MovieScript(
+│   setting='繁华的纽约市街道，充满摩天大楼、秘密小巷和隐藏的地下通道。',
+│   ending='主角成功挫败了一个国际阴谋，洗清了自己的名誉，赢回了他的爱人。',
+│   genre='惊悚片',
+│   name='城市中的阴影',
+│   characters=['亚历克斯·门罗', '伊娃·帕克', '罗德里格斯探员', '神秘的布莱克先生'],
+│   storyline="当前CIA特工亚历克斯·门罗被诬陷犯下他没有犯下的罪行时，他必须穿越纽约危险的街道来洗清自己的名誉。当他揭露涉及城市最臭名昭著的犯罪集团的欺骗迷宫时，他寻求旧情人伊娃·帕克的帮助。他们一起争分夺秒地揭露真正的恶棍，以免为时已晚。"
+)
+
+# 使用结构化输出
+MovieScript(
+│   setting='在繁华的街道和标志性的纽约市天际线中。',
+│   ending='伊莎贝拉和亚历克斯，在险些落入辛迪加魔爪后，发现自己站在帝国大厦的顶端。当夕阳的光芒沐浴着城市，他们分享了一个胜利的吻。新的勇气和作为无敌的二人组，他们发誓要保护纽约免受任何未来的威胁。',
+│   genre='动作惊悚片',
+│   name='纽约编年史',
+│   characters=['伊莎贝拉·格兰特', '亚历克斯·陈', '马库斯·凯恩', '埃莉·门罗探员', '维克多·辛克莱'],
+│   storyline='无畏的调查记者伊莎贝拉·格兰特揭露了一个涉及强大辛迪加阴谋控制纽约市的大阴谋。与叛逆警察亚历克斯·陈合作，他们必须争分夺秒地揭露罪犯，以免城市陷入混乱。在每一个转折点都躲避危险，他们为保护他们所爱的城市免于即将到来的毁灭而战斗。'
+)
+```
+
+## 开发者资源
+
+* 查看[Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/async/structured_output.py)

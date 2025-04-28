@@ -1,0 +1,131 @@
+---
+title: '推理介绍'
+description: 'Agno代理推理能力的介绍'
+---
+
+# 推理介绍
+
+**推理**赋予代理在响应前"思考"和"分析"其行动结果（即工具调用）的能力，极大地提高了代理解决需要顺序工具调用问题的能力。
+
+推理代理在响应前会经历内部思维链，处理不同的想法，根据需要进行验证和纠正。Agno支持3种推理方法：
+
+1. [推理模型](#推理模型)
+2. [推理工具](#推理工具)
+3. [推理代理](#推理代理)
+
+哪种方法最有效将取决于您的用例，我们建议尝试所有方法，并沉浸在这个推理代理的新时代中。
+
+## 推理模型
+
+推理模型是一类经过强化学习训练的大型语言模型，它们会在回答前思考。它们在响应前会产生内部思维链。推理模型的例子包括OpenAI o系列、扩展思考模式下的Claude 3.7 sonnet、Gemini 2.0 flash thinking和DeepSeek-R1。
+
+模型层面的推理主要关注模型在**开始生成响应前**所做的事情。推理模型在单次使用场景中表现出色。它们非常适合解决不需要多轮交互或顺序调用工具的困难问题（编码、数学、物理）。
+
+### 示例
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+agent = Agent(model=OpenAIChat(id="o3-mini"))
+agent.print_response(
+    "Solve the trolley problem. Evaluate multiple ethical frameworks. "
+    "Include an ASCII diagram of your solution.",
+    stream=True,
+)
+```
+
+在[推理模型指南](https://docs.agno.com/reasoning/reasoning-models)中了解更多关于推理模型的信息。
+
+## 推理模型 + 响应模型
+
+如果我们想使用推理模型进行推理，但使用不同的模型生成响应，该怎么办？众所周知，推理模型擅长解决问题，但在以自然方式响应方面不那么出色（如claude sonnet或gpt-4o）。
+
+通过使用单独的模型进行推理和不同的模型进行响应，我们可以兼顾两者的优点。
+
+### 示例
+
+让我们使用Groq的deepseek-r1进行推理，使用claude sonnet进行自然响应。
+
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.models.groq import Groq
+
+deepseek_plus_claude = Agent(
+    model=Claude(id="claude-3-7-sonnet-20250219"),
+    reasoning_model=Groq(
+        id="deepseek-r1-distill-llama-70b", temperature=0.6, max_tokens=1024, top_p=0.95
+    ),
+)
+deepseek_plus_claude.print_response("9.11 and 9.9 -- which is bigger?", stream=True)
+```
+
+## 推理工具
+
+通过给模型提供 **"思考"工具** ，我们可以通过提供结构化思考的专用空间，极大地提高其推理能力。这是一种简单但有效的方法，可以为非推理模型添加推理能力。
+
+这项研究最初由Anthropic在[这篇博客文章](https://www.anthropic.com/engineering/claude-think-tool)中发表，但在发表前很久就已经被许多AI工程师（包括我们自己的团队）实践过。
+
+### 示例
+
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.thinking import ThinkingTools
+from agno.tools.yfinance import YFinanceTools
+
+reasoning_agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[\
+        ThinkingTools(add_instructions=True),\
+        YFinanceTools(\
+            stock_price=True,\
+            analyst_recommendations=True,\
+            company_info=True,\
+            company_news=True,\
+        ),\
+    ],
+    instructions="Use tables where possible",
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    reasoning_agent.print_response(
+        "Write a report on NVDA. Only the report, no other text.",
+        stream=True,
+        show_full_reasoning=True,
+        stream_intermediate_steps=True,
+    )
+```
+
+在[推理工具指南](https://docs.agno.com/reasoning/reasoning-tools)中了解更多关于推理工具的信息。
+
+## 推理代理
+
+推理代理是Agno开发的一种新型多代理系统，它结合了思维链推理和工具使用。
+
+您可以通过设置`reasoning=True`在任何代理上启用推理。
+
+当一个设置了`reasoning=True`的代理被赋予任务时，一个单独的"推理代理"首先使用思维链解决问题。在每一步中，它调用工具来收集信息、验证结果并迭代，直到达到最终答案。一旦推理代理有了最终答案，它就会将结果交回给原始代理进行验证并提供响应。
+
+### 示例
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+reasoning_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    reasoning=True,
+    markdown=True,
+)
+reasoning_agent.print_response(
+    "Solve the trolley problem. Evaluate multiple ethical frameworks. "
+    "Include an ASCII diagram of your solution.",
+    stream=True,
+    show_full_reasoning=True,
+)
+```
+
+在[推理代理指南](https://docs.agno.com/reasoning/reasoning-agents)中了解更多关于推理代理的信息。

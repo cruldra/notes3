@@ -1,0 +1,207 @@
+---
+title: '运行本地代理API'
+description: '如何使用Docker在本地运行Agno代理API'
+---
+
+# 运行本地代理API
+
+本指南将带您了解：
+
+* 创建一个带有Agno代理的最小FastAPI应用
+* 使用Docker容器化
+* 在本地运行，并使用PostgreSQL数据库进行知识和记忆存储
+
+## 设置
+
+### 1. 为您的项目创建一个新目录
+
+创建一个新目录并进入该目录。按照本指南操作后，您的项目结构应该如下所示：
+
+```bash
+mkdir my-project
+cd my-project
+```
+
+完成本指南后，您的项目结构应该如下所示：
+
+```
+my-project/
+├── main.py
+├── Dockerfile
+├── requirements.txt
+├── docker-compose.yml
+```
+
+### 2. 创建`requirements.txt`文件并添加所需依赖项：
+
+```
+fastapi
+agno
+openai
+pgvector
+pypdf
+psycopg[binary]
+sqlalchemy
+uvicorn
+```
+
+## 步骤1：创建带有Agno代理的FastAPI应用
+
+### 1. 创建一个新的Python文件，例如`main.py`，并添加以下代码来创建一个带有Agno代理的最小FastAPI应用：
+
+```python
+from fastapi import FastAPI
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+app = FastAPI()
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    description="You are a helpful assistant.",
+    markdown=True,
+)
+
+@app.get("/ask")
+async def ask(query: str):
+    response = agent.run(query)
+    return {"response": response.content}
+```
+
+### 2. 创建并激活虚拟环境：
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. 通过运行以下命令安装所需依赖项：
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. 设置您的OPENAI_API_KEY环境变量：
+
+```bash
+export OPENAI_API_KEY=your_api_key
+```
+
+### 5. 使用`uvicorn main:app --reload`运行FastAPI应用。
+
+```bash
+uvicorn main:app --reload
+```
+
+## 步骤2：创建Dockerfile
+
+### 1. 在同一目录中，创建一个名为`Dockerfile`的新文件，内容如下：
+
+```dockerfile
+FROM agnohq/python:3.12
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### 2. 通过运行以下命令构建Docker镜像：
+
+```bash
+docker build -t my-agent-app .
+```
+
+### 3. 使用以下命令运行Docker容器：
+
+```bash
+docker run -p 8000:8000 -e OPENAI_API_KEY=your_api_key my-agent-app
+```
+
+### 4. 访问您的应用
+
+您现在可以在`http://localhost:8000`访问FastAPI应用。
+
+## 步骤3：使用PostgreSQL添加知识和记忆
+
+### 1. 更新您的`main.py`文件，以包含使用PostgreSQL的知识和记忆存储：
+
+```python
+from fastapi import FastAPI
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+from agno.storage.postgres import PostgresStorage
+
+app = FastAPI()
+
+db_url = "postgresql+psycopg://agno:agno@db/agno"
+
+knowledge_base = PDFUrlKnowledgeBase(
+    urls=["https://agno-public.s3.amazonaws.com/recipes/ThaiRecipes.pdf"],
+    vector_db=PgVector(table_name="recipes", db_url=db_url),
+)
+knowledge_base.load(recreate=True)
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    description="You are a Thai cuisine expert!",
+    knowledge=knowledge_base,
+    storage=PostgresStorage(table_name="agent_sessions", db_url=db_url),
+    markdown=True,
+)
+
+@app.get("/ask")
+async def ask(query: str):
+    response = agent.run(query)
+    return {"response": response.content}
+```
+
+### 2. 在同一目录中创建一个`docker-compose.yml`文件，内容如下：
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: agnohq/pgvector:16
+    environment:
+      POSTGRES_DB: agno
+      POSTGRES_USER: agno
+      POSTGRES_PASSWORD: agno
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agno"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+```
+
+### 3. 使用以下命令运行Docker Compose设置：
+
+```bash
+docker-compose up --build
+```
+
+这将启动FastAPI应用和PostgreSQL数据库，使您的代理能够使用知识和记忆存储。
+
+您现在可以在`http://localhost:8000`访问FastAPI应用，并与具有知识和记忆能力的代理进行交互。
+
+您可以通过运行`curl http://localhost:8000/ask?query="What is the recipe for pad thai?"`来测试代理。

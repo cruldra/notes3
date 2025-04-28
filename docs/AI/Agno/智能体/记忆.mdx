@@ -1,0 +1,348 @@
+---
+title: '记忆'
+description: 'Agno代理记忆系统的详细说明'
+---
+
+# 记忆
+
+记忆赋予代理回忆相关信息的能力。记忆是代理上下文的一部分，帮助它提供最佳、最个性化的响应。
+
+如果用户告诉代理他们喜欢滑雪，那么未来的响应可以引用这些信息，提供更加个性化的体验。
+
+在Agno中，记忆涵盖聊天历史、用户偏好和关于当前任务的任何补充信息。**Agno开箱即用地支持3种类型的记忆：**
+
+1. **会话存储（聊天历史和会话状态）：** 会话存储将代理的会话保存在数据库中，使代理能够进行多轮对话。会话存储还保存会话状态，由于它在每次运行后都会保存到数据库，因此会在多次运行之间持久化。会话存储是一种短期记忆，**在Agno中称为"Storage"**。
+
+2. **用户记忆（用户偏好）：** 代理可以存储通过对话了解到的关于用户的见解和事实。这有助于代理为其交互的用户个性化响应。可以将其视为向代理添加"类似ChatGPT的记忆"。**在Agno中称为"Memory"**。
+
+3. **会话摘要（聊天摘要）：** 代理可以存储会话的浓缩表示，当聊天历史变得太长时很有用。**在Agno中称为"Summary"**。
+
+使用`Agent.context`实现自己的记忆实现相对容易。
+
+要成为代理记忆专家，您需要了解：
+
+1. [默认内置记忆](#默认记忆)
+2. [会话存储](#会话存储)
+3. [用户记忆](#用户记忆)
+4. [会话摘要](#会话摘要)
+
+## 展示代码：记忆和存储实战
+
+这是一个使用记忆和存储的简单但完整的代理示例。
+
+```python
+from agno.agent import Agent
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.openai import OpenAIChat
+from agno.storage.sqlite import SqliteStorage
+from rich.pretty import pprint
+
+# 记忆的用户ID
+user_id = "ava"
+# 记忆和存储的数据库文件
+db_file = "tmp/agent.db"
+
+# 初始化memory.v2
+memory = Memory(
+    # 使用任何模型创建记忆
+    model=OpenAIChat(id="gpt-4.1"),
+    db=SqliteMemoryDb(table_name="user_memories", db_file=db_file),
+)
+# 初始化存储
+storage = SqliteStorage(table_name="agent_sessions", db_file=db_file)
+
+# 初始化代理
+memory_agent = Agent(
+    model=OpenAIChat(id="gpt-4.1"),
+    # 在数据库中存储记忆
+    memory=memory,
+    # 赋予代理更新记忆的能力
+    enable_agentic_memory=True,
+    # 或者 - 在每次响应后运行MemoryManager
+    enable_user_memories=True,
+    # 在数据库中存储聊天历史
+    storage=storage,
+    # 将聊天历史添加到消息中
+    add_history_to_messages=True,
+    # 历史运行数量
+    num_history_runs=3,
+    markdown=True,
+)
+
+memory.clear()
+memory_agent.print_response(
+    "我叫Ava，我喜欢滑雪。",
+    user_id=user_id,
+    stream=True,
+    stream_intermediate_steps=True,
+)
+print("关于Ava的记忆：")
+pprint(memory.get_user_memories(user_id=user_id))
+
+memory_agent.print_response(
+    "我住在旧金山，我应该搬到4小时车程内的哪里？",
+    user_id=user_id,
+    stream=True,
+    stream_intermediate_steps=True,
+)
+print("关于Ava的记忆：")
+pprint(memory.get_user_memories(user_id=user_id))
+```
+
+### 注意事项
+
+* `enable_agentic_memory=True`给代理提供了一个管理用户记忆的工具，这个工具将任务传递给`MemoryManager`类。您也可以设置`enable_user_memories=True`，这将在每条用户消息后始终运行`MemoryManager`。
+* `add_history_to_messages=True`将聊天历史添加到发送给模型的消息中，`num_history_runs`决定添加多少次运行。
+* `read_chat_history=True`向代理添加一个工具，允许它读取聊天历史，因为聊天历史可能比`num_history_runs`中包含的更大。
+
+## 默认记忆
+
+每个代理都带有内置记忆，用于跟踪会话中的消息，即聊天历史。
+
+您可以使用`agent.get_messages_for_session()`访问这些消息。
+
+我们可以通过以下方式让代理访问聊天历史：
+
+* 我们可以设置`add_history_to_messages=True`和`num_history_runs=5`，自动将最后5次运行的消息添加到发送给代理的每条消息中。
+* 我们可以设置`read_chat_history=True`，为代理提供`get_chat_history()`工具，允许它读取整个聊天历史中的任何消息。
+* **我们建议同时设置这三项：`add_history_to_messages=True`、`num_history_runs=3`和`read_chat_history=True`，以获得最佳体验。**
+* 我们还可以设置`read_tool_call_history=True`，为代理提供`get_tool_call_history()`工具，允许它按时间倒序读取工具调用。
+
+默认记忆不会在执行周期之间持久化。因此，脚本运行结束或请求结束后，内置的默认记忆就会丢失。
+
+您可以通过向代理添加`storage`驱动程序，将此记忆持久化到数据库中。
+
+### 1. 内置记忆示例
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from rich.pretty import pprint
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    # 设置add_history_to_messages=true，将之前的聊天历史添加到发送给模型的消息中。
+    add_history_to_messages=True,
+    # 添加到消息中的历史响应数量。
+    num_history_responses=3,
+    description="你是一个总是以礼貌、积极和正面的方式回应的有用助手。",
+)
+
+# -*- 创建一个运行
+agent.print_response("分享一个两句话的恐怖故事", stream=True)
+# -*- 打印记忆中的消息
+pprint([m.model_dump(include={"role", "content"}) for m in agent.get_messages_for_session()])
+
+# -*- 提出一个继续对话的后续问题
+agent.print_response("我的第一条消息是什么？", stream=True)
+# -*- 打印记忆中的消息
+pprint([m.model_dump(include={"role", "content"}) for m in agent.get_messages_for_session()])
+```
+
+### 2. 运行示例
+
+安装库
+
+```bash
+pip install google-genai agno
+```
+
+导出您的密钥
+
+```bash
+export GOOGLE_API_KEY=xxx
+```
+
+运行示例
+
+```bash
+python agent_memory.py
+```
+
+## 会话存储
+
+内置记忆仅在当前执行周期内可用。一旦脚本结束或请求结束，内置记忆就会丢失。
+
+**存储**帮助我们将代理会话和状态保存到数据库或文件中。
+
+向代理添加存储就像提供一个`storage`驱动程序一样简单，Agno会处理其余部分。您可以使用Sqlite、Postgres、Mongo或任何其他您想要的数据库。
+
+以下是一个演示跨执行周期持久性的简单示例：
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.storage.sqlite import SqliteStorage
+from rich.pretty import pprint
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 固定会话ID以在执行周期之间继续同一会话
+    session_id="fixed_id_for_demo",
+    storage=SqliteStorage(table_name="agent_sessions", db_file="tmp/data.db"),
+    add_history_to_messages=True,
+    num_history_runs=3,
+)
+agent.print_response("我上一个问题是什么？")
+agent.print_response("法国的首都是什么？")
+agent.print_response("我上一个问题是什么？")
+pprint(agent.get_messages_for_session())
+```
+
+第一次运行时，"我上一个问题是什么？"的答案将不可用。但再次运行时，代理将能够正确回答。因为我们固定了会话ID，所以每次运行脚本时，代理都将从同一会话继续。
+
+在[存储](https://docs.agno.com/agents/storage)部分阅读更多内容。
+
+## 用户记忆
+
+除了存储会话历史和状态外，代理还可以根据对话历史创建用户记忆。
+
+要启用用户记忆，给您的代理一个`Memory`对象并设置`enable_agentic_memory=True`。
+
+启用代理记忆还会将所有现有的用户记忆添加到代理的系统提示中。
+
+### 1. 用户记忆示例
+
+```python
+from agno.agent import Agent
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.google.gemini import Gemini
+
+memory_db = SqliteMemoryDb(table_name="memory", db_file="tmp/memory.db")
+memory = Memory(db=memory_db)
+
+john_doe_id = "john_doe@example.com"
+
+agent = Agent(
+    model=Gemini(id="gemini-2.0-flash-exp"),
+    memory=memory,
+    enable_agentic_memory=True,
+)
+
+# 代理可以向用户的记忆中添加新记忆
+agent.print_response(
+    "我叫John Doe，我喜欢在周末在山上徒步。",
+    stream=True,
+    user_id=john_doe_id,
+)
+
+agent.print_response("我的爱好是什么？", stream=True, user_id=john_doe_id)
+
+# 代理还可以从用户的记忆中删除所有记忆
+agent.print_response(
+    "删除关于我的所有现有记忆。完全清空数据库。",
+    stream=True,
+    user_id=john_doe_id,
+)
+
+agent.print_response(
+    "我叫John Doe，我喜欢绘画。", stream=True, user_id=john_doe_id
+)
+
+# 代理可以从用户的记忆中删除特定记忆
+agent.print_response("删除关于我名字的任何记忆。", stream=True, user_id=john_doe_id)
+```
+
+### 2. 运行示例
+
+安装库
+
+```bash
+pip install google-genai agno
+```
+
+导出您的密钥
+
+```bash
+export GOOGLE_API_KEY=xxx
+```
+
+运行示例
+
+```bash
+python user_memory.py
+```
+
+用户记忆存储在`Memory`对象中，并在`SqliteMemoryDb`中持久化，以便在多个用户和多个会话中使用。
+
+## 会话摘要
+
+要启用会话摘要，在`Agent`上设置`enable_session_summaries=True`。
+
+### 1. 会话摘要示例
+
+```python
+from agno.agent import Agent
+from agno.memory.v2.db.sqlite import SqliteMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.google.gemini import Gemini
+
+memory_db = SqliteMemoryDb(table_name="memory", db_file="tmp/memory.db")
+memory = Memory(db=memory_db)
+
+user_id = "jon_hamm@example.com"
+session_id = "1001"
+
+agent = Agent(
+    model=Gemini(id="gemini-2.0-flash-exp"),
+    memory=memory,
+    enable_session_summaries=True,
+)
+
+agent.print_response(
+    "你能告诉我关于量子计算的什么？",
+    stream=True,
+    user_id=user_id,
+    session_id=session_id,
+)
+
+agent.print_response(
+    "我还想了解关于LLMs的信息？",
+    stream=True,
+    user_id=user_id,
+    session_id=session_id
+)
+
+session_summary = memory.get_session_summary(
+    user_id=user_id, session_id=session_id
+)
+print(f"会话摘要：{session_summary.summary}\n")
+```
+
+### 2. 运行示例
+
+安装库
+
+```bash
+pip install google-genai agno
+```
+
+导出您的密钥
+
+```bash
+export GOOGLE_API_KEY=xxx
+```
+
+运行示例
+
+```bash
+python session_summary.py
+```
+
+## 属性
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `memory` | `Memory` | `Memory()` | 代理用于存储和检索信息的记忆对象。 |
+| `add_history_to_messages` | `bool` | `False` | 如果为true，将聊天历史添加到发送给模型的消息中。也称为`add_chat_history_to_messages`。 |
+| `num_history_responses` | `int` | `3` | 添加到消息中的历史响应数量。 |
+| `enable_user_memories` | `bool` | `False` | 如果为true，为用户创建和存储个性化记忆。 |
+| `enable_session_summaries` | `bool` | `False` | 如果为true，创建和存储会话摘要。 |
+| `enable_agentic_memory` | `bool` | `False` | 如果为true，使代理能够管理用户的记忆。 |
+
+## 开发者资源
+
+* 查看[Cookbook](https://github.com/agno-agi/agno/tree/main/cookbook/agent_concepts/memory)
+* 查看[Examples](https://docs.agno.com/examples/concepts/memory)
