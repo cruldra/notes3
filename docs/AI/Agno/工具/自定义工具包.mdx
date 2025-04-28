@@ -1,0 +1,56 @@
+---
+title: '编写自定义工具包'
+description: '如何在Agno中编写自定义工具包'
+---
+
+# 编写自定义工具包
+
+许多高级用例需要编写自定义工具包。以下是一般流程：
+
+1. 创建一个继承`agno.tools.Toolkit`类的类。
+2. 将您的函数添加到该类中。
+3. **重要：**使用`self.register(function_name)`注册函数
+
+现在您的工具包已准备好与代理一起使用。例如：
+
+```python
+from typing import List
+
+from agno.agent import Agent
+from agno.tools import Toolkit
+from agno.utils.log import logger
+
+class ShellTools(Toolkit):
+    def __init__(self):
+        super().__init__(name="shell_tools")
+        self.register(self.run_shell_command)
+
+    def run_shell_command(self, args: List[str], tail: int = 100) -> str:
+        """
+        运行shell命令并返回输出或错误。
+
+        Args:
+            args (List[str]): 要运行的命令，作为字符串列表。
+            tail (int): 从输出中返回的行数。
+        Returns:
+            str: 命令的输出。
+        """
+        import subprocess
+
+        logger.info(f"运行shell命令: {args}")
+        try:
+            logger.info(f"运行shell命令: {args}")
+            result = subprocess.run(args, capture_output=True, text=True)
+            logger.debug(f"结果: {result}")
+            logger.debug(f"返回码: {result.returncode}")
+            if result.returncode != 0:
+                return f"错误: {result.stderr}"
+            # 只返回输出的最后n行
+            return "\n".join(result.stdout.split("\n")[-tail:])
+        except Exception as e:
+            logger.warning(f"运行shell命令失败: {e}")
+            return f"错误: {e}"
+
+agent = Agent(tools=[ShellTools()], show_tool_calls=True, markdown=True)
+agent.print_response("列出我的主目录中的所有文件。")
+```

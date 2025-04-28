@@ -1,0 +1,129 @@
+---
+title: '编写自定义工具'
+description: '如何在Agno中编写和使用自定义工具'
+---
+
+# 编写自定义工具
+
+在大多数生产环境中，您需要编写自己的工具。这就是为什么我们专注于在Agno中提供最佳的工具使用体验。
+
+规则很简单：
+
+* 任何Python函数都可以被代理用作工具。
+* 使用`@tool`装饰器来修改这个工具被调用前后发生的事情。
+
+## 任何Python函数都可以用作工具
+
+例如，以下是如何将`get_top_hackernews_stories`函数用作工具：
+
+```python
+import json
+import httpx
+
+from agno.agent import Agent
+
+def get_top_hackernews_stories(num_stories: int = 10) -> str:
+    """
+    使用此函数获取Hacker News的热门故事。
+
+    Args:
+        num_stories (int): 要返回的故事数量。默认为10。
+
+    Returns:
+        str: 热门故事的JSON字符串。
+    """
+
+    # 获取热门故事ID
+    response = httpx.get('https://hacker-news.firebaseio.com/v0/topstories.json')
+    story_ids = response.json()
+
+    # 获取故事详情
+    stories = []
+    for story_id in story_ids[:num_stories]:
+        story_response = httpx.get(f'https://hacker-news.firebaseio.com/v0/item/{story_id}.json')
+        story = story_response.json()
+        if "text" in story:
+            story.pop("text", None)
+        stories.append(story)
+    return json.dumps(stories)
+
+agent = Agent(tools=[get_top_hackernews_stories], show_tool_calls=True, markdown=True)
+agent.print_response("总结hackernews上的前5个故事？", stream=True)
+```
+
+## @tool装饰器的魔力
+
+要修改工具调用前后发生的事情，请使用`@tool`装饰器。一些显著的特性：
+
+* `show_result=True`：在代理的响应中显示工具调用的输出。没有这个标志，工具调用的结果会发送给模型进行进一步处理。
+* `stop_after_tool_call=True`：在工具调用后停止代理。
+* `pre_hook`：在此工具调用之前运行函数。
+* `post_hook`：在此工具调用之后运行函数。
+* `cache_results=True`：缓存工具结果以避免重复相同的调用。
+
+以下是一个在`@tool`装饰器上使用所有可能参数的示例。
+
+```python
+import httpx
+from agno.agent import Agent
+from agno.tools import tool
+
+def log_before_call(fc):
+    """在工具执行前运行的前置钩子函数"""
+    print(f"即将使用参数调用函数：{fc.arguments}")
+
+def log_after_call(fc):
+    """在工具执行后运行的后置钩子函数"""
+    print(f"函数调用完成，结果为：{fc.result}")
+
+@tool(
+    name="fetch_hackernews_stories",                # 工具的自定义名称（否则使用函数名）
+    description="从Hacker News获取热门故事",         # 自定义描述（否则使用函数文档字符串）
+    show_result=True,                               # 函数调用后显示结果
+    stop_after_tool_call=True,                      # 工具调用后立即返回结果并停止代理
+    pre_hook=log_before_call,                       # 执行前运行的钩子
+    post_hook=log_after_call,                       # 执行后运行的钩子
+    cache_results=True,                             # 启用结果缓存
+    cache_dir="/tmp/agno_cache",                    # 自定义缓存目录
+    cache_ttl=3600                                  # 缓存TTL（秒）（1小时）
+)
+def get_top_hackernews_stories(num_stories: int = 5) -> str:
+    """
+    从Hacker News获取热门故事。
+
+    Args:
+        num_stories: 要获取的故事数量（默认：5）
+
+    Returns:
+        str: 文本格式的热门故事
+    """
+    # 获取热门故事ID
+    response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+    story_ids = response.json()
+
+    # 获取故事详情
+    stories = []
+    for story_id in story_ids[:num_stories]:
+        story_response = httpx.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json")
+        story = story_response.json()
+        stories.append(f"{story.get('title')} - {story.get('url', 'No URL')}")
+
+    return "\n".join(stories)
+
+agent = Agent(tools=[get_top_hackernews_stories])
+agent.print_response("向我展示Hacker News的热门新闻")
+```
+
+### @tool参数参考
+
+| 参数 | 类型 | 描述 |
+| --- | --- | --- |
+| `name` | `str` | 函数名称的覆盖 |
+| `description` | `str` | 函数描述的覆盖 |
+| `show_result` | `bool` | 如果为True，在函数调用后显示结果 |
+| `stop_after_tool_call` | `bool` | 如果为True，代理将在函数调用后停止 |
+| `pre_hook` | `callable` | 在函数执行前运行的钩子 |
+| `post_hook` | `callable` | 在函数执行后运行的钩子 |
+| `cache_results` | `bool` | 如果为True，启用函数结果的缓存 |
+| `cache_dir` | `str` | 存储缓存文件的目录 |
+| `cache_ttl` | `int` | 缓存结果的生存时间（秒）（默认：3600） |

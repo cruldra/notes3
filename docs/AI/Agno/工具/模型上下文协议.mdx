@@ -1,0 +1,280 @@
+---
+title: '模型上下文协议'
+description: '如何在Agno中使用模型上下文协议(MCP)'
+---
+
+# 模型上下文协议
+
+模型上下文协议（Model Context Protocol，MCP）使代理能够通过标准化接口与外部系统交互。通过Agno的MCP集成，您可以将任何兼容MCP的服务连接到您的代理。
+
+## 示例：文件系统代理
+
+以下是一个使用文件系统MCP服务器来探索和分析文件的文件系统代理：
+
+```python
+import asyncio
+from pathlib import Path
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.mcp import MCPTools
+from mcp import StdioServerParameters
+
+
+async def run_agent(message: str) -> None:
+    """运行文件系统代理，处理给定的消息。"""
+
+    file_path = str(Path(__file__).parent.parent.parent.parent)
+
+    # MCP服务器，用于访问文件系统（通过`npx`）
+    async with MCPTools(f"npx -y @modelcontextprotocol/server-filesystem {file_path}") as mcp_tools:
+        agent = Agent(
+            model=OpenAIChat(id="gpt-4o"),
+            tools=[mcp_tools],
+            instructions=dedent("""\
+                您是一个文件系统助手。帮助用户探索文件和目录。
+
+                - 导航文件系统以回答问题
+                - 使用list_allowed_directories工具查找您可以访问的目录
+                - 提供您检查的文件的清晰上下文
+                - 使用标题组织您的回答
+                - 简明扼要，专注于相关信息\
+            """),
+            markdown=True,
+            show_tool_calls=True,
+        )
+
+        # 运行代理
+        await agent.aprint_response(message, stream=True)
+
+
+# 示例用法
+if __name__ == "__main__":
+    # 基本示例 - 探索项目许可证
+    asyncio.run(run_agent("这个项目的许可证是什么？"))
+```
+
+## 多个MCP服务器
+
+您可以使用`MultiMCPTools`类在单个代理中使用多个MCP服务器。
+
+```python
+import asyncio
+import os
+
+from agno.agent import Agent
+from agno.tools.mcp import MultiMCPTools
+
+
+async def run_agent(message: str) -> None:
+    """运行Airbnb和Google Maps代理，处理给定的消息。"""
+
+    env = {
+        **os.environ,
+        "GOOGLE_MAPS_API_KEY": os.getenv("GOOGLE_MAPS_API_KEY"),
+    }
+
+    async with MultiMCPTools(
+        [\
+            "npx -y @openbnb/mcp-server-airbnb --ignore-robots-txt",\
+            "npx -y @modelcontextprotocol/server-google-maps",\
+        ],
+        env=env,
+    ) as mcp_tools:
+        agent = Agent(
+            tools=[mcp_tools],
+            markdown=True,
+            show_tool_calls=True,
+        )
+
+        await agent.aprint_response(message, stream=True)
+
+
+# 示例用法
+if __name__ == "__main__":
+    # Pull request示例
+    asyncio.run(
+        run_agent(
+            "2025年8月1日至4日，开普敦有哪些适合2人入住3晚的房源？"
+        )
+    )
+```
+
+## 更多灵活性
+
+您也可以自己创建MCP服务器并将其传递给`MCPTools`构造函数。
+
+```python
+import asyncio
+from pathlib import Path
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.mcp import MCPTools
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+
+async def create_filesystem_agent(session):
+    """创建并配置带有MCP工具的文件系统代理。"""
+    # 初始化MCP工具包
+    mcp_tools = MCPTools(session=session)
+    await mcp_tools.initialize()
+
+    # 创建带有MCP工具包的代理
+    return Agent(
+        model=OpenAIChat(id="gpt-4o"),
+        tools=[mcp_tools],
+        instructions=dedent("""\
+            您是一个文件系统助手。帮助用户探索文件和目录。
+
+            - 导航文件系统以回答问题
+            - 使用list_allowed_directories工具查找您可以访问的目录
+            - 提供您检查的文件的清晰上下文
+            - 使用标题组织您的回答
+            - 简明扼要，专注于相关信息\
+        """),
+        markdown=True,
+        show_tool_calls=True,
+    )
+
+
+async def run_agent(message: str) -> None:
+    """运行文件系统代理，处理给定的消息。"""
+    
+    # 初始化MCP服务器
+    server_params = StdioServerParameters(
+        command="npx",
+        args=[\
+            "-y",\
+            "@modelcontextprotocol/server-filesystem",\
+            str(Path(__file__).parent.parent.parent.parent),  # 设置为您想要探索的项目根目录\
+        ],
+    )
+
+    # 创建客户端会话以连接到MCP服务器
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            agent = await create_filesystem_agent(session)
+
+            # 运行代理
+            await agent.aprint_response(message, stream=True)
+
+
+# 示例用法
+if __name__ == "__main__":
+    # 基本示例 - 探索项目许可证
+    asyncio.run(run_agent("这个项目的许可证是什么？"))
+```
+
+## 在Playground中运行MCP
+
+您也可以在Agno Playground中运行MCP服务器，它提供了一个用于与代理交互的Web界面。以下是在Playground中运行的GitHub代理示例：
+
+```python
+import asyncio
+from os import getenv
+from textwrap import dedent
+
+import nest_asyncio
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.playground import Playground, serve_playground_app
+from agno.storage.agent.sqlite import SqliteAgentStorage
+from agno.tools.mcp import MCPTools
+
+# 允许嵌套事件循环
+nest_asyncio.apply()
+
+agent_storage_file: str = "tmp/agents.db"
+
+
+async def run_server() -> None:
+    """运行GitHub代理服务器。"""
+    github_token = getenv("GITHUB_TOKEN") or getenv("GITHUB_ACCESS_TOKEN")
+    if not github_token:
+        raise ValueError("需要GITHUB_TOKEN环境变量")
+
+    # 创建客户端会话以连接到MCP服务器
+    async with MCPTools("npx -y @modelcontextprotocol/server-github") as mcp_tools:
+        agent = Agent(
+            name="MCP GitHub代理",
+            tools=[mcp_tools],
+            instructions=dedent("""\
+                您是一个GitHub助手。帮助用户探索仓库和他们的活动。
+
+                - 使用标题组织您的回答
+                - 简明扼要，专注于相关信息\
+            """),
+            model=OpenAIChat(id="gpt-4o"),
+            storage=SqliteAgentStorage(
+                table_name="basic_agent",
+                db_file=agent_storage_file,
+                auto_upgrade_schema=True,
+            ),
+            add_history_to_messages=True,
+            num_history_responses=3,
+            add_datetime_to_instructions=True,
+            markdown=True,
+        )
+
+        playground = Playground(agents=[agent])
+        app = playground.get_app()
+
+        # 在保持MCPTools上下文管理器活动的同时提供应用程序
+        serve_playground_app(app)
+
+
+if __name__ == "__main__":
+    asyncio.run(run_server())
+```
+
+## 最佳实践
+
+1. **错误处理**：始终为MCP服务器连接和操作包含适当的错误处理。
+
+2. **资源清理**：使用`MCPTools`或`MultiMCPTools`作为异步上下文管理器，确保资源的正确清理：
+
+```python
+async with MCPTools(command) as mcp_tools:
+    # 您的代理代码
+```
+
+3. **清晰的指令**：为您的代理提供清晰和具体的指令：
+
+```python
+instructions = """
+您是一个文件系统助手。帮助用户探索文件和目录。
+- 导航文件系统以回答问题
+- 使用list_allowed_directories工具查找可访问的目录
+- 提供您检查的文件的清晰上下文
+- 简明扼要，专注于相关信息
+"""
+```
+
+## 理解服务器参数
+
+配置`MCPTools`或`MultiMCPTools`的推荐方式是使用`command`参数。
+
+或者，您可以使用`MCPTools`的`server_params`参数来配置与MCP服务器的连接。它包含以下键：
+
+* `command`：运行MCP服务器的命令。
+  * 对于可以通过npm安装的mcp服务器，使用`npx`（或在Windows上运行时使用`node`）。
+  * 对于可以通过uvx安装的mcp服务器，使用`uvx`。
+* `args`：传递给MCP服务器的参数。
+* `env`：可选的传递给MCP服务器的环境变量。记住在`env`字典中包含所有当前环境变量。如果未提供`env`，将使用当前环境变量。例如：
+
+```python
+{
+    **os.environ,
+    "GOOGLE_MAPS_API_KEY": os.getenv("GOOGLE_MAPS_API_KEY"),
+}
+```
+
+## 更多信息
+
+* 在[这里](https://github.com/modelcontextprotocol/servers)找到MCP服务器的集合。
+* 阅读[MCP文档](https://modelcontextprotocol.io/introduction)了解更多关于模型上下文协议的信息。
+* 查看Agno的[Cookbook](https://github.com/agno-agi/agno/tree/main/cookbook/tools/mcp)获取更多使用MCP的代理示例。

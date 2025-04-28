@@ -1,0 +1,90 @@
+---
+title: '异步工具'
+description: '如何在Agno中使用异步工具'
+---
+
+# 异步工具
+
+Agno代理可以同时执行多个工具，使您能够高效处理模型进行的函数调用。这在函数涉及耗时操作时特别有价值。它提高了响应速度并减少了总体执行时间。
+
+以下是一个示例：
+
+```python
+import asyncio
+import time
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.utils.log import logger
+
+async def atask1(delay: int):
+    """模拟一个需要随机时间完成的任务
+    Args:
+        delay (int): 任务延迟的时间
+    """
+    logger.info("任务1已开始")
+    for _ in range(delay):
+        await asyncio.sleep(1)
+        logger.info("任务1已睡眠1秒")
+    logger.info("任务1已完成")
+    return f"任务1在{delay:.2f}秒内完成"
+
+
+async def atask2(delay: int):
+    """模拟一个需要随机时间完成的任务
+    Args:
+        delay (int): 任务延迟的时间
+    """
+    logger.info("任务2已开始")
+    for _ in range(delay):
+        await asyncio.sleep(1)
+        logger.info("任务2已睡眠1秒")
+    logger.info("任务2已完成")
+    return f"任务2在{delay:.2f}秒内完成"
+
+
+async def atask3(delay: int):
+    """模拟一个需要随机时间完成的任务
+    Args:
+        delay (int): 任务延迟的时间
+    """
+    logger.info("任务3已开始")
+    for _ in range(delay):
+        await asyncio.sleep(1)
+        logger.info("任务3已睡眠1秒")
+    logger.info("任务3已完成")
+    return f"任务3在{delay:.2f}秒内完成"
+
+
+async_agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    tools=[atask2, atask1, atask3],
+    show_tool_calls=True,
+    markdown=True,
+)
+
+asyncio.run(
+    async_agent.aprint_response("请运行所有任务，延迟时间为3秒", stream=True)
+)
+```
+
+运行代理：
+
+```bash
+pip install -U agno openai
+
+export OPENAI_API_KEY=***
+
+python async_tools.py
+```
+
+使用方法：
+
+1. 为您的代理提供工具列表，最好是异步的以获得最佳性能。但是，同步函数也可以使用，因为它们将在单独的线程上并发执行。
+2. 使用`arun`或`aprint_response`方法运行代理，启用工具调用的并发执行。
+
+工具的并发执行需要支持并行函数调用的模型。例如，OpenAI模型有一个`parallel_tool_calls`参数（默认启用），允许同时请求和执行多个工具调用。
+
+在这个例子中，`gpt-4o`同时对`atask1`、`atask2`和`atask3`进行三次工具调用。通常这些工具调用会按顺序执行，但使用`aprint_response`函数，它们可以并发运行，提高执行时间。
+
+![](https://mintlify.s3.us-west-1.amazonaws.com/agno/images/async-tools.png)

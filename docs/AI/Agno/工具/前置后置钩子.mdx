@@ -1,0 +1,67 @@
+---
+title: '前置和后置钩子'
+description: '如何在Agno工具中使用前置和后置钩子'
+---
+
+# 前置和后置钩子
+
+前置和后置钩子是一项强大的功能，让我们可以修改工具调用前后发生的事情。
+
+在`@tool`装饰器中设置`pre_hook`以在工具调用前运行函数。
+
+在`@tool`装饰器中设置`post_hook`以在工具调用后运行函数。
+
+## 示例：前置/后置钩子 + 代理上下文
+
+以下是使用`pre_hook`、`post_hook`以及代理上下文的演示示例。
+
+```python
+import json
+from typing import Iterator
+
+import httpx
+from agno.agent import Agent
+from agno.tools import FunctionCall, tool
+
+
+def pre_hook(fc: FunctionCall):
+    print(f"前置钩子: {fc.function.name}")
+    print(f"参数: {fc.arguments}")
+    print(f"结果: {fc.result}")
+
+
+def post_hook(fc: FunctionCall):
+    print(f"后置钩子: {fc.function.name}")
+    print(f"参数: {fc.arguments}")
+    print(f"结果: {fc.result}")
+
+
+@tool(pre_hook=pre_hook, post_hook=post_hook)
+def get_top_hackernews_stories(agent: Agent) -> Iterator[str]:
+    num_stories = agent.context.get("num_stories", 5) if agent.context else 5
+
+    # 获取热门故事ID
+    response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+    story_ids = response.json()
+
+    # 生成故事详情
+    for story_id in story_ids[:num_stories]:
+        story_response = httpx.get(
+            f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
+        )
+        story = story_response.json()
+        if "text" in story:
+            story.pop("text", None)
+        yield json.dumps(story)
+
+
+agent = Agent(
+    context={
+        "num_stories": 2,
+    },
+    tools=[get_top_hackernews_stories],
+    markdown=True,
+    show_tool_calls=True,
+)
+agent.print_response("HackerNews上的热门故事有哪些？", stream=True)
+```

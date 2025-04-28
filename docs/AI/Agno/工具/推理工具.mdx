@@ -1,0 +1,134 @@
+---
+title: '推理工具'
+description: '如何在Agno中使用推理工具'
+---
+
+# 推理工具
+
+`ReasoningTools`工具包允许代理在执行过程中的任何时候像使用其他工具一样使用推理。与传统方法不同，传统方法在开始时进行一次推理以创建固定计划，而这种方法使代理能够在每个步骤后进行反思，调整其思考，并即时更新其行动。
+
+我们发现，这种方法显著提高了代理解决复杂问题的能力，而这些问题它原本可能无法处理。通过给代理提供"思考"其行动的空间，它可以更深入地检查自己的响应，质疑自己的假设，并从不同角度处理问题。
+
+该工具包包含以下工具：
+
+* `think`：这个工具被代理用作草稿本，用于推理问题并逐步解决。它有助于将复杂问题分解为更小、更易管理的部分，并跟踪推理过程。
+* `analyze`：这个工具用于分析推理步骤的结果并确定下一步行动。
+
+## 示例
+
+以下是如何使用`ReasoningTools`工具包的示例：
+
+```python
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.reasoning import ReasoningTools
+from agno.tools.yfinance import YFinanceTools
+
+thinking_agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[\
+        ReasoningTools(add_instructions=True),\
+        YFinanceTools(\
+            stock_price=True,\
+            analyst_recommendations=True,\
+            company_info=True,\
+            company_news=True,\
+        ),\
+    ],
+    instructions="尽可能使用表格",
+    show_tool_calls=True,
+    markdown=True,
+)
+
+thinking_agent.print_response("撰写一份比较NVDA和TSLA的报告", stream=True)
+```
+
+该工具包带有默认指令和少样本示例，以帮助代理有效使用该工具。以下是如何启用它们：
+
+```python
+reasoning_agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    tools=[\
+        ReasoningTools(\
+            think=True,\
+            analyze=True,\
+            add_instructions=True,\
+            add_few_shot=True,\
+        ),\
+    ],
+)
+```
+
+`ReasoningTools`可以与任何支持函数调用的模型提供商一起使用。以下是使用`OpenAIChat`的推理代理示例：
+
+```python
+from textwrap import dedent
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.reasoning import ReasoningTools
+
+reasoning_agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[ReasoningTools(add_instructions=True)],
+    instructions=dedent("""\
+        您是一位具有强大分析能力的专家问题解决助手！🧠
+
+        您解决问题的方法：
+        1. 首先，将复杂问题分解为组成部分
+        2. 明确陈述您的假设
+        3. 发展结构化的推理路径
+        4. 考虑多种视角
+        5. 评估证据和反论
+        6. 得出有充分理由的结论
+
+        在解决问题时：
+        - 使用明确的逐步推理
+        - 识别关键变量和约束
+        - 探索替代方案
+        - 突出不确定性领域
+        - 清晰解释您的思考过程
+        - 考虑短期和长期影响
+        - 明确评估权衡
+
+        对于定量问题：
+        - 展示您的计算
+        - 解释数字的意义
+        - 在适当时考虑置信区间
+        - 识别源数据可靠性
+
+        对于定性推理：
+        - 评估不同因素如何相互作用
+        - 考虑心理和社会动态
+        - 评估实际约束
+        - 解决价值考量
+        \
+    """),
+    add_datetime_to_instructions=True,
+    stream_intermediate_steps=True,
+    show_tool_calls=True,
+    markdown=True,
+)
+```
+
+这个代理可以用来提出引发深思熟虑分析的问题，例如：
+
+```python
+reasoning_agent.print_response(
+    "一家初创公司有50万美元的资金，需要决定是将其用于营销还是"
+    "产品开发。他们希望在12个月内最大化增长和用户获取。"
+    "他们应该考虑哪些因素，以及应该如何分析这个决策？",
+    stream=True
+)
+```
+
+或者，
+
+```python
+reasoning_agent.print_response(
+    "解决这个逻辑谜题：一个人必须带着一只狐狸、一只鸡和一袋谷物过河。"
+    "船只够大，只能容纳这个人和一件物品。如果无人看管，狐狸会"
+    "吃掉鸡，而鸡会吃掉谷物。这个人如何安全地将所有东西带过河？",
+    stream=True,
+)
+```

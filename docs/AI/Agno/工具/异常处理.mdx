@@ -1,0 +1,48 @@
+---
+title: '异常处理'
+description: '如何在Agno工具中使用异常处理'
+---
+
+# 异常处理
+
+如果在工具调用后我们需要使用不同的指令集"重试"模型或停止代理，我们可以抛出以下异常之一：
+
+* `RetryAgentRun`：当您想用不同的指令集重试代理运行时使用此异常。
+* `StopAgentRun`：当您想停止代理运行时使用此异常。
+* `AgentRunException`：可用于重试工具调用的通用异常。
+
+以下示例展示了如何使用`RetryAgentRun`异常来使用额外指令重试代理。
+
+```python
+from agno.agent import Agent
+from agno.exceptions import RetryAgentRun
+from agno.models.openai import OpenAIChat
+from agno.utils.log import logger
+
+
+def add_item(agent: Agent, item: str) -> str:
+    """将项目添加到购物清单。"""
+    agent.session_state["shopping_list"].append(item)
+    len_shopping_list = len(agent.session_state["shopping_list"])
+    if len_shopping_list < 3:
+        raise RetryAgentRun(
+            f"购物清单是：{agent.session_state['shopping_list']}。购物清单至少需要3个项目。"
+            + f"再添加{3 - len_shopping_list}个项目。",
+        )
+
+    logger.info(f"购物清单现在是：{agent.session_state.get('shopping_list')}")
+    return f"购物清单现在是：{agent.session_state.get('shopping_list')}"
+
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    # 初始化会话状态，包含空购物清单
+    session_state={"shopping_list": []},
+    tools=[add_item],
+    markdown=True,
+)
+agent.print_response("添加牛奶", stream=True)
+print(f"最终会话状态：{agent.session_state}")
+```
+
+确保设置`AGNO_DEBUG=True`以查看调试日志。

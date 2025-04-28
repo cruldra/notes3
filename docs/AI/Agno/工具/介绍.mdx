@@ -1,0 +1,47 @@
+---
+title: '介绍'
+description: 'Agno工具的介绍'
+---
+
+# 介绍
+
+工具是代理可以调用的**函数**，用于与外部世界交互。
+
+工具使代理具有"代理性"，使它们能够与外部系统交互，如搜索网络、运行SQL、发送电子邮件或调用API。
+
+Agno自带80多个预构建的工具包，但在大多数情况下，您将编写自己的工具。一般语法如下：
+
+```python
+import random
+
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools import tool
+
+
+@tool(show_result=True, stop_after_tool_call=True)
+def get_weather(city: str) -> str:
+    """获取城市的天气。"""
+    # 在实际实现中，这将调用天气API
+    weather_conditions = ["晴朗", "多云", "下雨", "下雪", "有风"]
+    random_weather = random.choice(weather_conditions)
+
+    return f"{city}的天气是{random_weather}。"
+
+
+agent = Agent(
+    model=OpenAIChat(model="gpt-4o-mini"),
+    tools=[get_weather],
+    markdown=True,
+)
+agent.print_response("旧金山的天气怎么样？", stream=True)
+```
+
+在上面的例子中，`get_weather`函数是一个工具。当它被调用时，工具结果将显示在输出中，因为我们设置了`show_result=True`。
+
+然后，代理将在工具调用后停止，因为我们设置了`stop_after_tool_call=True`。
+
+阅读更多关于：
+
+* [可用的工具包](https://docs.agno.com/tools/toolkits)
+* [使用函数作为工具](https://docs.agno.com/tools/functions)

@@ -1,0 +1,116 @@
+---
+title: '以人为本的设计'
+description: '如何在Agno工具中实现以人为本的设计'
+---
+
+# 以人为本的设计
+
+以人为本的设计（Human in the loop，HITL）让您可以在执行工具调用前或后获取用户输入。
+
+以下示例展示了如何使用前置钩子在执行工具调用前获取用户确认。当然，我们也可以很容易地在后置钩子中实现同样的功能。
+
+## 示例：使用前置钩子实现以人为本的设计
+
+此示例展示了如何：
+
+* 为工具添加前置钩子以获取用户确认
+* 在工具执行期间处理用户输入
+* 根据用户选择优雅地取消操作
+
+```python
+"""🤝 以人为本的设计：为工具调用添加用户确认
+
+此示例展示了如何在Agno工具中实现以人为本的功能。
+它展示了如何：
+- 为工具添加前置钩子以获取用户确认
+- 在工具执行期间处理用户输入
+- 根据用户选择优雅地取消操作
+
+一些实际应用：
+- 在执行敏感操作前进行确认
+- 在进行API调用前进行审查
+- 验证数据转换
+- 在关键系统中批准自动化操作
+
+运行 `pip install openai httpx rich agno` 安装依赖项。
+"""
+
+import json
+from typing import Iterator
+
+import httpx
+from agno.agent import Agent
+from agno.exceptions import StopAgentRun
+from agno.models.openai import OpenAIChat
+from agno.tools import FunctionCall, tool
+from rich.console import Console
+from rich.pretty import pprint
+from rich.prompt import Prompt
+
+# 这是print_response方法使用的控制台实例
+# 我们可以使用它来停止和重新启动实时显示，并请求用户确认
+console = Console()
+
+
+def pre_hook(fc: FunctionCall):
+    # 从控制台获取实时显示实例
+    live = console._live
+
+    # 暂时停止实时显示，以便我们可以请求用户确认
+    live.stop()  # type: ignore
+
+    # 请求确认
+    console.print(f"\n即将运行 [bold blue]{fc.function.name}[/]")
+    message = (
+        Prompt.ask("您想继续吗？", choices=["y", "n"], default="y")
+        .strip()
+        .lower()
+    )
+
+    # 重新启动实时显示
+    live.start()  # type: ignore
+
+    # 如果用户不想继续，抛出StopExecution异常
+    if message != "y":
+        raise StopAgentRun(
+            "用户取消了工具调用",
+            agent_message="由于未获得许可，停止执行。",
+        )
+
+
+@tool(pre_hook=pre_hook)
+def get_top_hackernews_stories(num_stories: int) -> Iterator[str]:
+    """在用户确认后从Hacker News获取热门故事。
+
+    Args:
+        num_stories (int): 要检索的故事数量
+
+    Returns:
+        str: 包含故事详情的JSON字符串
+    """
+    # 获取热门故事ID
+    response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+    story_ids = response.json()
+
+    # 生成故事详情
+    for story_id in story_ids[:num_stories]:
+        story_response = httpx.get(
+            f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
+        )
+        story = story_response.json()
+        if "text" in story:
+            story.pop("text", None)
+        yield json.dumps(story)
+
+
+# 初始化具有技术敏感性格和明确指令的代理
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o-mini"),
+    tools=[get_top_hackernews_stories],
+    markdown=True,
+)
+
+agent.print_response(
+    "获取前2个hackernews热门故事？", stream=True, console=console
+)
+```
