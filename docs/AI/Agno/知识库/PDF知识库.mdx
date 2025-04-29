@@ -1,0 +1,173 @@
+---
+title: 'PDF知识库'
+description: '如何在Agno中使用本地PDF文件作为知识库'
+---
+
+# PDF知识库
+
+**PDF知识库(PDFKnowledgeBase)**读取**本地PDF文件**，将它们转换为向量嵌入，并加载到向量数据库中。
+
+## 使用方法
+
+以下示例使用本地PgVector数据库。[确保它正在运行](https://docs.agno.com/vectordb/pgvector)
+
+```shell
+pip install pypdf
+```
+
+knowledge_base.py
+```python
+from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
+from agno.vectordb.pgvector import PgVector
+
+pdf_knowledge_base = PDFKnowledgeBase(
+    path="data/pdfs",
+    # 表名: ai.pdf_documents
+    vector_db=PgVector(
+        table_name="pdf_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+    reader=PDFReader(chunk=True),
+)
+```
+
+然后将`knowledge_base`与智能体一起使用：
+
+agent.py
+```python
+from agno.agent import Agent
+from knowledge_base import knowledge_base
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+agent.knowledge.load(recreate=False)
+
+agent.print_response("问我一些知识库中的内容")
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| path | Union[str, Path] | - | PDF文件的路径。可以指向单个PDF文件或包含PDF文件的目录。 |
+| reader | Union[PDFReader, PDFImageReader] | PDFReader() | 将PDF转换为向量数据库文档的PDFReader或PDFImageReader。 |
+
+`PDFKnowledgeBase`是[AgentKnowledge](/reference/knowledge/base)类的子类，可以访问相同的参数。
+
+## 高级用法
+
+### 自定义PDF处理
+
+您可以通过自定义`PDFReader`来控制PDF的处理方式：
+
+```python
+from agno.knowledge.pdf import PDFReader, PDFKnowledgeBase
+
+# 创建自定义PDF阅读器
+custom_reader = PDFReader(
+    chunk=True,  # 将PDF分块
+    chunk_size=1000,  # 每块1000个字符
+    chunk_overlap=100,  # 块之间重叠100个字符
+    metadata_extractor=lambda file_path: {"source": file_path.name},  # 添加元数据
+)
+
+knowledge_base = PDFKnowledgeBase(
+    path="data/pdf_files",
+    reader=custom_reader,
+    vector_db=PgVector(
+        table_name="pdf_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+### 处理PDF中的图像
+
+对于包含图像的PDF，您可以使用`PDFImageReader`来处理图像内容：
+
+```python
+from agno.knowledge.pdf import PDFImageReader, PDFKnowledgeBase
+from agno.models.openai import OpenAIVision
+
+# 创建PDF图像阅读器
+image_reader = PDFImageReader(
+    vision_model=OpenAIVision(id="gpt-4o"),  # 使用视觉模型处理图像
+    extract_text=True,  # 同时提取文本
+    chunk=True,  # 将内容分块
+)
+
+knowledge_base = PDFKnowledgeBase(
+    path="data/image_rich_pdfs",
+    reader=image_reader,
+    vector_db=PgVector(
+        table_name="pdf_image_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+### 异步加载
+
+对于大型PDF集合，可以使用异步加载提高性能：
+
+```python
+import asyncio
+from agno.agent import Agent
+from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
+from agno.vectordb.pgvector import PgVector
+
+knowledge_base = PDFKnowledgeBase(
+    path="data/large_pdf_collection",
+    vector_db=PgVector(
+        table_name="pdf_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+    reader=PDFReader(chunk=True),
+)
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+
+async def main():
+    # 异步加载知识库
+    await knowledge_base.aload(recreate=False)
+    
+    # 使用智能体
+    await agent.aprint_response("问我一些知识库中的内容", markdown=True)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## PDF知识库的优化策略
+
+为了获得最佳的PDF知识库性能，请考虑以下优化策略：
+
+1. **适当的分块大小**：根据PDF内容的性质调整分块大小。对于技术文档，较小的分块（500-1000字符）可能更好；对于叙述性内容，较大的分块可能更合适。
+
+2. **合理的重叠量**：块之间的重叠有助于保持上下文连贯性。通常，10-20%的重叠是一个好的起点。
+
+3. **元数据丰富化**：添加有用的元数据，如文件名、页码、章节等，以便在检索时提供更多上下文。
+
+4. **预处理PDF**：对于质量较差的PDF，考虑在加载前进行OCR处理以提高文本提取质量。
+
+5. **使用混合搜索**：结合语义搜索和关键词搜索，以获得最佳的检索结果。
+
+## 实际应用场景
+
+PDF知识库在以下场景特别有用：
+
+1. **学术研究**：加载研究论文和学术文献
+2. **法律文档**：处理合同、法规和法律文件
+3. **技术文档**：管理产品手册、规格书和技术指南
+4. **财务报告**：分析年度报告、财务报表和市场分析
+5. **医疗文献**：整理医学研究、临床指南和病例报告
+
+## 开发者资源
+
+* 查看[同步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/pdf_kb.py)
+* 查看[异步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/pdf_kb_async.py)

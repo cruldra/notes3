@@ -1,0 +1,168 @@
+---
+title: 'JSON知识库'
+description: '如何在Agno中使用本地JSON文件作为知识库'
+---
+
+# JSON知识库
+
+**JSON知识库(JSONKnowledgeBase)**读取**本地JSON文件**，将它们转换为向量嵌入，并加载到向量数据库中。
+
+## 使用方法
+
+以下示例使用本地PgVector数据库。[确保它正在运行](https://docs.agno.com/vectordb/pgvector)
+
+knowledge_base.py
+```python
+from agno.knowledge.json import JSONKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+
+knowledge_base = JSONKnowledgeBase(
+    path="data/json",
+    # 表名: ai.json_documents
+    vector_db=PgVector(
+        table_name="json_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+然后将`knowledge_base`与`Agent`一起使用：
+
+agent.py
+```python
+from agno.agent import Agent
+from knowledge_base import knowledge_base
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+agent.knowledge.load(recreate=False)
+
+agent.print_response("问我一些知识库中的内容")
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| path | Union[str, Path] | - | JSON文件的路径。可以指向单个JSON文件或包含JSON文件的目录。 |
+| reader | JSONReader | JSONReader() | 将JSON文件转换为向量数据库文档的JSONReader。 |
+
+`JSONKnowledgeBase`是[AgentKnowledge](/reference/knowledge/base)类的子类，可以访问相同的参数。
+
+## 高级用法
+
+### 自定义JSON处理
+
+您可以通过自定义`JSONReader`来控制JSON的处理方式：
+
+```python
+from agno.knowledge.json import JSONReader, JSONKnowledgeBase
+
+# 创建自定义JSON阅读器
+custom_reader = JSONReader(
+    chunk=True,  # 将JSON分块
+    chunk_size=1000,  # 每块1000个字符
+    chunk_overlap=100,  # 块之间重叠100个字符
+    metadata_extractor=lambda file_path: {"source": file_path.name},  # 添加元数据
+)
+
+knowledge_base = JSONKnowledgeBase(
+    path="data/json_files",
+    reader=custom_reader,
+    vector_db=PgVector(
+        table_name="json_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+### 处理嵌套JSON
+
+JSON知识库能够处理嵌套的JSON结构，将复杂的JSON对象转换为可搜索的文本：
+
+```python
+# 示例嵌套JSON文件内容
+"""
+{
+  "company": "Acme Inc",
+  "employees": [
+    {
+      "name": "John Doe",
+      "position": "Developer",
+      "skills": ["Python", "JavaScript", "Docker"]
+    },
+    {
+      "name": "Jane Smith",
+      "position": "Designer",
+      "skills": ["UI/UX", "Figma", "Sketch"]
+    }
+  ],
+  "locations": {
+    "headquarters": "New York",
+    "branches": ["London", "Tokyo", "Sydney"]
+  }
+}
+"""
+
+# JSONReader会将嵌套结构展平为可搜索的文本
+```
+
+### 异步加载
+
+对于大型JSON集合，可以使用异步加载提高性能：
+
+```python
+import asyncio
+from agno.agent import Agent
+from agno.knowledge.json import JSONKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+
+knowledge_base = JSONKnowledgeBase(
+    path="data/large_json_collection",
+    vector_db=PgVector(
+        table_name="json_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+
+async def main():
+    # 异步加载知识库
+    await knowledge_base.aload(recreate=False)
+    
+    # 使用智能体
+    await agent.aprint_response("问我一些知识库中的内容", markdown=True)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## 实际应用场景
+
+JSON知识库在以下场景特别有用：
+
+1. **API文档**：将API响应格式和示例加载到知识库中
+2. **配置管理**：使用配置文件和设置作为知识源
+3. **产品目录**：将产品数据和规格作为JSON加载
+4. **用户数据分析**：分析用户配置文件和偏好
+5. **数据集探索**：将JSON格式的数据集加载到知识库中进行探索和查询
+
+## JSON与其他知识库类型的比较
+
+| 知识库类型 | 优点 | 适用场景 |
+|---------|------|---------|
+| JSON知识库 | 结构化数据处理，支持嵌套对象 | API文档、配置文件、结构化数据 |
+| 文本知识库 | 简单直接，适合纯文本 | 文档、笔记、简单文本 |
+| CSV知识库 | 表格数据处理，适合数据分析 | 数据集、表格数据、统计信息 |
+| PDF知识库 | 处理复杂格式文档 | 报告、论文、正式文档 |
+
+## 开发者资源
+
+* 查看[同步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/json_kb.py)
+* 查看[异步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/json_kb_async.py)
