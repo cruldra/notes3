@@ -1,0 +1,189 @@
+---
+title: '智能体搜索'
+description: '如何在Agno中实现智能体增强检索生成(Agentic RAG)'
+---
+
+# 智能体搜索
+
+使用智能体迭代搜索信息被称为**智能体搜索(Agentic Search)**，而**搜索、推理和响应**的过程被称为**智能体增强检索生成(Agentic RAG)**。
+
+模型解释您的查询，生成相关关键词并搜索其知识库。
+
+智能体的响应质量取决于其搜索能力。**更好的搜索 = 更好的响应**
+
+您可以使用语义搜索、关键词搜索或混合搜索。我们推荐使用**带重排序的混合搜索**来获得最佳的智能体搜索效果。
+
+由于智能体会主动搜索它需要的信息，这种模式被称为**智能体搜索**，正在智能体开发者中变得越来越流行。
+
+让我们通过一些示例来了解智能体搜索的实际应用。
+
+## 智能体增强检索生成
+
+当我们向智能体添加知识库时，在后台，我们给模型提供了一个工具，可以搜索该知识库以获取它需要的信息。
+
+模型生成一组关键词并调用`search_knowledge_base()`工具来检索相关信息或少样本示例。
+
+以下是使用混合搜索 + 重排序的工作示例：
+
+如果不需要重排序步骤，可以将其移除。
+
+agentic_rag.py
+```python
+"""本示例展示如何使用混合搜索和重排序实现智能体增强检索生成。
+1. 运行: `pip install agno anthropic cohere lancedb tantivy sqlalchemy` 安装依赖
+2. 导出您的ANTHROPIC_API_KEY和CO_API_KEY
+3. 运行: `python cookbook/agent_concepts/agentic_search/agentic_rag.py` 启动智能体
+"""
+
+from agno.agent import Agent
+from agno.embedder.cohere import CohereEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.models.anthropic import Claude
+from agno.reranker.cohere import CohereReranker
+from agno.vectordb.lancedb import LanceDb, SearchType
+
+# 创建一个知识库，加载来自URL的文档
+knowledge_base = UrlKnowledge(
+    urls=["https://docs.agno.com/introduction/agents.md"],
+    # 使用LanceDB作为向量数据库，将嵌入存储在`agno_docs`表中
+    vector_db=LanceDb(
+        uri="tmp/lancedb",
+        table_name="agno_docs",
+        search_type=SearchType.hybrid,
+        embedder=CohereEmbedder(id="embed-v4.0"),
+        reranker=CohereReranker(model="rerank-v3.5"),
+    ),
+)
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    # 当向智能体提供`knowledge`时，默认启用智能体增强检索生成
+    knowledge=knowledge_base,
+    # search_knowledge=True赋予智能体按需搜索的能力
+    # search_knowledge默认为True
+    search_knowledge=True,
+    instructions=[
+        "在您的回答中包含来源。",
+        "回答问题前始终搜索您的知识库。",
+        "回答中只包含输出内容，不要包含其他文本。",
+    ],
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    # 加载知识库，首次运行后注释掉
+    # knowledge_base.load(recreate=True)
+    agent.print_response("什么是智能体？", stream=True)
+```
+
+## 带推理的智能体增强检索生成
+
+我们可以通过赋予智能体对搜索结果进行推理的能力，进一步提高其搜索能力。
+
+通过添加推理，智能体首先"思考"要搜索什么，然后"分析"搜索结果。
+
+以下是使用推理来提高搜索结果质量的智能体增强检索生成示例。
+
+agentic_rag_reasoning.py
+```python
+"""本示例展示如何实现带推理的智能体增强检索生成。
+1. 运行: `pip install agno anthropic cohere lancedb tantivy sqlalchemy` 安装依赖
+2. 导出您的ANTHROPIC_API_KEY和CO_API_KEY
+3. 运行: `python cookbook/agent_concepts/agentic_search/agentic_rag_with_reasoning.py` 启动智能体
+"""
+
+from agno.agent import Agent
+from agno.embedder.cohere import CohereEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.models.anthropic import Claude
+from agno.reranker.cohere import CohereReranker
+from agno.tools.reasoning import ReasoningTools
+from agno.vectordb.lancedb import LanceDb, SearchType
+
+# 创建一个知识库，加载来自URL的文档
+knowledge_base = UrlKnowledge(
+    urls=["https://docs.agno.com/introduction/agents.md"],
+    # 使用LanceDB作为向量数据库，将嵌入存储在`agno_docs`表中
+    vector_db=LanceDb(
+        uri="tmp/lancedb",
+        table_name="agno_docs",
+        search_type=SearchType.hybrid,
+        embedder=CohereEmbedder(id="embed-v4.0"),
+        reranker=CohereReranker(model="rerank-v3.5"),
+    ),
+)
+
+agent = Agent(
+    model=Claude(id="claude-3-7-sonnet-latest"),
+    # 当向智能体提供`knowledge`时，默认启用智能体增强检索生成
+    knowledge=knowledge_base,
+    # search_knowledge=True赋予智能体按需搜索的能力
+    # search_knowledge默认为True
+    search_knowledge=True,
+    tools=[ReasoningTools(add_instructions=True)],
+    instructions=[
+        "在您的回答中包含来源。",
+        "回答问题前始终搜索您的知识库。",
+        "回答中只包含输出内容，不要包含其他文本。",
+    ],
+    markdown=True,
+)
+
+if __name__ == "__main__":
+    # 加载知识库，首次运行后注释掉
+    # knowledge_base.load(recreate=True)
+    agent.print_response(
+        "什么是智能体？",
+        stream=True,
+        show_full_reasoning=True,
+        stream_intermediate_steps=True,
+    )
+```
+
+## 智能体搜索的工作原理
+
+智能体搜索的工作流程如下：
+
+1. **查询理解**：智能体首先理解用户的查询意图
+2. **关键词生成**：基于查询生成相关的搜索关键词
+3. **知识库搜索**：使用这些关键词在知识库中搜索相关信息
+4. **结果分析**：分析搜索结果的相关性和有用性
+5. **响应生成**：基于搜索结果生成最终响应
+
+在带推理的智能体搜索中，还会添加以下步骤：
+
+- 在搜索前进行推理，确定最佳的搜索策略
+- 在获取搜索结果后进行分析，评估信息的质量和相关性
+- 如果需要，进行多轮搜索以获取更完整的信息
+
+## 搜索类型比较
+
+Agno支持多种搜索类型，每种都有其优缺点：
+
+| 搜索类型 | 描述 | 优点 | 缺点 |
+|---------|------|------|------|
+| 语义搜索 | 基于嵌入向量的相似性搜索 | 能够理解语义关系，找到概念相似的内容 | 可能忽略关键词匹配 |
+| 关键词搜索 | 基于精确词汇匹配的搜索 | 精确匹配特定术语，速度快 | 无法理解语义变化或同义词 |
+| 混合搜索 | 结合语义和关键词搜索 | 平衡语义理解和关键词精确性 | 实现复杂度较高 |
+| 带重排序的混合搜索 | 在混合搜索后添加重排序步骤 | 最佳的搜索质量，能够优化结果排序 | 计算成本最高 |
+
+## 最佳实践
+
+为了获得最佳的智能体搜索效果，请考虑以下建议：
+
+1. **使用混合搜索**：结合语义和关键词搜索以获得最佳结果
+2. **添加重排序**：使用重排序器进一步优化搜索结果
+3. **启用推理**：给智能体添加推理工具，提高搜索质量
+4. **优化分块策略**：确保知识库中的文档被适当分块
+5. **提供清晰指令**：在智能体指令中明确说明搜索和引用要求
+6. **监控和调整**：观察智能体的搜索行为，并根据需要调整参数
+
+## 实际应用场景
+
+智能体搜索在以下场景特别有用：
+
+1. **客户支持**：智能体可以搜索产品文档和常见问题解答
+2. **研究助手**：搜索和分析大量研究论文和数据
+3. **法律顾问**：搜索法律文档、判例和法规
+4. **医疗咨询**：搜索医学文献和临床指南
+5. **教育辅助**：搜索教材和学习资源回答学生问题

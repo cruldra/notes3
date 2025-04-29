@@ -1,0 +1,122 @@
+---
+title: '介绍'
+description: 'Agno代理知识库系统的详细说明'
+---
+
+# 介绍
+
+**知识库**是代理可以在运行时**搜索**的特定领域信息，帮助它做出更好的决策（动态少样本学习）并提供准确的响应（智能体增强检索生成，Agentic RAG）。知识存储在向量数据库中，这种**按需搜索**模式被称为智能体增强检索生成。
+
+## 动态少样本学习：Text2Sql代理示例
+
+例如：如果我们正在构建一个Text2Sql代理，我们需要提供表结构、列名、数据类型、示例查询、常见"陷阱"等信息，以帮助它生成最佳的SQL查询。
+
+我们显然不会将所有这些信息放在系统提示中，而是将这些信息存储在向量数据库中，并让代理在运行时查询它。
+
+使用这些信息，代理可以生成最佳的SQL查询。这被称为动态少样本学习。
+
+**Agno代理默认使用智能体增强检索生成**，这意味着如果您向代理添加`knowledge`，它将在运行时搜索这个知识库，获取完成任务所需的特定信息。
+
+向代理添加知识的伪代码步骤如下：
+
+```python
+from agno.agent import Agent, AgentKnowledge
+
+# 为代理创建知识库
+knowledge_base = AgentKnowledge(vector_db=...)
+
+# 向知识库添加信息
+knowledge_base.load_text("天空是蓝色的")
+
+# 将知识库添加到代理，并
+# 给它一个工具，根据需要搜索知识库
+agent = Agent(knowledge=knowledge_base, search_knowledge=True)
+```
+
+我们可以通过以下方式让代理访问知识库：
+
+* 设置`search_knowledge=True`为代理添加`search_knowledge_base()`工具。如果您向代理添加`knowledge`，则`search_knowledge`**默认为`True`**。
+* 设置`add_references=True`自动将知识库中的引用添加到代理的提示中。这是传统的2023年RAG方法。
+
+如果您需要完全控制知识库搜索，可以传递自己的`retriever`函数，该函数具有以下签名：
+
+```python
+def retriever(agent: Agent, query: str, num_documents: Optional[int], **kwargs) -> Optional[list[dict]]:
+  ...
+```
+
+此函数在`search_knowledge_base()`期间被调用，代理用它从知识库中检索引用。
+
+## 向量数据库
+
+虽然任何类型的存储都可以作为知识库，但向量数据库提供了从密集信息中快速检索相关结果的最佳解决方案。以下是向量数据库与代理一起使用的方式：
+
+1. **分块信息**：将知识分解为更小的块，确保我们的搜索查询只返回相关结果。
+
+2. **加载知识库**：将这些块转换为嵌入向量，并存储在向量数据库中。
+
+3. **搜索知识库**：当用户发送消息时，我们将输入消息转换为嵌入，并在向量数据库中"搜索"最近邻。
+
+## 加载知识库
+
+在使用知识库之前，需要加载用于检索的嵌入。
+
+### 异步加载
+
+许多向量数据库支持异步操作，这在加载大型知识库时可以显著提高性能。您可以使用`aload()`方法利用这一功能：
+
+```python
+import asyncio
+
+from agno.agent import Agent
+from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
+from agno.vectordb.qdrant import Qdrant
+
+COLLECTION_NAME = "pdf-reader"
+
+vector_db = Qdrant(collection=COLLECTION_NAME, url="http://localhost:6333")
+
+# 从data/pdfs目录创建PDF知识库
+knowledge_base = PDFKnowledgeBase(
+    path="data/pdf",
+    vector_db=vector_db,
+    reader=PDFReader(chunk=True),
+)
+
+# 创建带有知识库的代理
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+
+if __name__ == "__main__":
+    # 首次运行后注释掉
+    asyncio.run(knowledge_base.aload(recreate=False))
+
+    # 创建并使用代理
+    asyncio.run(agent.aprint_response("如何制作泰国咖喱？", markdown=True))
+```
+
+使用`aload()`确保您充分利用非阻塞操作、并发处理和异步向量数据库操作提供的减少延迟的优势。这在具有高吞吐量要求的生产环境中尤其有价值。
+
+有关向量数据库异步功能的更多详细信息，请参阅[向量数据库介绍](/vectordb/introduction)。
+
+## 可用的知识库类型
+
+使用以下知识库之一来简化分块、加载、搜索和优化过程：
+
+* **ArXiv知识库**：将ArXiv论文加载到知识库
+* **组合知识库**：将多个知识库合并为一个
+* **CSV知识库**：将本地CSV文件加载到知识库
+* **CSV URL知识库**：从URL加载CSV文件到知识库
+* **文档知识库**：将本地docx文件加载到知识库
+* **JSON知识库**：将JSON文件加载到知识库
+* **LangChain知识库**：使用Langchain检索器作为知识库
+* **PDF知识库**：将本地PDF文件加载到知识库
+* **PDF URL知识库**：从URL加载PDF文件到知识库
+* **S3 PDF知识库**：从S3加载PDF文件到知识库
+* **S3文本知识库**：从S3加载文本文件到知识库
+* **文本知识库**：加载文本/docx文件到知识库
+* **网站知识库**：将网站数据加载到知识库
+* **维基百科知识库**：将维基百科文章加载到知识库
+* **YouTube知识库**：将YouTube视频加载到知识库

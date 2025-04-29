@@ -1,0 +1,144 @@
+---
+title: '文本知识库'
+description: '如何在Agno中使用本地文本文件作为知识库'
+---
+
+# 文本知识库
+
+**文本知识库(TextKnowledgeBase)**读取**本地文本文件**，将它们转换为向量嵌入，并加载到向量数据库中。
+
+## 使用方法
+
+以下示例使用本地PgVector数据库。[确保它正在运行](https://docs.agno.com/vectordb/pgvector)
+
+knowledge_base.py
+```python
+from agno.knowledge.text import TextKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+
+knowledge_base = TextKnowledgeBase(
+    path="data/txt_files",
+    # 表名: ai.text_documents
+    vector_db=PgVector(
+        table_name="text_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+然后将`knowledge_base`与智能体一起使用：
+
+agent.py
+```python
+from agno.agent import Agent
+from knowledge_base import knowledge_base
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+agent.knowledge.load(recreate=False)
+
+agent.print_response("问我一些知识库中的内容")
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| path | Union[str, Path] | - | 文本文件的路径。可以指向单个文本文件或包含文本文件的目录。 |
+| formats | List[str] | [".txt"] | 此知识库接受的文件格式。 |
+| reader | TextReader | TextReader() | 将文本文件转换为向量数据库文档的TextReader。 |
+
+`TextKnowledgeBase`是[AgentKnowledge](/reference/knowledge/base)类的子类，可以访问相同的参数。
+
+## 高级用法
+
+### 自定义文件格式
+
+默认情况下，文本知识库只处理`.txt`文件，但您可以通过指定`formats`参数来扩展支持的文件类型：
+
+```python
+knowledge_base = TextKnowledgeBase(
+    path="data/text_files",
+    formats=[".txt", ".md", ".log"],  # 添加Markdown和日志文件支持
+    vector_db=PgVector(
+        table_name="text_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+### 自定义文本处理
+
+您可以通过自定义`TextReader`来控制文本的处理方式：
+
+```python
+from agno.knowledge.text import TextReader, TextKnowledgeBase
+
+# 创建自定义文本阅读器
+custom_reader = TextReader(
+    chunk=True,  # 将文本分块
+    chunk_size=1000,  # 每块1000个字符
+    chunk_overlap=100,  # 块之间重叠100个字符
+    metadata_extractor=lambda file_path: {"source": file_path.name},  # 添加元数据
+)
+
+knowledge_base = TextKnowledgeBase(
+    path="data/text_files",
+    reader=custom_reader,
+    vector_db=PgVector(
+        table_name="text_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+### 异步加载
+
+对于大型文本集合，可以使用异步加载提高性能：
+
+```python
+import asyncio
+from agno.agent import Agent
+from agno.knowledge.text import TextKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+
+knowledge_base = TextKnowledgeBase(
+    path="data/large_text_collection",
+    vector_db=PgVector(
+        table_name="text_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+
+async def main():
+    # 异步加载知识库
+    await knowledge_base.aload(recreate=False)
+    
+    # 使用智能体
+    await agent.aprint_response("问我一些知识库中的内容", markdown=True)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## 实际应用场景
+
+文本知识库在以下场景特别有用：
+
+1. **技术文档管理**：将技术规范、API文档和指南加载到知识库中
+2. **客户支持**：使用常见问题解答和支持文档创建客户支持智能体
+3. **法律文档分析**：加载合同、法规和法律文本进行分析和查询
+4. **研究助手**：整合研究笔记、论文摘要和实验记录
+5. **日志分析**：将系统日志文件加载到知识库中进行故障排除和模式识别
+
+## 开发者资源
+
+* 查看[同步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/text_kb.py)
+* 查看[异步加载Cookbook](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/text_kb_async.py)

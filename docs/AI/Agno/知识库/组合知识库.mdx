@@ -1,0 +1,121 @@
+---
+title: '组合知识库'
+description: '如何在Agno中组合多个知识库'
+---
+
+# 组合知识库
+
+**组合知识库(CombinedKnowledgeBase)** 将多个知识库合并为一个，适用于应用程序需要使用多个信息源的场景。
+
+## 使用方法
+
+以下示例使用本地PgVector数据库。[确保它正在运行](https://docs.agno.com/vectordb/pgvector)
+
+```shell
+pip install pypdf bs4
+```
+
+knowledge_base.py
+```python
+from agno.knowledge.combined import CombinedKnowledgeBase
+from agno.vectordb.pgvector import PgVector
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.knowledge.website import WebsiteKnowledgeBase
+from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
+
+
+url_pdf_knowledge_base = PDFUrlKnowledgeBase(
+    urls=["pdf_url"],
+    # 表名: ai.pdf_documents
+    vector_db=PgVector(
+        table_name="pdf_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+
+website_knowledge_base = WebsiteKnowledgeBase(
+    urls=["https://docs.agno.com/introduction"],
+    # 从种子URL跟随的链接数量
+    max_links=10,
+    # 表名: ai.website_documents
+    vector_db=PgVector(
+        table_name="website_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+
+local_pdf_knowledge_base = PDFKnowledgeBase(
+    path="data/pdfs",
+    # 表名: ai.pdf_documents
+    vector_db=PgVector(
+        table_name="pdf_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+    reader=PDFReader(chunk=True),
+)
+
+knowledge_base = CombinedKnowledgeBase(
+    sources=[
+        url_pdf_knowledge_base,
+        website_knowledge_base,
+        local_pdf_knowledge_base,
+    ],
+    vector_db=PgVector(
+        # 表名: ai.combined_documents
+        table_name="combined_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5532/ai",
+    ),
+)
+```
+
+然后将`knowledge_base`与智能体一起使用：
+
+agent.py
+```python
+from agno.agent import Agent
+from knowledge_base import knowledge_base
+
+agent = Agent(
+    knowledge=knowledge_base,
+    search_knowledge=True,
+)
+agent.knowledge.load(recreate=False)
+
+agent.print_response("问我一些知识库中的内容")
+```
+
+## 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| sources | List[AgentKnowledge] | [] | 知识库列表 |
+
+`CombinedKnowledgeBase`是[AgentKnowledge](/reference/knowledge/base)类的子类，可以访问相同的参数。
+
+## 工作原理
+
+组合知识库的工作原理如下：
+
+1. 它接收多个知识库作为源
+2. 每个源知识库可以使用不同的向量数据库和不同的数据源
+3. 组合知识库将所有源的查询结果合并在一起
+4. 当智能体搜索知识库时，它会从所有源中获取最相关的信息
+
+这种方法的优势在于：
+
+- **多样化信息源**：可以同时使用PDF、网站、CSV等不同类型的数据
+- **模块化设计**：可以根据需要添加或移除特定的知识源
+- **统一接口**：智能体只需与一个知识库交互，而不必了解底层的多个数据源
+
+## 实际应用场景
+
+组合知识库在以下场景特别有用：
+
+1. **企业知识管理**：结合内部文档、网站和数据库
+2. **研究助手**：组合学术论文、网站和本地笔记
+3. **客户支持**：结合产品手册、常见问题和支持文档
+4. **多领域专家系统**：将不同专业领域的知识整合到一个智能体中
+
+## 开发者资源
+
+* 查看[Cookbook示例](https://github.com/agno-agi/agno/blob/main/cookbook/agent_concepts/knowledge/combined_kb.py)
