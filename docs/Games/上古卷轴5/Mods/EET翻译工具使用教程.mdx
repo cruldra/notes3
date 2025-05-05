@@ -1,0 +1,140 @@
+---
+title: 'ESP-ESM Translator (EET) - 安装和简单使用教程'
+description: '如何使用EET工具翻译上古卷轴和辐射系列游戏的mod'
+---
+
+# ESP-ESM Translator (EET) - 安装和简单使用教程
+
+![EET标题图](https://www.confrerie-des-traducteurs.fr/forum/ext/dmzx/imageupload/img-files/2802/bef4f66/68bb6f7/1ffa6ce881a33dad695dd2bce348adee.jpg)
+
+无论是想在翻译兄弟会(La Confrérie)上分享翻译，还是为个人使用翻译mod，每个人都使用(或应该使用)EET！
+
+EET(ESP-ESM Translator)是由我们的兄弟Épervier 666开发的软件，可以轻松翻译我们喜爱游戏的mod。
+
+该程序使用相关游戏的数据库，这些数据库包含非官方补丁的修正和其他修正，以及几个"自动化"功能，以便于您的工作。
+
+以下是一个非常简单的教程，用于翻译您从翻译兄弟会以外的地方获取的mod。如需高级使用方法，请参阅论坛"图书馆"中的完整指南(即将推出)。
+
+注意：这些快速翻译适用于所有Bethesda游戏，但对于晨风(Morrowind)、湮灭(Oblivion)、辐射3和辐射新维加斯，**仅适用于没有脚本的mod**。
+
+## 目录
+* [第1部分](#第1部分---安装) - 安装
+* [第2部分](#第2部分---快速翻译mod) - 快速翻译mod
+* [第3部分](#第3部分---补充内容) - 补充内容
+
+---
+
+## 第1部分 - 安装
+
+要下载EET - ESP-ESM Translator，只需访问[我们网站上的页面](https://www.confrerie-des-traducteurs.fr/skyrim/mods/utilitaires/eet%5F%5F%5Fesp%5Fesm%5Ftranslator)并点击"下载工具！"。
+
+![EET下载页面](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1555505085_EET.PNG)
+
+我在这里提供了天际(Skyrim)部分的链接，但您可以在我们网站的任何其他部分(辐射4、晨风等)找到该程序。
+
+> 注意：只有高级用户应该通过[Épervier](https://www.confrerie-des-traducteurs.fr/forum/memberlist.php?mode=viewprofile&u=601)在其签名中提供的链接使用测试版。同样，不要急于使用他在[Nexus](https://www.nexusmods.com/skyrimspecialedition/mods/921)上发布的最新版本，该程序通常会在翻译兄弟会上快速更新，并包含一系列有用的设置以及必要的数据库(各种支持游戏的法语BDD)。
+>
+> 关于与Épervier讨论程序、功能请求和遇到的错误，请访问软件的[SAML页面](https://www.confrerie-des-traducteurs.fr/forum/viewtopic.php?f=200&t=14609)。
+>
+> 对于翻译者，论坛图书馆中有一个[更完整的指南](https://www.confrerie-des-traducteurs.fr/forum/viewtopic.php?f=372&t=29457)！
+
+只有一个必要的先决条件：[Visual C++ 2010 Redistributable Package (x86)](https://www.microsoft.com/fr-fr/download/details.aspx?id=5555)，除特殊情况外，您的机器上可能已经有了。一般来说，为了打开我们的档案，我们建议使用免费的开源软件：[7-Zip](https://www.7-zip.org/)！
+
+下载"eet\_\_\_esp\_esm\_translator.7z"档案后，在"下载"文件夹中找到它，点击"提取"并选择您想要的位置和名称。我建议将其与您的其他modding工具一起安装，例如在我的情况下，"Mods"文件夹，使用清晰的名称和已安装的版本，在我的情况下："EET - ESP-ESM Translator 3.68"。
+
+![EET解压缩](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1555505272_EET_1.PNG)
+
+![EET解压缩2](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566419931_Yoplala_1555505283_EET_2.PNG)
+
+安装程序后，您可以通过点击可执行文件(.exe)或使用它打开游戏插件(.esp、.esm或.esl)来打开它。不要犹豫，将其设为这些插件的默认程序。
+
+---
+
+## 第2部分 - 快速翻译mod
+
+我们档案中的EET版本已经包含了所有必要的设置，可以快速有效地使用该软件进行个人翻译。我在这里谈论的是个人使用，如果您想与社区分享您的翻译，我们邀请您阅读图书馆中的完整指南，并熟悉这个出色的工具！:)
+
+当您从Nexus下载包含插件(esp、esm或esl)的mod时，您必须检查是否有需要翻译的内容(这也适用于一些没有插件但包含"Interface" > "Translations"子文件夹的mod，但在这些情况下，我们将使用简单的记事本)。如果您不这样做，您可能会在游戏中遇到英文内容。例如，一个伙伴mod可能会将种族描述重置为英文，或者一个图形mod可能会将地点名称重置为英文等。
+
+以Nexus上的一个伙伴为例：[Winter - The Assassin Companion](https://www.nexusmods.com/skyrimspecialedition/mods/4073)，它位于伙伴mod的第38页。
+
+![Nexus示例](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1531262169_0._Nexus.PNG)
+
+使用MO2安装mod后，导航到其文件夹并使用EET打开esp文件。一个小窗口会询问您插件的格式。对于所有游戏，格式是**windows-1252**，除了天际特别版和辐射4，它们使用**utf-8**！默认情况下，程序会识别插件格式并应该提供正确的编码，如果不是这样，您可能需要检查插件格式，可能在这方面有问题。
+
+![编码选择](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1531262351_Capture.PNG)
+
+在继续之前，请确保您使用的是正确的数据库。默认情况下，程序会识别编码和相关游戏，并加载正确的数据库，但最好始终保持谨慎。主窗口右上角的快速查看将为您提供必要的信息。要更改编码或数据库，只需勾选旁边的小框以"释放"下拉菜单。
+
+![数据库选择](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566422556_Capture.PNG)
+
+然后在一行上按**Ctrl+A**选择mod的所有行，然后按**F11**通过数据库进行自动翻译。对于某些mod，这个操作就足够了！对于许多其他mod，您还需要调整一些小细节。
+
+官方行(原版和非官方补丁)将被程序自动翻译并验证，即变为绿色。其他颜色警告您还有一些工作要做。例如，灰色行表示程序识别了对象的引用，但文本已被mod作者修改(通常是有意的，有时是错误的)。白色行表示mod作者的新条目，您需要自己翻译。青色行表示程序根据其他类似条目(来自mod或BDD)翻译了该条目。等等...在这个阶段，在我的例子中，您可以看到EET阻止了mod将原版武器名称和伙伴所在旅馆的名称重置为英文。
+
+![F11示例](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566424142_Exemple_F11.PNG)
+
+在我的例子中，我看到作者将夜莺弓(Nightingale Bow)的一个实例重命名为"Shadow Seeker"，所以我决定将其翻译为"Traqueur de l'ombre"(暗影追踪者)。我不喜欢NPC的重命名，所以我将"Winter"保留为原始版本(F8)。
+
+![翻译示例](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566424802_Exemple.PNG)
+
+如果您有一些更长的文本需要自己翻译，而您的英语不好，EET允许您直接在其界面中使用在线翻译器。要在一行上使用"Google翻译"，只需点击它并按**Shift + F12**。不过，请检查结果。
+
+完成翻译后，通过点击![验证按钮](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566424921_v.PNG)(或**F10**)来验证您的行。
+
+![验证示例](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566425056_Capture.PNG)
+
+然后只需点击工具栏上的**绿色箭头**：![绿色箭头](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1531262702_4._fleche.PNG)。程序将询问您保存翻译插件的位置，选择相同的文件夹并保持相同的名称，然后确认。确认格式，与输入时相同。大功告成！:)
+
+![完成](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1531262947_le_tour.PNG)
+
+退出程序时，它会提示您保存翻译，请接受。如果mod更新，您只需从程序中加载翻译并将其应用到新版本的插件上！:)
+
+现在，您知道如何快速翻译mod供个人使用了！
+
+---
+
+## 第3部分 - 补充内容
+
+### A. 使用游戏数据库(BDD)
+
+除非是相当罕见的情况，EET会识别相关游戏并加载游戏数据库。这个数据库由原版文本、非官方补丁(PNO)的修正以及有时我们自己的额外修正组成。这就是为什么从我们的网站获取数据库和软件很重要。
+
+检查加载的数据库非常简单，因为它显示在程序主窗口的右上角，在编码格式旁边。要更改编码或数据库，只需勾选旁边的小框以"释放"下拉菜单。
+
+![数据库选择](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566422556_Capture.PNG)
+
+要将游戏BDD应用于一行或多行选定的行，您可以使用F5(使用各种数据库进行即时翻译)、Shift + F5(仅使用官方BDD进行即时翻译)或F11。F5及其变体的优势在于它允许您尝试翻译句子片段或表达式。
+
+![F5示例](http://www.confrerie-des-traducteurs.fr/forum/upload/Oaristys/Oaristys_1488712761_f5.jpg)
+
+要执行搜索并在外部窗口中打开BDD，您可以按F3或点击快捷方式![BDD按钮](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566733176_BDD_1.PNG)。
+
+![BDD窗口](https://www.confrerie-des-traducteurs.fr/forum/upload/Yoplala/Yoplala_1566844639_BDD_1.PNG)
+
+这个窗口将成为您最好的朋友，它将帮助您找到原版行，或句子片段，术语等。实际上，作者可能创建了一个新的对话行，但引用了例如现有的原版地点，因此找到它以正确书写是必不可少的。
+
+> 注意：如果已经选择了一行或文本，程序将打开窗口，并已经对该行的引用或相关文本进行了活跃搜索。这样，您可以搜索EDID、完整文本、文本片段等。
+
+### B. 加载现有翻译
+
+通常，您会想从现有翻译开始，例如从老滚到特别版的移植，更新翻译，翻译兼容性补丁等。为此，只需进入菜单"Traduction > Charger mod déjà traduit"(翻译 > 加载已翻译的mod)并选择您要加载的已翻译插件。这样，您将看到根据现有翻译在插件中翻译的新行。
+
+### C. 找出罪魁祸首 - 分析目录中的所有mod
+
+EET提供了分析整个目录、仅多个mod或比较两个mod的可能性。这些功能可以从"Bases de données"(数据库)菜单访问。
+
+对于翻译者来说，这是确保多个翻译之间一致性的额外方法，例如当他们在一个mod及其补丁上工作时。对于玩家来说，这是一种快速检查某些英文行来自哪里并能够将文本恢复为法语的方法。
+
+### D. mod更新，如何更新我的翻译
+
+想要更新之前已翻译版本的mod？非常简单：加载您的新VO版本，然后进入"Traduction > Charger mod déjà traduit"(翻译 > 加载已翻译的mod)并选择旧版本VF的插件。所有匹配的内容都将被加载，您将看到新版本中修改或添加的行。
+
+您也可以使用Ctrl + L加载之前翻译的保存文件。EET会警告您保存与插件的另一个版本相关联，您可以确认并查看差异。
+
+### E. EET更新
+
+即将推出！
+
+### 其他备注
+* 与内置的Google自动翻译功能相比，我们推荐使用[DeepL](https://www.deepl.com/translator)，这是另一个更有效的在线翻译器。
