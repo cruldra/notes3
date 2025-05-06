@@ -1,0 +1,504 @@
+---
+sidebar_position: 3
+---
+
+# React组件组合模式
+
+组件组合模式（Composition Pattern）是React中一种强大且灵活的设计模式，它允许开发者创建高度可复用、可扩展的组件API。本文将深入探讨组件组合模式的核心概念、实现方法以及最佳实践。
+
+## 什么是组件组合模式？
+
+组件组合模式是指通过将多个独立组件组合在一起，形成一个功能完整的UI组件的设计方法。这种模式的核心思想是：
+
+1. **多个组件协同工作**：不同组件各自负责特定功能，共同实现一个完整的UI交互体验
+2. **共享内部状态**：组件之间通过某种机制共享状态，而无需通过props层层传递
+3. **灵活的API设计**：为使用者提供直观、声明式的API，隐藏内部复杂性
+
+最经典的例子是HTML中的`<select>`和`<option>`标签：
+
+```html
+<select>
+  <option value="react">React</option>
+  <option value="vue">Vue</option>
+  <option value="angular">Angular</option>
+</select>
+```
+
+在React中，这种模式通常被称为"复合组件"（Compound Components）模式。
+
+## 为什么使用组件组合模式？
+
+组件组合模式解决了以下几个常见问题：
+
+### 1. 避免Props钻取（Props Drilling）
+
+当组件层次结构较深时，需要将props从顶层组件传递到深层子组件，这会导致中间组件被迫接收并传递它们不关心的props。组合模式通过共享状态机制避免了这个问题。
+
+### 2. 提高组件灵活性
+
+组合模式允许使用者以更灵活的方式组合和定制组件，而不是通过大量的props配置选项。这使得组件能够适应更多未预见的使用场景。
+
+### 3. 提供更直观的API
+
+组合模式提供了一种更接近HTML原生元素的声明式API，使组件的使用方式更加直观和易于理解。
+
+### 4. 实现关注点分离
+
+每个子组件只关注自己的功能，使代码更加模块化和可维护。
+
+## 实现组件组合模式的方法
+
+在React中，有几种主要的方法来实现组件组合模式：
+
+### 1. React Context API
+
+这是最常用且灵活的方法，通过Context在组件树中共享状态：
+
+```jsx
+// 创建Context
+const TabContext = React.createContext();
+
+// 父组件
+const Tabs = ({children, defaultIndex = 0}) => {
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+
+  return (
+    <TabContext.Provider value={{selectedIndex, setSelectedIndex}}>
+      <div className="tabs">{children}</div>
+    </TabContext.Provider>
+  );
+};
+
+// 子组件
+const TabList = ({children}) => {
+  return <div className="tab-list">{children}</div>;
+};
+
+const Tab = ({children, index}) => {
+  const {selectedIndex, setSelectedIndex} = useContext(TabContext);
+
+  return (
+    <button
+      className={selectedIndex === index ? "tab active" : "tab"}
+      onClick={() => setSelectedIndex(index)}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TabPanel = ({children, index}) => {
+  const {selectedIndex} = useContext(TabContext);
+
+  if (selectedIndex !== index) return null;
+  return <div className="tab-panel">{children}</div>;
+};
+
+// 将子组件作为父组件的属性导出
+Tabs.TabList = TabList;
+Tabs.Tab = Tab;
+Tabs.TabPanel = TabPanel;
+
+export default Tabs;
+```
+
+使用方式：
+
+```jsx
+<Tabs>
+  <Tabs.TabList>
+    <Tabs.Tab index={0}>第一个标签</Tabs.Tab>
+    <Tabs.Tab index={1}>第二个标签</Tabs.Tab>
+  </Tabs.TabList>
+  <Tabs.TabPanel index={0}>第一个标签的内容</Tabs.TabPanel>
+  <Tabs.TabPanel index={1}>第二个标签的内容</Tabs.TabPanel>
+</Tabs>
+```
+
+### 2. React.Children和React.cloneElement
+
+这种方法通过遍历子元素并克隆它们来注入额外的props：
+
+```jsx
+const Tabs = ({children, defaultIndex = 0}) => {
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+
+  return (
+    <div className="tabs">
+      {React.Children.map(children, child =>
+        React.cloneElement(child, {selectedIndex, setSelectedIndex})
+      )}
+    </div>
+  );
+};
+```
+
+这种方法的局限性在于它只能处理直接子元素，如果子元素被其他组件包裹，就无法正常工作。
+
+### 3. Render Props
+
+Render Props是一种React设计模式，它通过函数作为props（或children）传递给组件，使组件能够将内部状态和行为暴露给使用者，从而实现高度的灵活性和可定制性。
+
+#### 什么是Render Props？
+
+"Render Props"这个术语指的是一种在React组件之间共享代码的技术，其中一个组件接受一个返回React元素的函数，并在内部调用这个函数而不是实现自己的渲染逻辑。
+
+简单来说，组件不直接渲染内容，而是接收一个函数，这个函数告诉组件应该渲染什么。
+
+#### 基本实现方式
+
+Render Props有两种主要实现方式：
+
+1. **通过children作为函数**：
+
+```jsx
+const Tabs = ({children, defaultIndex = 0}) => {
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+
+  // children是一个函数，我们调用它并传入状态和行为
+  return children({selectedIndex, setSelectedIndex});
+};
+
+// 使用方式
+<Tabs>
+  {({selectedIndex, setSelectedIndex}) => (
+    <>
+      <div className="tab-list">
+        <button
+          className={selectedIndex === 0 ? "active" : ""}
+          onClick={() => setSelectedIndex(0)}
+        >
+          Tab 1
+        </button>
+        <button
+          className={selectedIndex === 1 ? "active" : ""}
+          onClick={() => setSelectedIndex(1)}
+        >
+          Tab 2
+        </button>
+      </div>
+      <div className="tab-panels">
+        {selectedIndex === 0 && <div>内容1</div>}
+        {selectedIndex === 1 && <div>内容2</div>}
+      </div>
+    </>
+  )}
+</Tabs>
+```
+
+2. **通过专门的render prop**：
+
+```jsx
+const Tabs = ({render, defaultIndex = 0}) => {
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+
+  // 使用专门的render prop而不是children
+  return render({selectedIndex, setSelectedIndex});
+};
+
+// 使用方式
+<Tabs
+  render={({selectedIndex, setSelectedIndex}) => (
+    // 渲染逻辑与上面相同
+  )}
+/>
+```
+
+#### Render Props与组件组合模式的结合
+
+Render Props可以与组件组合模式结合使用，提供更灵活的API：
+
+```jsx
+const Tabs = ({children, defaultIndex = 0}) => {
+  const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+
+  // 提供两种使用方式：函数或组件组合
+  if (typeof children === 'function') {
+    return children({selectedIndex, setSelectedIndex});
+  }
+
+  // 使用React.Children和cloneElement为子组件注入props
+  return (
+    <div className="tabs">
+      {React.Children.map(children, child =>
+        React.cloneElement(child, {selectedIndex, setSelectedIndex})
+      )}
+    </div>
+  );
+};
+
+// 使用方式1：Render Props
+<Tabs>
+  {({selectedIndex, setSelectedIndex}) => (
+    // 完全自定义的渲染逻辑
+  )}
+</Tabs>
+
+// 使用方式2：组件组合
+<Tabs>
+  <TabList>
+    <Tab index={0}>Tab 1</Tab>
+    <Tab index={1}>Tab 2</Tab>
+  </TabList>
+  <TabPanel index={0}>内容1</TabPanel>
+  <TabPanel index={1}>内容2</TabPanel>
+</Tabs>
+```
+
+#### Render Props的优势
+
+1. **最大的灵活性**：使用者可以完全控制渲染逻辑，组件只负责提供状态和行为
+2. **无需预定义组件结构**：不需要预先定义所有可能的子组件，使用者可以自由组合
+3. **易于处理复杂嵌套**：可以轻松处理任意深度的组件嵌套
+4. **类型安全**：在TypeScript中，函数参数和返回值可以得到良好的类型检查
+
+#### 实际应用示例：可拖拽组件
+
+下面是一个使用Render Props实现可拖拽功能的例子：
+
+```jsx
+const Draggable = ({children}) => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMouseDown = () => setIsDragging(true);
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setPosition({
+        x: position.x + e.movementX,
+        y: position.y + e.movementY
+      });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, position]);
+
+  return children({
+    position,
+    dragHandlers: {
+      onMouseDown: handleMouseDown
+    }
+  });
+};
+
+// 使用方式
+<Draggable>
+  {({position, dragHandlers}) => (
+    <div
+      style={{
+        position: 'absolute',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        padding: '20px',
+        background: 'lightblue',
+        cursor: isDragging ? 'grabbing' : 'grab'
+      }}
+      {...dragHandlers}
+    >
+      拖动我！
+    </div>
+  )}
+</Draggable>
+```
+
+## 实际案例：构建Accordion组件
+
+让我们通过构建一个手风琴（Accordion）组件来展示组件组合模式的实际应用：
+
+```jsx
+import React, { createContext, useContext, useState } from 'react';
+
+// 创建Context
+const AccordionContext = createContext();
+
+// 父组件
+export const Accordion = ({children}) => {
+  return <div className="accordion">{children}</div>;
+};
+
+// Item组件
+const AccordionItem = ({children}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <AccordionContext.Provider value={{isOpen, setIsOpen}}>
+      <div className="accordion-item">{children}</div>
+    </AccordionContext.Provider>
+  );
+};
+
+// Header组件
+const AccordionHeader = ({children}) => {
+  const {isOpen, setIsOpen} = useContext(AccordionContext);
+
+  return (
+    <button
+      className="accordion-header"
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      {children}
+      <span className={`arrow ${isOpen ? 'open' : ''}`}>▼</span>
+    </button>
+  );
+};
+
+// Content组件
+const AccordionContent = ({children}) => {
+  const {isOpen} = useContext(AccordionContext);
+
+  if (!isOpen) return null;
+  return <div className="accordion-content">{children}</div>;
+};
+
+// 将子组件作为父组件的属性导出
+Accordion.Item = AccordionItem;
+Accordion.Header = AccordionHeader;
+Accordion.Content = AccordionContent;
+```
+
+使用方式：
+
+```jsx
+<Accordion>
+  <Accordion.Item>
+    <Accordion.Header>第一部分</Accordion.Header>
+    <Accordion.Content>第一部分的详细内容...</Accordion.Content>
+  </Accordion.Item>
+  <Accordion.Item>
+    <Accordion.Header>第二部分</Accordion.Header>
+    <Accordion.Content>第二部分的详细内容...</Accordion.Content>
+  </Accordion.Item>
+</Accordion>
+```
+
+## 组件组合模式的最佳实践
+
+### 1. 提供合理的默认行为
+
+确保组件在最简单的使用场景下能够正常工作，不要强制使用者提供过多的配置。
+
+### 2. 支持可控和非可控模式
+
+允许使用者选择是否控制组件的状态：
+
+```jsx
+const Tabs = ({children, selectedIndex, onChange, defaultIndex = 0}) => {
+  // 如果提供了selectedIndex，则为可控模式
+  const isControlled = selectedIndex !== undefined;
+  const [internalIndex, setInternalIndex] = useState(defaultIndex);
+
+  // 当前实际使用的索引
+  const currentIndex = isControlled ? selectedIndex : internalIndex;
+
+  // 处理索引变化
+  const handleIndexChange = (index) => {
+    if (!isControlled) {
+      setInternalIndex(index);
+    }
+    if (onChange) {
+      onChange(index);
+    }
+  };
+
+  // ...
+};
+```
+
+### 3. 使用TypeScript增强类型安全
+
+为组件添加适当的类型定义，提高开发体验和代码质量：
+
+```tsx
+interface TabsProps {
+  children: React.ReactNode;
+  defaultIndex?: number;
+  selectedIndex?: number;
+  onChange?: (index: number) => void;
+}
+
+interface TabProps {
+  children: React.ReactNode;
+  index: number;
+  disabled?: boolean;
+}
+
+// ...
+```
+
+### 4. 考虑可访问性（Accessibility）
+
+确保组件符合ARIA标准，支持键盘导航和屏幕阅读器：
+
+```jsx
+const Tab = ({children, index}) => {
+  const {selectedIndex, setSelectedIndex} = useContext(TabContext);
+
+  return (
+    <button
+      role="tab"
+      aria-selected={selectedIndex === index}
+      aria-controls={`panel-${index}`}
+      id={`tab-${index}`}
+      tabIndex={selectedIndex === index ? 0 : -1}
+      onClick={() => setSelectedIndex(index)}
+      onKeyDown={(e) => {
+        // 处理键盘导航
+        // ...
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TabPanel = ({children, index}) => {
+  const {selectedIndex} = useContext(TabContext);
+
+  return (
+    <div
+      role="tabpanel"
+      id={`panel-${index}`}
+      aria-labelledby={`tab-${index}`}
+      hidden={selectedIndex !== index}
+    >
+      {selectedIndex === index && children}
+    </div>
+  );
+};
+```
+
+## 组件组合模式的优缺点
+
+### 优点
+
+1. **灵活性**：能够适应各种使用场景，包括未预见的场景
+2. **可扩展性**：易于添加新功能或修改现有功能
+3. **直观的API**：使用方式接近HTML原生元素，易于理解
+4. **关注点分离**：每个组件只负责自己的功能，代码更加模块化
+
+### 缺点
+
+1. **实现复杂性**：内部实现比简单组件更复杂
+2. **学习成本**：使用者需要了解组件的组合方式
+3. **性能考虑**：需要注意Context的使用可能导致不必要的重渲染
+
+## 总结
+
+组件组合模式是React中一种强大的设计模式，它通过将复杂UI拆分为多个协同工作的组件，提供了灵活、直观的API。通过Context API、React.Children或Render Props等方法，我们可以实现组件间的状态共享，避免Props钻取问题。
+
+这种模式特别适合构建复杂的UI组件，如标签页、手风琴、下拉菜单等。通过遵循最佳实践，我们可以创建既易于使用又高度可定制的组件，提高代码的可维护性和可复用性。
+
+在实际项目中，组件组合模式是构建组件库和设计系统的重要工具，能够帮助我们应对不断变化的需求和未预见的使用场景。
