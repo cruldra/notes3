@@ -1,0 +1,102 @@
+# IFrame Generator RE
+
+## 基本信息
+
+- **MOD名称**：IFrame Generator RE
+- **作者**：Maxsu
+- **Nexus链接**：[https://www.nexusmods.com/skyrimspecialedition/mods/74401](https://www.nexusmods.com/skyrimspecialedition/mods/74401)
+- **版本**：v1.03
+- **支持游戏版本**：天际特别版(SE)和周年纪念版(AE)
+
+## 简介
+
+IFrame Generator RE是一个SKSE插件，允许您以无脚本方式为动画生成无敌帧。这是原版的重制版，增加了新功能并同时支持AE和SE版本。
+
+## 什么是无敌帧(IFrame)?
+
+无敌帧(Invincibility Frames，简称IFrame)是游戏设计中的一个重要概念，源自格斗游戏和动作游戏。它指的是在特定动画播放过程中，角色暂时处于"无敌状态"的那些帧，在这些帧中角色不会受到任何伤害。
+
+**无敌帧的作用和意义：**
+
+1. **游戏平衡**：无敌帧为玩家提供了在危险情况下的生存机会，使游戏更加平衡和公平。
+2. **战斗流畅性**：在闪避、翻滚等动作中添加无敌帧，可以使战斗感觉更加流畅和反应灵敏。
+3. **战术深度**：玩家需要学习和掌握何时使用带有无敌帧的动作，增加了游戏的战术深度。
+4. **视觉一致性**：当角色进行闪避或翻滚等动作时，从视觉上看起来应该能够避开攻击，无敌帧使这种视觉表现与实际游戏机制保持一致。
+
+**在上古卷轴5中的应用：**
+
+在上古卷轴5中，原版游戏并没有为闪避或翻滚动作提供无敌帧。这意味着即使你的角色在视觉上完成了闪避动作，仍然可能受到伤害。许多战斗增强MOD（如TK Dodge RE）添加了闪避功能，而IFrame Generator RE则为这些动作提供了无敌帧支持，使闪避动作不仅仅是视觉效果，而是真正有效的战术选择。
+
+## 需求
+
+- 对应游戏版本的SKSE
+- [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
+
+## 功能介绍
+
+IFrame Generator RE是一个框架，允许MOD制作者以无脚本方式为他们的动画生成无敌帧。它通过直接在动画文件中标记无敌帧时间段，而不是使用传统的脚本方法，从而提高了性能和稳定性。
+
+**RE更新中的新功能：**
+- 在一个插件中同时支持AE和SE版本
+- 允许您在动画文件中注释无敌帧，生成无敌帧而不改变行为特性
+
+## 对普通用户
+
+作为普通用户，您只需要知道，您安装了一些需要此MOD来实现其无敌帧功能的动画MOD。因此，您只需下载并安装此MOD作为依赖项即可。
+
+**使用IFrame Generator的知名MOD：**
+- [TK Dodge RE](https://www.nexusmods.com/skyrimspecialedition/mods/56956)（无脚本闪避MOD）
+- [Elden Rim Dodge](https://www.nexusmods.com/skyrimspecialedition/mods/76872)（艾尔登法环风格闪避）
+- [Stylish Dodge Chaos](https://www.nexusmods.com/skyrimspecialedition/mods/92548)（风格化闪避）
+- [Dynamic Dodge Shot](https://www.nexusmods.com/skyrimspecialedition/mods/114101)（动态闪避射击）
+- [Rim Parry and Execution](https://www.nexusmods.com/skyrimspecialedition/mods/114366)（格挡与处决）
+
+安装此MOD后，这些动作MOD中的闪避、翻滚和特殊动作将拥有无敌帧，使您能够真正地避开敌人的攻击，而不仅仅是视觉上的闪避动作。
+
+## 安装方法
+
+1. 确保已安装对应游戏版本的SKSE
+2. 安装[Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
+3. 使用MOD管理器（如Vortex或MO2）安装此MOD
+
+## 技术说明
+
+IFrame Generator RE是一个框架，它允许为游戏中的动画添加无敌帧（Invincibility Frames，简称IFrame）。与传统的通过脚本实现无敌帧的方法不同，此MOD直接在动画文件中注释无敌帧，这种方法更加高效，不会造成脚本延迟，也不会增加游戏的脚本负担。
+
+### 无敌帧的技术实现
+
+在游戏开发中，无敌帧通常有几种实现方式：
+
+1. **脚本方法**：通过脚本检测动画播放状态，在特定时间段内禁用伤害计算。这种方法简单但可能导致脚本延迟和性能问题。
+
+2. **动画事件**：在动画文件中添加特殊事件标记，当播放到这些标记时触发无敌状态。这种方法更加高效但需要修改动画文件。
+
+3. **碰撞检测修改**：临时修改角色的碰撞检测系统，使其在特定时间内不响应伤害碰撞。
+
+IFrame Generator RE采用了一种混合方法，它允许MOD作者在不修改原始动画文件的情况下，通过配置为特定动画添加无敌帧。这种方法既保持了高效性，又提供了极大的灵活性。
+
+此MOD主要面向其他MOD作者使用，作为一个框架为他们的动画MOD提供无敌帧功能。对于普通用户来说，只需要安装此MOD作为依赖项，以确保那些需要无敌帧功能的动画MOD能够正常工作。
+
+## 更新日志
+
+### 版本v1.03
+- 防止与未加载3D模型的角色一起工作时可能发生的CTD问题
+- 使用`RelWithDebInfo`配置构建插件，以便开发者可以从崩溃日志偏移量中轻松查找对应的代码块
+
+## 对MOD作者
+
+如果您是MOD作者并希望在您的动画MOD中使用无敌帧功能，请查看[官方文档](https://github.com/max-su-2019/MaxsuIFrame/blob/main/doc/en/tutorial.md)了解详情。
+
+[源代码](https://github.com/max-su-2019/MaxsuIFrame)
+
+## 致谢
+- [Doodlezoid](https://www.nexusmods.com/skyrimspecialedition/users/28038035) - 将项目移植到NG
+
+## 权限说明
+
+- 不允许在未经许可的情况下上传到其他网站
+- 不允许在未经许可的情况下修改文件
+- 不允许转换为其他游戏使用
+- 在使用此文件中的任何资产之前必须获得作者许可
+- 不允许在付费MOD中使用此文件的资产
+- 如果您的MOD使用此MOD的资产，您可以获得Nexus的捐赠点数
