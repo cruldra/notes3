@@ -1,0 +1,201 @@
+# 上古卷轴5中的NIF文件详解
+
+## 什么是NIF文件？
+
+NIF（NetImmerse File Format）是上古卷轴系列游戏中使用的3D模型文件格式。这种格式最初由NetImmerse开发，后来被Gamebryo引擎继承和使用。Bethesda游戏工作室在其多款游戏中采用了这种文件格式，包括《上古卷轴3：晨风》、《上古卷轴4：湮灭》、《上古卷轴5：天际》以及《辐射3》、《辐射：新维加斯》和《辐射4》等。
+
+NIF文件的名称来源于"NetImmerse File"，它是以Gamebryo引擎的前身NetImmerse命名的。这种文件格式专为游戏开发而设计，能够高效地存储和处理3D模型数据。
+
+## NIF文件的用途
+
+在上古卷轴5中，NIF文件主要用于以下几个方面：
+
+1. **3D模型存储**：游戏中的所有3D模型，包括角色、武器、盔甲、建筑、家具、植物等都使用NIF文件格式存储。
+
+2. **骨骼和动画**：NIF文件可以包含骨骼结构和动画数据，用于角色和生物的动作表现。
+
+3. **碰撞检测**：NIF文件中可以定义物体的碰撞体积，用于游戏中的物理交互。
+
+4. **材质和纹理映射**：NIF文件可以定义模型的材质属性和纹理映射关系，与DDS贴图文件配合使用。
+
+5. **特殊效果**：一些特殊效果，如发光、透明、反射等也可以在NIF文件中定义。
+
+## NIF文件的结构
+
+NIF文件采用树状结构组织数据，主要包含以下几种节点类型：
+
+1. **NiNode**：基本节点类型，用于组织模型的层次结构。
+
+2. **NiTriShape/NiTriStrips**：包含模型的几何数据，如顶点、法线、UV坐标等。
+
+3. **NiMaterialProperty**：定义材质属性，如颜色、光泽度等。
+
+4. **NiTexturingProperty**：定义纹理映射关系。
+
+5. **NiSourceTexture**：指定纹理文件路径。
+
+6. **NiSkinInstance**：定义骨骼蒙皮信息。
+
+7. **NiSkinData**：存储蒙皮权重数据。
+
+8. **NiSkinPartition**：用于优化蒙皮渲染。
+
+9. **BSLightingShaderProperty**：天际特有的着色器属性，用于高级光照效果。
+
+10. **BSEffectShaderProperty**：用于特殊效果，如发光、透明等。
+
+## 在游戏中的位置
+
+在上古卷轴5中，NIF文件主要存放在以下位置：
+
+1. **Data\meshes\**：这个文件夹及其子文件夹存放了游戏中的大部分模型文件。
+
+2. **Data\meshes\actors\character\**：存放角色相关的模型文件。
+
+3. **Data\meshes\armor\**：存放盔甲模型文件。
+
+4. **Data\meshes\weapons\**：存放武器模型文件。
+
+5. **Data\meshes\architecture\**：存放建筑模型文件。
+
+6. **Data\meshes\clutter\**：存放杂物和家具模型文件。
+
+这些NIF文件可以直接作为散装文件存在，也可以打包在BSA（Bethesda Softworks Archive）文件中。
+
+## 编辑NIF文件的工具
+
+要查看和编辑NIF文件，需要使用专门的工具。以下是一些常用的NIF文件编辑工具：
+
+### 1. NifSkope
+
+NifSkope是最常用的NIF文件查看和编辑工具，它提供了直观的界面，允许用户查看和修改NIF文件的各种属性。
+
+**主要功能**：
+- 查看和编辑NIF文件的节点结构
+- 修改材质和纹理属性
+- 添加或删除节点
+- 预览模型和纹理
+- 支持多种Bethesda游戏的NIF格式
+
+**下载地址**：[NifSkope官方网站](https://github.com/niftools/nifskope/releases)
+
+### 2. Blender + NIF插件
+
+Blender是一款强大的开源3D建模软件，通过安装NIF插件，可以在Blender中导入、编辑和导出NIF文件。
+
+**主要功能**：
+- 在专业3D建模环境中编辑NIF模型
+- 创建新的模型并导出为NIF格式
+- 编辑UV映射和材质
+- 设置骨骼和动画
+
+**相关插件**：
+- [Blender NIF Plugin](https://github.com/niftools/blender_nif_plugin)
+- [PyNifly](https://github.com/BadDogSkyrim/PyNifly)（专为上古卷轴5和辐射4设计）
+
+### 3. 3ds Max + NIF插件
+
+3ds Max是专业的3D建模软件，通过安装NIF插件，可以在3ds Max中处理NIF文件。
+
+**主要功能**：
+- 导入和导出NIF文件
+- 高级模型编辑
+- 材质和纹理设置
+- 骨骼和动画编辑
+
+**相关插件**：
+- [Max NIF Plugin](https://github.com/niftools/max_nif_plugin)
+
+### 4. OutfitStudio (BodySlide)
+
+OutfitStudio是BodySlide工具套件的一部分，专为编辑上古卷轴和辐射系列游戏的角色和装备模型设计。
+
+**主要功能**：
+- 编辑角色体型和装备适配
+- 导入和导出NIF文件
+- 简化的模型编辑界面
+- 支持批量处理
+
+**下载地址**：[BodySlide and OutfitStudio](https://www.nexusmods.com/skyrimspecialedition/mods/201)
+
+## 常见的NIF文件编辑操作
+
+### 1. 修改材质和纹理
+
+使用NifSkope可以轻松修改模型的材质和纹理：
+1. 打开NIF文件
+2. 找到BSLightingShaderProperty或NiTexturingProperty节点
+3. 修改纹理路径或材质属性
+4. 保存文件
+
+### 2. 添加发光效果
+
+为武器或装备添加发光效果：
+1. 在NifSkope中打开模型
+2. 找到或添加BSEffectShaderProperty节点
+3. 设置发光颜色和强度
+4. 保存文件
+
+### 3. 修改碰撞体积
+
+调整物体的碰撞检测范围：
+1. 找到bhkCollisionObject节点
+2. 修改碰撞体积的形状和大小
+3. 保存文件
+
+### 4. 合并模型
+
+将多个模型合并为一个：
+1. 使用NifSkope的Block > Paste Branch功能
+2. 将一个模型的分支复制到另一个模型中
+3. 调整节点层次结构
+4. 保存为新文件
+
+### 5. 转换模型格式
+
+将其他格式的模型转换为NIF格式：
+1. 使用Blender或3ds Max导入原始模型（如OBJ、FBX等）
+2. 安装相应的NIF插件
+3. 调整模型以符合游戏要求
+4. 导出为NIF格式
+
+## NIF文件与其他文件的关系
+
+### 1. NIF与DDS
+
+NIF文件通常与DDS（DirectDraw Surface）贴图文件配合使用：
+- NIF文件定义模型的几何结构和材质属性
+- DDS文件存储模型的纹理图像
+- NIF文件中的纹理路径指向相应的DDS文件
+
+### 2. NIF与KF/HKX
+
+KF（Keyframe）和HKX（Havok）文件用于存储动画数据：
+- NIF文件定义骨骼结构
+- KF/HKX文件定义骨骼的动画序列
+- 游戏引擎将两者结合，实现模型的动画效果
+
+### 3. NIF与ESP/ESM
+
+ESP（Elder Scrolls Plugin）和ESM（Elder Scrolls Master）文件是游戏的插件文件：
+- ESP/ESM文件定义游戏中的物品、角色、任务等
+- 这些定义会引用相应的NIF模型文件
+- 修改ESP/ESM中的路径可以更换物品使用的模型
+
+## 注意事项
+
+1. **备份原始文件**：在编辑NIF文件前，务必备份原始文件，以防编辑出错导致游戏崩溃。
+
+2. **保持节点结构**：尽量不要随意删除或添加节点，除非你确切知道这样做的后果。
+
+3. **路径问题**：修改纹理路径时，确保路径格式正确，通常使用相对于游戏Data文件夹的路径。
+
+4. **版本兼容性**：不同版本的游戏（如原版天际和特别版）使用的NIF格式可能有所不同，确保使用兼容的工具和格式。
+
+5. **性能考虑**：过于复杂的模型可能影响游戏性能，尤其是在多个这样的模型同时出现时。
+
+## 总结
+
+NIF文件是上古卷轴5中至关重要的3D模型文件格式，它定义了游戏中所有可见物体的外观和物理特性。通过了解NIF文件的结构和编辑方法，MOD制作者可以创建或修改游戏中的各种模型，从而丰富游戏体验。
+
+无论是简单地更换武器纹理，还是创建全新的角色模型，掌握NIF文件的知识都是制作高质量MOD的基础。随着工具的不断发展和社区的经验积累，NIF文件的编辑变得越来越accessible，为MOD创作提供了广阔的可能性。
