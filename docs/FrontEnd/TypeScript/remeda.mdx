@@ -1,0 +1,373 @@
+# Remeda - TypeScript 优先的函数式工具库
+
+Remeda 是一个为 JavaScript 和 TypeScript 设计的实用工具库，可以作为 lodash 的替代品。它提供了丰富的函数式编程工具，并且完全使用 TypeScript 编写，提供了出色的类型安全性。
+
+> Remeda = **R**eact + ram**eda**
+
+Remeda 的名字来源于 React 和 ramda 的组合，表明它结合了 React 生态系统的实用性和 Ramda 的函数式编程理念。
+
+## 主要特点
+
+### 1. 完全使用 TypeScript 编写
+
+与 Lodash 和 Ramda 等库不同，Remeda 是完全使用 TypeScript 编写的，而不是后期添加类型定义。这意味着类型是深度集成到代码中的，可以将重点从运行时错误转移到编译时错误，让你在 IDE 和 CI 中捕获错误，而不是在日志或生产环境中。
+
+```typescript
+const DATA = [1, 2, 3] as const;
+
+const builtin = DATA.map((x) => x.toString());
+//    ^? string[]
+
+const withRemeda = R.map(DATA, (x) => x.toString());
+//    ^? [string, string, string]
+```
+
+### 2. 函数式编程支持
+
+Remeda 提供了函数式编程的便利性，同时保持了灵活性：
+
+- **自动柯里化**：所有函数都内置了自动柯里化，可以使用数据优先（data-first）或数据最后（data-last）的方式调用
+- **管道操作**：支持使用 `pipe` 函数进行数据转换，使代码更易读
+
+```typescript
+// 数据优先方式（类似 lodash）
+R.pick(obj, ["firstName", "lastName"]);
+
+// 数据最后方式（类似 ramda）
+R.pipe(obj, R.pick(["firstName", "lastName"]));
+```
+
+### 3. 高效的惰性求值
+
+Remeda 的 `pipe` 函数能够自动检测可以惰性计算的 Remeda 函数，并在不需要你做任何额外工作的情况下优化管道的这些部分：
+
+```typescript
+// 获取前 3 个唯一值
+const DATA = [1, 2, 2, 3, 3, 4, 5, 6];
+
+const result = R.pipe(
+  DATA,
+  R.map((x) => {
+    console.log("iterate", x);
+    return x;
+  }),
+  R.unique(),
+  R.take(3),
+); // => [1, 2, 3]
+
+// 控制台输出:
+// iterate 1
+// iterate 2
+// iterate 2
+// iterate 3
+```
+
+### 4. 可靠性和测试覆盖
+
+Remeda 拥有 100% 的测试覆盖率，确保所有功能按预期工作。测试不仅涵盖运行时行为，还包括类型检查。
+
+## 安装
+
+```bash
+# npm
+npm install remeda
+
+# pnpm
+pnpm add remeda
+
+# yarn
+yarn add remeda
+
+# bun
+bun install remeda
+```
+
+## 基本使用
+
+### 导入方式
+
+```typescript
+// 导入所有函数
+import * as R from "remeda";
+
+// 或者单独导入需要的函数
+import { pipe, map, filter, unique } from "remeda";
+```
+
+### 示例：数组操作
+
+```typescript
+import * as R from "remeda";
+
+// 获取唯一值并取前三个
+R.pipe(
+  [1, 2, 2, 3, 3, 4, 5, 6],
+  R.tap((value) => console.log(`Got ${value}`)),
+  R.unique(),
+  R.take(3),
+); // => [1, 2, 3]
+```
+
+### 示例：对象排序
+
+```typescript
+import * as R from "remeda";
+
+type User = {
+  firstName: string;
+  lastName: string;
+  lastLogin: number;
+};
+
+const users: User[] = [
+  { firstName: "John", lastName: "Doe", lastLogin: 1000 },
+  { firstName: "Jane", lastName: "Doe", lastLogin: 2000 },
+  { firstName: "Jack", lastName: "Smith", lastLogin: 1500 },
+];
+
+// 按最后登录时间降序，然后按姓氏和名字升序排序
+R.sortBy(
+  users,
+  [R.prop("lastLogin"), "desc"],
+  R.prop("lastName"),
+  R.prop("firstName"),
+);
+```
+
+## 与 Lodash 的比较
+
+### 1. 类型安全
+
+Remeda 提供了更好的类型安全性，因为它是从头开始使用 TypeScript 构建的，而 Lodash 是后期添加类型定义的。
+
+### 2. 函数式风格
+
+Remeda 同时支持数据优先（data-first）和数据最后（data-last）的调用风格，而 Lodash 主要是数据优先的。这使得 Remeda 在函数式编程中更加灵活。
+
+### 3. 惰性求值
+
+Remeda 的 `pipe` 函数支持惰性求值，可以自动优化性能，而 Lodash 需要使用 `_.chain()` 和 `.value()` 来实现类似功能。
+
+### 4. API 差异
+
+虽然 Remeda 提供了许多与 Lodash 相似的函数，但有一些命名和行为上的差异：
+
+- `_.uniq` 在 Remeda 中是 `R.unique`
+- `_.takeRight` 在 Remeda 中是 `R.takeLast`
+- `_.dropRight` 在 Remeda 中是 `R.dropLast`
+
+## 常用函数分类
+
+### 数组操作
+
+- `map`: 映射数组元素
+- `filter`: 过滤数组元素
+- `reduce`: 归约数组
+- `unique`: 获取唯一值
+- `take`/`takeLast`: 获取前/后 N 个元素
+- `drop`/`dropLast`: 删除前/后 N 个元素
+- `sort`/`sortBy`: 排序
+- `groupBy`: 分组
+- `partition`: 分割数组
+- `flatten`/`flat`: 扁平化数组
+
+### 对象操作
+
+- `pick`: 选择对象属性
+- `omit`: 忽略对象属性
+- `merge`: 合并对象
+- `mapValues`: 映射对象值
+- `mapKeys`: 映射对象键
+- `entries`: 获取键值对
+- `fromEntries`: 从键值对创建对象
+
+### 函数操作
+
+- `pipe`: 函数管道
+- `once`: 只执行一次的函数
+- `partialBind`: 部分应用函数
+- `funnel`: 控制函数调用频率（可用于实现 debounce 和 throttle）
+
+### 逻辑操作
+
+- `allPass`: 所有谓词都为真
+- `anyPass`: 任一谓词为真
+- `when`: 条件执行
+
+## 迁移指南
+
+如果你正在从 Lodash 迁移到 Remeda，可以参考官方的[迁移指南](https://remedajs.com/migrate/lodash)，它详细列出了 Lodash 函数及其在 Remeda 中的对应函数。
+
+## 高级用法
+
+### 组合多个操作
+
+Remeda 的 `pipe` 函数允许你以清晰的方式组合多个操作：
+
+```typescript
+import * as R from "remeda";
+
+const users = [
+  { name: "john", age: 20, gender: "m" },
+  { name: "marry", age: 22, gender: "f" },
+  { name: "samara", age: 24, gender: "f" },
+  { name: "paula", age: 24, gender: "f" },
+  { name: "bill", age: 33, gender: "m" },
+];
+
+// 筛选女性用户并按年龄分组
+const femalesByAge = R.pipe(
+  users,
+  R.filter((x) => x.gender === "f"),
+  R.groupBy((x) => x.age),
+);
+// 结果: { 22: [{name: "marry", ...}], 24: [{name: "samara", ...}, {name: "paula", ...}] }
+```
+
+### 使用 allPass 和 anyPass 进行复杂条件过滤
+
+```typescript
+import * as R from "remeda";
+
+const users = [
+  { name: "John", age: 29, active: true },
+  { name: "Jane", age: 32, active: false },
+  { name: "Bob", age: 17, active: true },
+];
+
+// 检查用户是否年龄大于18且处于活跃状态
+const isOlderThan18 = (user) => user.age > 18;
+const isActive = (user) => user.active === true;
+
+// 使用 allPass 检查所有条件
+const activeAdults = R.filter(users, R.allPass([isOlderThan18, isActive]));
+// 结果: [{ name: "John", age: 29, active: true }]
+
+// 使用 anyPass 检查任一条件
+const activeOrAdult = R.filter(users, R.anyPass([isOlderThan18, isActive]));
+// 结果: [{ name: "John", age: 29, active: true }, { name: "Jane", age: 32, active: false }, { name: "Bob", age: 17, active: true }]
+```
+
+### 使用 indexBy 创建查找表
+
+```typescript
+import { indexBy } from 'remeda';
+
+const users = [
+  { id: 1, name: 'John' },
+  { id: 2, name: 'Jane' },
+];
+
+// 通过 id 创建查找表
+const userById = indexBy(users, 'id');
+// 结果: { 1: { id: 1, name: 'John' }, 2: { id: 2, name: 'Jane' } }
+
+// 也可以使用函数选择器
+const userByIdStr = indexBy(users, (user) => String(user.id));
+// 结果: { '1': { id: 1, name: 'John' }, '2': { id: 2, name: 'Jane' } }
+```
+
+### 使用 once 创建只执行一次的函数
+
+```typescript
+import { once } from 'remeda';
+
+// 创建一个只会执行一次的函数
+const generateRandomNumber = once(() => {
+  console.log('Generating random number...');
+  return Math.random();
+});
+
+const num1 = generateRandomNumber(); // 输出: "Generating random number..." 并返回一个随机数
+const num2 = generateRandomNumber(); // 不输出任何内容，返回与 num1 相同的值
+const num3 = generateRandomNumber(); // 不输出任何内容，返回与 num1 相同的值
+
+console.log(num1 === num2); // true
+```
+
+### 使用 funnel 实现 debounce 和 throttle
+
+Remeda 提供了一个强大的 `funnel` 函数，可以用来实现 debounce 和 throttle 功能：
+
+```typescript
+import { funnel } from 'remeda';
+
+// 实现 debounce
+function debounce(func, wait = 0, { leading = false, trailing = true } = {}) {
+  const { call } = funnel(
+    (args) => {
+      if (leading || trailing) {
+        func(...args);
+      }
+    },
+    {
+      reducer: (_, ...args) => args,
+      minQuietPeriodMs: wait,
+      triggerAt: trailing ? (leading ? "both" : "end") : "start",
+    },
+  );
+  return call;
+}
+
+// 实现 throttle
+function throttle(func, wait = 0, { leading = true, trailing = true } = {}) {
+  const { call } = funnel(
+    (args) => {
+      if (leading || trailing) {
+        func(...args);
+      }
+    },
+    {
+      reducer: (_, ...args) => args,
+      minQuietPeriodMs: wait,
+      maxBurstDurationMs: wait,
+      triggerAt: trailing ? (leading ? "both" : "end") : "start",
+    },
+  );
+  return call;
+}
+```
+
+## 性能考虑
+
+Remeda 在设计时考虑了性能，特别是通过惰性求值优化了管道操作。在大多数情况下，Remeda 的性能与 Lodash 相当，有时甚至更好。
+
+然而，对于某些特定操作，原生 JavaScript 方法可能会更快。Remeda 的文档中通常会指出这些情况，并提供原生替代方案。
+
+## 总结
+
+Remeda 是一个现代化的、TypeScript 优先的函数式工具库，提供了与 Lodash 类似的功能，但具有更好的类型安全性和函数式编程支持。它的惰性求值和自动柯里化特性使其在性能和灵活性方面都有优势。
+
+主要优点：
+
+1. 完全使用 TypeScript 编写，提供卓越的类型安全性
+2. 同时支持数据优先和数据最后的调用风格
+3. 自动惰性求值优化性能
+4. 全面的测试覆盖确保可靠性
+5. 现代化的 API 设计，符合函数式编程原则
+
+如果你正在使用 TypeScript 开发项目，并且重视类型安全和函数式编程风格，Remeda 是一个值得考虑的 Lodash 替代品。
+
+## 何时选择 Remeda
+
+### 选择 Remeda 的情况
+
+1. **使用 TypeScript 开发项目**：如果你的项目使用 TypeScript，Remeda 提供的类型安全性是其最大优势
+2. **重视函数式编程**：如果你喜欢函数式编程风格，Remeda 的 pipe 和自动柯里化特性非常有用
+3. **需要同时支持数据优先和数据最后风格**：Remeda 同时支持这两种调用风格，提供了更大的灵活性
+4. **关注性能**：Remeda 的惰性求值可以在处理大型数据集时提供性能优势
+
+### 可能不适合 Remeda 的情况
+
+1. **已经深度依赖 Lodash**：如果你的项目已经大量使用 Lodash，迁移成本可能较高
+2. **需要 Lodash 的全部功能**：Remeda 不提供 Lodash 的所有功能，某些特定功能可能需要自行实现
+3. **项目不使用 TypeScript**：虽然 Remeda 可以在 JavaScript 项目中使用，但其类型安全的优势在 JavaScript 中无法充分发挥
+4. **团队不熟悉函数式编程**：如果团队成员不熟悉函数式编程概念，可能需要额外的学习成本
+
+## 相关资源
+
+- [Remeda 官方网站](https://remedajs.com)
+- [Remeda GitHub 仓库](https://github.com/remeda/remeda)
+- [Remeda NPM 包](https://www.npmjs.com/package/remeda)
+- [Lodash 到 Remeda 的迁移指南](https://remedajs.com/migrate/lodash)
+- [Ramda 到 Remeda 的迁移指南](https://remedajs.com/migrate/ramda)
