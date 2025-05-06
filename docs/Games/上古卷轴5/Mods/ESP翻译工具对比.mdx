@@ -1,0 +1,131 @@
+# 上古卷轴5 ESP翻译工具对比
+
+本文对比了几款常用的上古卷轴5 ESP/ESM/ESL文件翻译工具，帮助您选择最适合自己需求的工具。
+
+## 工具简介
+
+### 1. SSE-Auto-Translator
+
+SSE-Auto-Translator是一款由Cutleast开发的自动翻译工具，专注于自动下载和应用Nexus Mods上已有的翻译。它使用AI语言检测来识别需要翻译的内容，并通过DSD（Dynamic String Distributor）插件将翻译注入游戏，无需修改原始插件文件。
+
+**主要特点**：
+- 自动检测需要翻译的内容
+- 自动从Nexus Mods下载可用翻译
+- 通过SKSE插件注入翻译，不修改原始插件
+- 内置编辑器用于创建和编辑翻译
+- 支持Google翻译和DeepL API
+- 支持Mod Organizer 2和Vortex
+
+**GitHub链接**：[https://github.com/Cutleast/SSE-Auto-Translator](https://github.com/Cutleast/SSE-Auto-Translator)  
+**Nexus链接**：[https://www.nexusmods.com/skyrimspecialedition/mods/111491](https://www.nexusmods.com/skyrimspecialedition/mods/111491)
+
+### 2. xTranslator
+
+xTranslator（原名TesvTranslator/Fallout4Translator）是由MGuffin开发的一款成熟的翻译工具，支持多种Bethesda游戏，包括上古卷轴5、辐射4和星空。它提供了丰富的功能，包括批量翻译、正则表达式支持、拼写检查等。
+
+**主要特点**：
+- 支持多种Bethesda游戏（上古卷轴5、辐射4、星空）
+- 支持ESP、ESM、PEX和MCM文件格式
+- 内置拼写检查功能
+- 支持多种在线翻译API（Google、Yandex、DeepL等）
+- 支持正则表达式替换
+- 支持BSA/BA2文件浏览和提取
+- 支持多文件同时编辑
+
+**GitHub链接**：[https://github.com/MGuffin/xTranslator](https://github.com/MGuffin/xTranslator)
+
+### 3. SSELex
+
+SSELex（全名SkyrimSE Lexicon，原名YD Skyrim ToolR）是由YD525开发的开源翻译工具，专为上古卷轴5特别版设计。它支持多种文件格式，并结合了多线程技术和AI翻译，大大减轻了翻译者的工作量。
+
+**主要特点**：
+- 支持PEX、ESL、ESM、ESP和MCM文件格式
+- 提供两种翻译模式：快速模式（多线程）和普通模式（精确度优先）
+- 支持多种AI翻译平台（ChatGPT、Google、DeepL等）
+- 支持DSD（Dynamic String Distributor）格式导出
+- 支持多线程批量翻译
+- 内置字典文件支持
+- 支持多语言界面
+
+**GitHub链接**：[https://github.com/YD525/YDSkyrimToolR](https://github.com/YD525/YDSkyrimToolR)  
+**Nexus链接**：[https://www.nexusmods.com/skyrimspecialedition/mods/143056](https://www.nexusmods.com/skyrimspecialedition/mods/143056)
+
+## 工具对比表
+
+| 特性 | SSE-Auto-Translator | xTranslator | SSELex |
+|------|---------------------|-------------|--------|
+| **开发者** | Cutleast | MGuffin | YD525 |
+| **开源** | ✅ | ✅ | ✅ |
+| **许可证** | GPL-3.0 | MPL-2.0 | GPL-3.0 |
+| **支持游戏** | 上古卷轴5特别版 | 上古卷轴5、辐射4、星空 | 上古卷轴5特别版 |
+| **支持文件类型** | ESP, ESM, ESL | ESP, ESM, PEX, TXT(MCM) | ESP, ESM, ESL, PEX, MCM |
+| **翻译方式** | 自动下载+AI翻译 | 手动+API翻译 | 手动+AI翻译 |
+| **多线程支持** | ❌ | ❌ | ✅ |
+| **AI翻译支持** | Google, DeepL | Google, Yandex, MS Translate等 | ChatGPT, Google, DeepL等 |
+| **字典/数据库** | ✅ | ✅ | ✅ |
+| **BSA/BA2支持** | ✅ (提取) | ✅ (浏览和提取) | ❌ |
+| **正则表达式** | ❌ | ✅ | 计划中 |
+| **拼写检查** | ❌ | ✅ | ❌ |
+| **DSD支持** | ✅ | ❌ | ✅ |
+| **多文件同时编辑** | ✅ | ✅ | ❌ |
+| **界面语言** | 英语 | 多语言 | 多语言 |
+| **最后更新** | 2025年3月 | 2025年2月 | 2025年5月 |
+| **特色功能** | 自动下载翻译、无需修改原始插件 | 正则表达式、拼写检查、多游戏支持 | 多线程翻译、双模式界面 |
+
+## 选择建议
+
+### 适合使用SSE-Auto-Translator的情况：
+
+- 您希望自动下载和应用已有的翻译
+- 您不想修改原始ESP/ESM文件
+- 您使用Mod Organizer 2或Vortex管理MOD
+- 您希望通过SKSE插件注入翻译
+
+### 适合使用xTranslator的情况：
+
+- 您需要翻译多种Bethesda游戏的MOD
+- 您需要处理ESP、ESM、PEX和MCM文件
+- 您需要使用正则表达式进行复杂替换
+- 您需要拼写检查功能
+- 您需要同时编辑多个文件
+
+### 适合使用SSELex的情况：
+
+- 您需要高效的多线程批量翻译
+- 您希望使用ChatGPT等AI进行翻译
+- 您需要支持DSD格式导出
+- 您需要简单直观的界面
+- 您希望使用最新开发的工具
+
+## 使用提示
+
+### SSE-Auto-Translator使用提示
+
+1. 确保在Skyrim.ini中设置`[General]` > `sLanguage`为您想要的语言
+2. 对于不需要翻译的插件，可以添加到忽略列表中
+3. 使用内置编辑器创建自己的翻译
+4. 对于Premium用户，可以自动下载Nexus上的翻译
+
+### xTranslator使用提示
+
+1. 可以重命名可执行文件在不同游戏间切换
+2. 使用正则表达式工具进行批量替换
+3. 利用拼写检查功能提高翻译质量
+4. 使用BSA/BA2浏览器直接从档案中提取和编辑文件
+
+### SSELex使用提示
+
+1. 使用"快速"模式进行批量翻译，使用"普通"模式进行精确翻译
+2. 按F1快捷键可以快速翻译当前行
+3. 利用多线程功能加速大规模翻译工作
+4. 使用字典文件保存和重用翻译
+
+## 总结
+
+这三款工具各有特色，适合不同的翻译需求：
+
+- **SSE-Auto-Translator**：最适合希望自动应用已有翻译而不修改原始文件的用户
+- **xTranslator**：最适合需要处理多种游戏和文件类型，并需要高级功能如正则表达式的用户
+- **SSELex**：最适合需要高效批量翻译和AI辅助的用户
+
+您可以根据自己的具体需求选择最适合的工具，或者在不同情况下组合使用这些工具，以获得最佳的翻译效果。
