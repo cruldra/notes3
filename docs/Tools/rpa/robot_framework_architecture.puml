@@ -1,0 +1,82 @@
+@startuml
+!theme plain
+
+' 定义组件
+package "Robot Framework架构" {
+  ' 定义层
+  package "定义层" {
+    [测试用例/任务] as TestCases
+    [资源文件] as Resources
+    [变量文件] as Variables
+  }
+  
+  package "执行层" {
+    [Robot Framework核心] as RFCore
+    [执行引擎] as Engine
+    [日志/报告生成器] as Logger
+  }
+  
+  package "适配层" {
+    [标准库] as StdLib
+    [Selenium Library] as SeleniumLib
+    [FlaUILibrary] as FlaUILib
+    [其他库...] as OtherLibs
+  }
+}
+
+' 定义被测系统
+package "被测系统" {
+  [Web应用] as WebApp
+  [Windows桌面应用] as WinApp
+  [其他应用...] as OtherApps
+}
+
+' 定义底层技术
+package "底层技术" {
+  [Selenium WebDriver] as WebDriver
+  [FlaUI (UIA2/UIA3)] as FlaUI
+  [其他技术...] as OtherTech
+}
+
+' 定义关系
+TestCases --> RFCore : 被解析和执行
+Resources --> RFCore : 被导入
+Variables --> RFCore : 被加载
+
+RFCore --> Engine : 使用
+Engine --> Logger : 生成结果
+Engine --> StdLib : 调用
+Engine --> SeleniumLib : 调用
+Engine --> FlaUILib : 调用
+Engine --> OtherLibs : 调用
+
+SeleniumLib --> WebDriver : 基于
+FlaUILib --> FlaUI : 基于
+OtherLibs --> OtherTech : 基于
+
+WebDriver --> WebApp : 控制
+FlaUI --> WinApp : 控制
+OtherTech --> OtherApps : 控制
+
+' 添加注释
+note right of SeleniumLib
+  用于Web应用自动化
+  支持多种浏览器
+  使用ID、XPath、CSS等定位元素
+end note
+
+note right of FlaUILib
+  用于Windows桌面应用自动化
+  支持Win32、WinForms、WPF等
+  使用XPath定位UI元素
+end note
+
+note bottom of RFCore
+  提供核心功能：
+  - 解析测试数据
+  - 执行关键字
+  - 处理结果
+  - 生成报告
+end note
+
+@enduml
