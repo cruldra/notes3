@@ -1,0 +1,257 @@
+# React Context 和 Hook 的区别
+
+在 React 开发中，Context 和 Hook 是两个非常重要的概念，它们都能帮助我们更好地管理组件状态和逻辑。虽然它们经常一起使用，但它们的设计目的和使用场景有着明显的区别。本文将详细探讨 React Context 和 Hook 之间的区别，以及它们各自的适用场景。
+
+## 基本概念
+
+### React Context
+
+React Context 是一种**状态共享机制**，它允许在组件树中共享数据，而不必通过 props 层层传递。Context 主要解决的是"prop drilling"（属性钻取）问题，即当需要将数据从顶层组件传递到深层嵌套组件时，中间组件不得不传递它们不需要的 props。
+
+Context 由以下部分组成：
+- `React.createContext`：创建一个 Context 对象
+- `Context.Provider`：提供数据的组件
+- `Context.Consumer` 或 `useContext` Hook：消费数据的组件
+
+### React Hook
+
+React Hook 是 React 16.8 引入的特性，它允许在**函数组件**中使用状态和其他 React 特性，而无需编写类组件。Hook 是一种复用状态逻辑的方式，而不是状态本身。
+
+常见的内置 Hook 包括：
+- `useState`：管理组件状态
+- `useEffect`：处理副作用
+- `useContext`：消费 Context 数据
+- `useReducer`：管理复杂状态逻辑
+- `useRef`：引用 DOM 元素或保存任何可变值
+- `useMemo` 和 `useCallback`：性能优化
+
+## 主要区别
+
+### 1. 设计目的不同
+
+**Context**：
+- 主要用于**跨组件共享数据**
+- 解决组件树中的数据传递问题
+- 提供一种全局或半全局的状态管理方案
+
+**Hook**：
+- 主要用于**组件内部逻辑和状态管理**
+- 解决函数组件中复用状态逻辑的问题
+- 提供一种在函数组件中使用 React 特性的方式
+
+### 2. 作用范围不同
+
+**Context**：
+- 作用于整个组件树或子树
+- 影响所有消费该 Context 的组件
+- 适合管理全局状态
+
+**Hook**：
+- 作用于单个组件实例
+- 每个组件调用 Hook 都会获得独立的状态
+- 适合管理组件内部状态
+
+### 3. 数据流向不同
+
+**Context**：
+- 自上而下的数据流
+- 一个 Provider 可以影响多个消费组件
+- 当 Context 值变化时，所有消费该 Context 的组件都会重新渲染
+
+**Hook**：
+- 组件内部的数据流
+- Hook 的状态变化只影响当前组件
+- 可以通过自定义 Hook 在不同组件间复用逻辑，但不共享状态
+
+### 4. 使用方式不同
+
+**Context**：
+- 需要设置 Provider 和 Consumer
+- 通常需要创建专门的 Context 文件
+- 消费组件需要使用 `useContext` 或 `Context.Consumer`
+
+**Hook**：
+- 直接在函数组件内部调用
+- 遵循 Hook 的使用规则（只在顶层调用，只在函数组件中调用）
+- 可以组合多个 Hook 创建复杂逻辑
+
+## 使用场景对比
+
+### Context 适用场景
+
+1. **全局状态管理**：如用户认证状态、主题设置、语言偏好等
+2. **避免 prop drilling**：当需要将数据传递给多层嵌套的组件时
+3. **共享不常变化的数据**：Context 更新会触发所有消费组件重新渲染，因此适合不经常变化的数据
+
+```jsx
+// 创建 Context
+const ThemeContext = React.createContext('light');
+
+// 提供 Context
+function App() {
+  const [theme, setTheme] = useState('light');
+  
+  return (
+    <ThemeContext.Provider value={theme}>
+      <Header />
+      <Main />
+      <Footer />
+      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        切换主题
+      </button>
+    </ThemeContext.Provider>
+  );
+}
+
+// 消费 Context
+function ThemedButton() {
+  const theme = useContext(ThemeContext);
+  return <button className={theme}>按钮</button>;
+}
+```
+
+### Hook 适用场景
+
+1. **组件内状态管理**：管理表单输入、UI 状态等
+2. **处理副作用**：如数据获取、订阅事件、手动 DOM 操作等
+3. **复用状态逻辑**：通过自定义 Hook 在不同组件间复用逻辑
+
+```jsx
+// 使用内置 Hook
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    document.title = `点击了 ${count} 次`;
+  }, [count]);
+  
+  return (
+    <div>
+      <p>点击了 {count} 次</p>
+      <button onClick={() => setCount(count + 1)}>
+        点击
+      </button>
+    </div>
+  );
+}
+
+// 自定义 Hook 复用逻辑
+function useWindowSize() {
+  const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return size;
+}
+```
+
+## 结合使用：自定义 Hook 与 Context
+
+Context 和 Hook 可以结合使用，创建更强大的状态管理解决方案。一种常见的模式是创建一个自定义 Hook 来封装 Context 的使用：
+
+```jsx
+// 创建 Context 和 Provider
+const CounterContext = React.createContext();
+
+function CounterProvider({ children }) {
+  const [count, setCount] = useState(0);
+  
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  
+  return (
+    <CounterContext.Provider value={{ count, increment, decrement }}>
+      {children}
+    </CounterContext.Provider>
+  );
+}
+
+// 创建自定义 Hook 消费 Context
+function useCounter() {
+  const context = useContext(CounterContext);
+  if (context === undefined) {
+    throw new Error('useCounter 必须在 CounterProvider 内部使用');
+  }
+  return context;
+}
+
+// 在组件中使用
+function CounterDisplay() {
+  const { count } = useCounter();
+  return <div>计数: {count}</div>;
+}
+
+function CounterButtons() {
+  const { increment, decrement } = useCounter();
+  return (
+    <div>
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
+    </div>
+  );
+}
+
+// 组合使用
+function App() {
+  return (
+    <CounterProvider>
+      <CounterDisplay />
+      <CounterButtons />
+    </CounterProvider>
+  );
+}
+```
+
+## 选择指南：何时使用 Context vs 自定义 Hook
+
+### 使用 Context 当：
+
+1. 需要在组件树中共享数据
+2. 多个不相关的组件需要访问相同的数据
+3. 想避免 prop drilling 问题
+4. 数据变化不频繁
+
+### 使用自定义 Hook 当：
+
+1. 需要在多个组件中复用逻辑，但不共享状态
+2. 需要封装复杂的状态逻辑
+3. 需要组合多个内置 Hook
+4. 组件间不需要共享数据
+
+### 结合使用当：
+
+1. 需要提供一个完整的状态管理解决方案
+2. 需要封装 Context 的使用细节
+3. 想要提供更好的开发体验和错误处理
+
+## 性能考虑
+
+### Context 性能注意事项
+
+- Context 值变化会导致所有消费组件重新渲染
+- 对于频繁变化的数据，考虑拆分 Context 或使用其他状态管理方案
+- 使用 `React.memo` 和 `useMemo` 优化消费组件
+
+### Hook 性能注意事项
+
+- 遵循依赖数组的最佳实践，避免不必要的重新渲染
+- 使用 `useMemo` 和 `useCallback` 缓存计算结果和回调函数
+- 避免在渲染期间创建新对象或函数
+
+## 总结
+
+React Context 和 Hook 是两个强大但用途不同的特性：
+
+- **Context** 主要用于跨组件共享数据，解决 prop drilling 问题
+- **Hook** 主要用于在函数组件中管理状态和副作用，复用逻辑
+
+理解它们的区别和适用场景，可以帮助我们在 React 应用中做出更好的架构决策。在实际开发中，我们通常会结合使用这两种特性，创建更加模块化、可维护的代码。
+
+选择使用 Context 还是 Hook，或者两者结合，应该基于具体的需求和场景，没有一种放之四海而皆准的解决方案。重要的是理解它们的优缺点，并根据项目需求做出明智的选择。

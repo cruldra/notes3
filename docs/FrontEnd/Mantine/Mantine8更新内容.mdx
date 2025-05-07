@@ -1,0 +1,393 @@
+# Mantine 8 更新内容
+
+Mantine 8 于2025年5月5日发布，带来了许多新功能和改进。本笔记总结了主要更新内容和迁移注意事项。
+
+## 主要更新
+
+### 1. 全局样式导出变更
+
+全局样式现在被拆分为三个文件：
+
+- `baseline.css` - 最小化的CSS重置，设置`box-sizing: border-box`并更改字体属性
+- `default-css-variables.css` - 包含从默认主题生成的所有CSS变量
+- `global.css` - Mantine组件使用的全局类
+
+如果之前使用了单独的样式导入，需要更新导入方式：
+
+```jsx
+// 旧版导入方式
+import '@mantine/core/styles/global.css';
+
+// 新版导入方式
+import '@mantine/core/styles/baseline.css';
+import '@mantine/core/styles/default-css-variables.css';
+import '@mantine/core/styles/global.css';
+```
+
+如果使用了`@mantine/core/styles.css`，则无需更改。
+
+### 2. 新增组件
+
+#### Menu子菜单支持
+
+Menu组件现在支持子菜单功能，可以创建多级菜单：
+
+```jsx
+<Menu width={200} position="bottom-start">
+  <Menu.Target>
+    <Button>Toggle Menu</Button>
+  </Menu.Target>
+
+  <Menu.Dropdown>
+    <Menu.Item>Dashboard</Menu.Item>
+
+    <Menu.Sub>
+      <Menu.Sub.Target>
+        <Menu.Sub.Item>Products</Menu.Sub.Item>
+      </Menu.Sub.Target>
+
+      <Menu.Sub.Dropdown>
+        <Menu.Item>All products</Menu.Item>
+        <Menu.Item>Categories</Menu.Item>
+      </Menu.Sub.Dropdown>
+    </Menu.Sub>
+  </Menu.Dropdown>
+</Menu>
+```
+
+#### TimePicker组件
+
+新增TimePicker组件，作为TimeInput的替代方案，支持24小时和12小时格式：
+
+```jsx
+<TimePicker label="Enter time (24h format)" withSeconds withDropdown />
+<TimePicker label="Enter time (12h format)" withSeconds withDropdown format="12h" />
+```
+
+#### TimeValue组件
+
+新增TimeValue组件，用于显示格式化的时间字符串：
+
+```jsx
+<Text>
+  24h format: <TimeValue value="18:45:34" />
+</Text>
+<Text>
+  12h format: <TimeValue value="18:45:34" format="12h" />
+</Text>
+```
+
+#### TimeGrid组件
+
+新增TimeGrid组件，允许用户从预定义的时间槽中选择时间：
+
+```jsx
+<TimeGrid
+  data={getTimeRange({ startTime: '10:00', endTime: '21:00', interval: '01:00' })}
+  simpleGridProps={{
+    type: 'container',
+    cols: { base: 1, '180px': 2, '320px': 3 },
+    spacing: 'xs',
+  }}
+  withSeconds={false}
+/>
+```
+
+#### Heatmap组件
+
+新增Heatmap组件，允许以日历热图格式显示数据：
+
+```jsx
+<Heatmap
+  data={data}
+  startDate="2024-02-16"
+  endDate="2025-02-16"
+  withTooltip
+  withWeekdayLabels
+  withMonthLabels
+  getTooltipLabel={({ date, value }) =>
+    `${dayjs(date).format('DD MMM, YYYY')} – ${value} contributions`
+  }
+/>
+```
+
+### 3. 日期处理改进
+
+所有`@mantine/dates`组件现在使用`YYYY-MM-DD`或`YYYY-MM-DD HH:mm:ss`格式的日期字符串，而不是`Date`对象：
+
+```jsx
+// Mantine 7
+const [value, setValue] = useState<Date | null>(null);
+return <DatePicker value={value} onChange={setValue} />
+
+// Mantine 8
+const [value, setValue] = useState<string | null>(null);
+return <DatePicker value={value} onChange={setValue} />
+
+// 如果需要保持使用Date对象
+const [value, setValue] = useState<Date | null>(null);
+return <DatePicker 
+  value={value} 
+  onChange={val => setValue(new Date(val))} 
+/>
+```
+
+`DatesProvider`组件不再支持`timezone`选项。如果需要处理时区，可以使用专门的日期库（如dayjs、luxon、date-fns）。
+
+### 4. 组件变更
+
+#### DateTimePicker组件
+
+现在使用TimePicker而不是TimeInput，`timeInputProps`属性不再可用，需要使用`timePickerProps`属性：
+
+```jsx
+// Mantine 7
+<DateTimePicker
+  timeInputProps={{
+    leftSection: <IconClock size={16} stroke={1.5} />,
+  }}
+/>
+
+// Mantine 8
+<DateTimePicker
+  timePickerProps={{
+    leftSection: <IconClock size={16} stroke={1.5} />,
+    minutesStep: 5,
+    withDropdown: true,
+  }}
+/>
+```
+
+#### Popover组件
+
+新增`hideDetached`属性，用于配置当目标元素隐藏或从DOM中移除时下拉菜单的行为：
+
+```jsx
+<Popover width="target" position="bottom" opened>
+  <Popover.Target>
+    <Button>Toggle popover</Button>
+  </Popover.Target>
+  <Popover.Dropdown>
+    This popover dropdown is hidden when detached
+  </Popover.Dropdown>
+</Popover>
+
+<Popover width="target" position="bottom" opened hideDetached={false}>
+  <Popover.Target>
+    <Button>Toggle popover</Button>
+  </Popover.Target>
+  <Popover.Dropdown>
+    This popover dropdown is visible when detached
+  </Popover.Dropdown>
+</Popover>
+```
+
+默认情况下，`hideDetached`是启用的，这与7.x版本的行为有所不同。
+
+#### Switch组件
+
+现在包含在拇指内部的指示器，可以通过设置`withThumbIndicator`属性来更改：
+
+```jsx
+<Switch
+  defaultChecked
+  label="I agree to sell my privacy"
+  withThumbIndicator={false} // 使用旧版样式
+/>
+```
+
+#### CodeHighlight组件
+
+不再依赖highlight.js，提供基于适配器的新API，允许使用任何语法高亮器：
+
+```jsx
+// 使用shiki适配器
+import { CodeHighlightAdapterProvider, createShikiAdapter } from '@mantine/code-highlight';
+
+// Shiki需要异步代码来加载高亮器
+async function loadShiki() {
+  const { createHighlighter } = await import('shiki');
+  const shiki = await createHighlighter({
+    langs: ['tsx', 'scss', 'html', 'bash', 'json'],
+    themes: [],
+  });
+
+  return shiki;
+}
+
+const shikiAdapter = createShikiAdapter(loadShiki);
+
+function App() {
+  return (
+    <MantineProvider>
+      <CodeHighlightAdapterProvider adapter={shikiAdapter}>
+        {/* 应用内容 */}
+      </CodeHighlightAdapterProvider>
+    </MantineProvider>
+  );
+}
+```
+
+#### Carousel组件
+
+更新使用最新版本的`embla-carousel-react`包：
+
+- 移除了`speed`和`draggable`属性
+- 现在需要显式安装`embla-carousel`和`embla-carousel-react`包
+- 移除了`useAnimationOffsetEffect`钩子
+- 移除了`Embla`类型导出，应该使用`embla-carousel`中的`EmblaCarouselType`
+- 之前传递给embla的属性现在被分组到`emblaOptions`属性下
+
+```jsx
+// Mantine 7
+<Carousel loop dragFree align="start" />
+
+// Mantine 8
+<Carousel emblaOptions={{ loop: true, dragFree: true, align: 'start' }} />
+```
+
+### 5. 其他变更
+
+- Portal组件现在默认启用`reuseTargetNode`属性
+- Kbd组件现在支持`size`属性
+- ScrollArea组件不再在内容的包装元素上强制使用`display: table`样式
+- Image组件默认不再包含`flex: 0`样式
+- SegmentedControl默认高度值已更改，以匹配Input组件的大小
+- Menu.Item不再有`data-hovered`属性，使用`:hover`和`:focus`选择器代替
+- use-os现在支持Chrome OS检测
+- ColorInput组件的默认吸管图标已更新
+- Notification组件的默认间距已增加
+
+## 主题类型增强
+
+现在可以扩展`spacing`、`radius`、`breakpoints`、`fontSizes`、`lineHeights`和`shadows`类型：
+
+```tsx
+import {
+  DefaultMantineSize,
+  MantineThemeSizesOverride,
+} from '@mantine/core';
+
+type ExtendedCustomSpacing =
+  | 'xxl'
+  | 'xxxs'
+  | DefaultMantineSize;
+
+type ExtendedCustomRadius =
+  | 'xxs'
+  | DefaultMantineSize;
+
+declare module '@mantine/core' {
+  export interface MantineThemeSizesOverride {
+    spacing: Record<ExtendedCustomSpacing, string>;
+    radius: Record<ExtendedCustomRadius, string>;
+  }
+}
+```
+
+## 迁移注意事项
+
+### 1. 全局样式导入
+
+如果使用了单独的样式导入，需要更新导入方式。如果使用了`@mantine/core/styles.css`，则无需更改。
+
+### 2. Portal的reuseTargetNode属性
+
+如果遇到z-index堆叠上下文问题，可以在主题中禁用`reuseTargetNode`：
+
+```jsx
+export const theme = createTheme({
+  components: {
+    Portal: Portal.extend({
+      defaultProps: {
+        reuseTargetNode: false,
+      },
+    }),
+  }
+});
+```
+
+### 3. Switch组件样式
+
+如果想使用没有指示器的旧样式，可以在主题中设置`withThumbIndicator`为`false`：
+
+```jsx
+export const theme = createTheme({
+  components: {
+    Switch: Switch.extend({
+      defaultProps: {
+        withThumbIndicator: false,
+      },
+    }),
+  }
+});
+```
+
+### 4. 日期字符串值
+
+如果想继续使用Date对象，需要在回调中转换值：
+
+```jsx
+<DatePicker 
+  value={value} 
+  onChange={val => setValue(new Date(val))} 
+/>
+```
+
+### 5. Menu组件样式选择器
+
+不再使用`data-hovered`属性，需要使用`:hover`和`:focus`选择器：
+
+```css
+/* Mantine 7 */
+.item {
+  &[data-hovered] {
+    background-color: red;
+  }
+}
+
+/* Mantine 8 */
+.item {
+  &:hover,
+  &:focus {
+    background-color: red;
+  }
+}
+```
+
+### 6. Popover的hideDetached属性
+
+如果想保持旧行为，可以在主题中禁用`hideDetached`：
+
+```jsx
+export const theme = createTheme({
+  components: {
+    Popover: Popover.extend({
+      defaultProps: {
+        hideDetached: false,
+      },
+    }),
+  }
+});
+```
+
+### 7. Carousel组件
+
+需要更新embla依赖并调整属性：
+
+```bash
+yarn add embla-carousel@^8.5.2 embla-carousel-react@^8.5.2
+```
+
+```jsx
+// Mantine 7
+<Carousel loop dragFree align="start" />
+
+// Mantine 8
+<Carousel emblaOptions={{ loop: true, dragFree: true, align: 'start' }} />
+```
+
+## 参考链接
+
+- [Mantine 8.0.0 官方更新日志](https://mantine.dev/changelog/8-0-0/)
+- [7.x到8.x迁移指南](https://mantine.dev/guides/7x-to-8x/)
