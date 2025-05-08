@@ -121,6 +121,12 @@ const config: Config = {
                     position: 'left',
                     label: 'Python',
                 },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'rust',
+                    position: 'left',
+                    label: 'Rust',
+                },
                 // {
                 //     type: 'docSidebar',
                 //     sidebarId: 'codeSnippets',

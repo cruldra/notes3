@@ -1,0 +1,304 @@
+条件编译是Rust语言中的一个强大特性，允许开发者根据不同的编译环境、目标平台或自定义条件来选择性地编译代码。这篇笔记详细介绍Rust中条件编译的概念、语法和常见用法。
+
+## 基本概念
+
+条件编译允许我们：
+- 为不同的操作系统提供不同的实现
+- 在调试和发布模式下使用不同的代码
+- 根据特定的编译标志启用或禁用功能
+- 优化二进制文件大小，只包含必要的代码
+
+## 条件编译属性
+
+Rust提供了几种条件编译的属性和宏：
+
+### 1. `#[cfg(...)]` 属性
+
+`cfg`属性用于条件性地包含或排除代码项（如函数、模块、结构体等）。
+
+```rust
+// 只在Windows平台编译这个函数
+#[cfg(target_os = "windows")]
+fn windows_only() {
+    println!("这个函数只在Windows上可用");
+}
+
+// 只在调试模式下编译这个函数
+#[cfg(debug_assertions)]
+fn debug_only() {
+    println!("这个函数只在调试模式下可用");
+}
+```
+
+### 2. `#[cfg_attr(...)]` 属性
+
+`cfg_attr`属性允许根据条件应用其他属性。它接受两个参数：
+- 第一个参数是条件表达式
+- 第二个参数是当条件为真时要应用的属性
+
+```rust
+// 在调试模式下允许未使用的变量
+#[cfg_attr(debug_assertions, allow(unused_variables))]
+fn process_data() {
+    let debug_info = "这个变量在调试模式下不会产生警告";
+    // 函数的其余部分...
+}
+
+// 在发布模式下内联这个函数
+#[cfg_attr(not(debug_assertions), inline)]
+fn performance_critical() {
+    // 性能关键代码...
+}
+```
+
+### 3. `cfg!()` 宏
+
+`cfg!()`宏在运行时评估配置条件，返回一个布尔值。这允许在运行时根据编译条件执行不同的代码路径。
+
+```rust
+fn main() {
+    if cfg!(debug_assertions) {
+        println!("当前在调试模式下运行");
+    } else {
+        println!("当前在发布模式下运行");
+    }
+    
+    if cfg!(target_os = "windows") {
+        println!("在Windows上运行");
+    } else if cfg!(target_os = "linux") {
+        println!("在Linux上运行");
+    } else if cfg!(target_os = "macos") {
+        println!("在macOS上运行");
+    }
+}
+```
+
+## 常用的条件标志
+
+Rust提供了许多内置的条件标志：
+
+### 1. 目标平台相关
+
+- `target_os`：目标操作系统（"windows", "macos", "linux", "android"等）
+- `target_arch`：目标架构（"x86", "x86_64", "arm", "aarch64"等）
+- `target_family`：操作系统家族（"unix", "windows"）
+- `target_env`：ABI/环境（"msvc", "gnu"等）
+- `target_endian`：字节序（"little", "big"）
+- `target_pointer_width`：指针宽度（"16", "32", "64"）
+
+```rust
+#[cfg(target_os = "linux")]
+fn linux_specific() {
+    // Linux特定代码
+}
+
+#[cfg(target_arch = "wasm32")]
+fn wasm_specific() {
+    // WebAssembly特定代码
+}
+
+#[cfg(target_family = "unix")]
+mod unix_support {
+    // Unix系统（Linux, macOS等）共享代码
+}
+```
+
+### 2. 编译模式相关
+
+- `debug_assertions`：在调试构建中为true，发布构建中为false
+- `proc_macro`：当编译过程宏crate时为true
+
+```rust
+#[cfg(debug_assertions)]
+fn expensive_debug_checks() {
+    // 只在调试模式下运行的昂贵检查
+}
+```
+
+### 3. 特性标志（Features）
+
+通过Cargo.toml中定义的特性标志：
+
+```rust
+// 当启用"advanced"特性时才编译这个模块
+#[cfg(feature = "advanced")]
+mod advanced_features {
+    // 高级功能实现...
+}
+```
+
+## 复杂条件表达式
+
+条件表达式可以使用布尔运算符组合：
+
+- `all(条件1, 条件2, ...)`：所有条件都为真时为真（AND）
+- `any(条件1, 条件2, ...)`：任一条件为真时为真（OR）
+- `not(条件)`：条件为假时为真（NOT）
+
+```rust
+// 只在64位Windows上编译
+#[cfg(all(target_os = "windows", target_pointer_width = "64"))]
+fn windows_64bit_only() {
+    // 64位Windows特定代码
+}
+
+// 在Windows或macOS上编译
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+fn desktop_platforms() {
+    // Windows和macOS共享代码
+}
+
+// 在非Linux平台上编译
+#[cfg(not(target_os = "linux"))]
+fn non_linux() {
+    // 适用于除Linux外的所有平台
+}
+
+// 复杂组合条件
+#[cfg(all(
+    target_family = "unix",
+    not(target_os = "macos"),
+    feature = "advanced"
+))]
+fn unix_non_mac_with_advanced_feature() {
+    // 在启用"advanced"特性的非macOS Unix系统上运行的代码
+}
+```
+
+## 条件编译模块
+
+可以对整个模块应用条件编译：
+
+```rust
+// 为不同操作系统提供不同的实现
+#[cfg(target_os = "windows")]
+mod platform {
+    pub fn get_path_separator() -> &'static str {
+        "\\"
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+mod platform {
+    pub fn get_path_separator() -> &'static str {
+        "/"
+    }
+}
+
+// 使用条件编译的模块
+fn main() {
+    println!("路径分隔符: {}", platform::get_path_separator());
+}
+```
+
+## 在Cargo.toml中定义特性
+
+在`Cargo.toml`中可以定义自定义特性，然后在代码中使用它们：
+
+```toml
+[package]
+name = "my_package"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["std"]  # 默认启用的特性
+std = []           # 标准库支持
+advanced = []      # 高级功能
+logging = []       # 日志功能
+```
+
+然后在代码中：
+
+```rust
+// 当启用"logging"特性时编译
+#[cfg(feature = "logging")]
+mod logging {
+    pub fn init_logger() {
+        // 初始化日志系统
+    }
+}
+
+fn main() {
+    // 条件性地初始化日志
+    #[cfg(feature = "logging")]
+    logging::init_logger();
+    
+    // 其他代码...
+}
+```
+
+## 编译时指定特性
+
+可以在编译时通过命令行指定要启用的特性：
+
+```bash
+# 启用"advanced"和"logging"特性
+cargo build --features "advanced logging"
+
+# 禁用默认特性，只启用"minimal"
+cargo build --no-default-features --features "minimal"
+```
+
+## 实际应用示例
+
+### 跨平台文件路径处理
+
+```rust
+pub fn get_config_path() -> String {
+    let base = 
+        #[cfg(target_os = "windows")]
+        {
+            std::env::var("APPDATA").unwrap_or_else(|_| ".".to_string())
+        }
+        #[cfg(target_os = "macos")]
+        {
+            let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+            format!("{}/Library/Application Support", home)
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+            format!("{}/.config", home)
+        }
+        #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+        {
+            ".".to_string()
+        };
+    
+    format!("{}/myapp/config.toml", base)
+}
+```
+
+### 调试辅助功能
+
+```rust
+// 在调试模式下提供额外的验证
+fn process_data(data: &[u8]) -> Result<(), String> {
+    #[cfg(debug_assertions)]
+    {
+        // 在调试模式下进行额外的数据验证
+        if data.len() < 10 {
+            return Err("数据太短".to_string());
+        }
+        
+        if !data.starts_with(&[0x42, 0x4D]) {
+            return Err("无效的数据头".to_string());
+        }
+    }
+    
+    // 实际处理逻辑...
+    Ok(())
+}
+```
+
+## 总结
+
+条件编译是Rust中一个强大的特性，它允许开发者：
+
+1. 为不同的平台提供特定的实现
+2. 在调试和发布模式下使用不同的代码路径
+3. 通过特性标志启用或禁用功能
+4. 优化二进制大小，只包含必要的代码
+
+掌握条件编译可以帮助开发者编写更灵活、更高效的Rust代码，同时保持良好的跨平台兼容性。

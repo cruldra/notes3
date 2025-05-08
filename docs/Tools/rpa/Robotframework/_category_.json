@@ -1,0 +1,8 @@
+{
+  "label": "Robotframework",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Robotframework是一种基于Python的开源自动化测试框架，它使用关键字驱动的方法来创建可读性强、易于维护的测试用例。"
+  }
+}

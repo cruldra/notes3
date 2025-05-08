@@ -1,0 +1,8 @@
+{
+  "label": "Rust",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Rust是一种系统编程语言,它提供了内存安全、并发性和性能的保证,被广泛用于编写底层系统软件、Web服务、数据库、操作系统等."
+  }
+}
