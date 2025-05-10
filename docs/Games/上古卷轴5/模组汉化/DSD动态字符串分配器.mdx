@@ -1,0 +1,171 @@
+---
+sidebar_position: 3
+---
+
+DSD（Dynamic String Distributor，动态字符串分配器）是一个为《上古卷轴5：天际》开发的SKSE插件，它提供了一种全新的模组翻译解决方案，无需修改原始ESP/ESM文件即可实现游戏内文本的动态翻译。本文将详细介绍DSD的工作原理、使用方法以及与传统翻译方式的区别。
+
+## DSD的基本概念
+
+### 什么是DSD？
+
+DSD（Dynamic String Distributor）是一个SKSE（Skyrim Script Extender）插件，专为解决上古卷轴5模组翻译问题而设计。它的主要功能是：
+
+- 对游戏中不统一或未翻译的词条，根据已安装的JSON文件进行动态统一
+- 无需修改原始ESP/ESM文件，通过SKSE插件注入翻译
+- 特别适合处理大量覆盖原版名词的环境美化、人物美化等mod
+
+### DSD的工作原理
+
+DSD通过以下方式工作：
+
+1. 当你安装一个美化或其他mod，但该mod的NPC或物品名称没有翻译时
+2. 传统方法需要创建一个额外的ESP文件进行覆盖
+3. 而DSD则通过JSON文件记录原文与译文的对应关系
+4. 在游戏运行时动态替换文本，无需修改原始插件
+
+## DSD的优势
+
+与传统的ESP翻译补丁相比，DSD具有以下优势：
+
+1. **无需修改原始插件**：
+   - 保持mod完整性，减少冲突
+   - 不占用ESP/ESM插件槽位
+   - 原始mod更新后无需重新制作翻译补丁
+
+2. **集中管理翻译**：
+   - 所有翻译在一个地方管理
+   - 便于更新和维护
+   - 可以共享翻译文件
+
+3. **兼容性好**：
+   - 与其他mod的兼容性更好
+   - 减少因翻译补丁导致的冲突
+   - 适用于大型模组合集
+
+4. **易于更新**：
+   - mod更新后只需更新翻译文件，不需要重新制作ESP补丁
+   - 可以增量更新翻译内容
+   - 社区可以共同维护翻译文件
+
+## 如何使用DSD
+
+### 安装步骤
+
+1. **安装SKSE**：
+   - 首先确保已安装[Skyrim Script Extender (SKSE)](https://skse.silverlock.org/)
+   - 确保SKSE版本与你的游戏版本匹配
+
+2. **安装DSD本体**：
+   - 从[Nexus Mods](https://www.nexusmods.com/skyrimspecialedition/mods/107676)下载DSD插件
+   - 使用mod管理器安装，或手动将文件放入游戏Data文件夹
+
+3. **安装翻译文件**：
+   - 下载对应的翻译文件，如[和光汉化的DSD文件](https://www.nexusmods.com/skyrimspecialedition/mods/139300)
+   - 使用mod管理器安装翻译文件
+   - 确保翻译文件放在加载顺序的最下面
+
+4. **启动游戏**：
+   - 通过SKSE启动游戏
+   - DSD会自动加载并应用翻译
+
+### 翻译文件结构
+
+DSD使用JSON格式的翻译文件，基本结构如下：
+
+```json
+{
+  "version": "1.0.0",
+  "strings": [
+    {
+      "original": "Original English Text",
+      "translated": "翻译后的中文文本"
+    },
+    {
+      "original": "Another English Text",
+      "translated": "另一个翻译后的中文文本"
+    }
+  ]
+}
+```
+
+这些文件通常位于`Data/SKSE/Plugins/DynamicStringDistributor/`目录下。
+
+## DSD与其他翻译工具的区别
+
+### 与ESP翻译补丁的区别
+
+传统的ESP翻译补丁需要创建一个新的ESP文件来覆盖原始mod中的文本，而DSD则是在游戏运行时动态替换文本：
+
+| 特性 | ESP翻译补丁 | DSD |
+|------|------------|-----|
+| 修改原始文件 | 是 | 否 |
+| 占用插件槽位 | 是 | 否 |
+| 更新维护 | 复杂 | 简单 |
+| 兼容性 | 可能有冲突 | 较好 |
+| 加载方式 | 通过游戏引擎 | 通过SKSE |
+
+### 与EET的区别
+
+EET（ESP-ESM Translator）是另一种常用的翻译工具，它需要手动创建翻译文件并生成ESP补丁：
+
+| 特性 | EET | DSD |
+|------|-----|-----|
+| 工作方式 | 生成ESP补丁 | 运行时注入 |
+| 需要ESP文件 | 是 | 否 |
+| 翻译文件格式 | 专有格式 | JSON |
+| 更新便捷性 | 需重新生成 | 直接更新JSON |
+| 适用范围 | 所有文本 | 主要用于名称和描述 |
+
+## 注意事项
+
+使用DSD时需要注意以下几点：
+
+1. **翻译文件版本**：
+   - 早期版本的DSD翻译文件可能包含全部文本，会导致一些问题：
+     - 训练师的对话可能统一变为"训练炼金术"
+     - 安装技能类大修但没有对应DSD文件时，描述会替换回原版
+   - 精修版DSD翻译文件（如和光汉化的精修版）只包含常用的人名地名词条，避免了上述问题
+
+2. **加载顺序**：
+   - DSD本体和翻译文件应放在加载顺序的最下面
+   - 某些情况下可能会影响交互式图标显示，需要调整加载顺序或查找兼容补丁
+
+3. **兼容性问题**：
+   - 某些特殊mod可能与DSD不兼容
+   - 如果发现问题，可以尝试使用传统的ESP翻译补丁
+
+4. **性能影响**：
+   - DSD在运行时动态替换文本，可能对性能有轻微影响
+   - 但通常这种影响很小，不会明显感知
+
+## 创建自己的DSD翻译文件
+
+如果你想为某个没有中文翻译的mod创建DSD翻译文件，可以按照以下步骤操作：
+
+1. **提取原始文本**：
+   - 使用xTranslator或SSELex等工具从ESP/ESM文件中提取原始文本
+   - 或者使用SSE-Auto-Translator自动提取需要翻译的内容
+
+2. **创建JSON文件**：
+   - 创建一个新的JSON文件，按照上述格式填入原文和译文
+   - 保存为UTF-8编码
+
+3. **放置文件**：
+   - 将JSON文件放入`Data/SKSE/Plugins/DynamicStringDistributor/`目录
+   - 文件名可以是mod的名称，如`ModName.json`
+
+4. **测试翻译**：
+   - 启动游戏，检查翻译是否正确显示
+   - 根据需要调整翻译内容
+
+## 总结
+
+DSD（Dynamic String Distributor）是一种现代化的上古卷轴5模组翻译解决方案，通过SKSE插件动态注入翻译，避免了创建大量ESP补丁的麻烦。它特别适合处理大型美化mod或包含大量NPC的mod，能够保持mod的完整性同时提供中文体验。
+
+与传统的ESP翻译补丁和EET等工具相比，DSD提供了更简便、更兼容的翻译方式，是当前上古卷轴5模组汉化的推荐解决方案之一。
+
+## 资源链接
+
+- [DSD官方页面](https://www.nexusmods.com/skyrimspecialedition/mods/107676)
+- [和光汉化DSD文件](https://www.nexusmods.com/skyrimspecialedition/mods/139300)
+- [SSE-Auto-Translator](https://www.nexusmods.com/skyrimspecialedition/mods/111491)（支持DSD格式导出的翻译工具）

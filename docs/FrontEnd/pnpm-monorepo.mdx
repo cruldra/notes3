@@ -1,0 +1,265 @@
+## PNPM Monorepo 实践指南
+
+### 什么是 Monorepo
+
+Monorepo（单一代码仓库）是一种项目架构策略，它将多个相关的项目或包放在同一个代码仓库中进行管理。与之相对的是 Multi-repo（多仓库）策略，即每个项目或包都有自己独立的代码仓库。
+
+#### Monorepo 的优点
+
+1. **代码共享和复用**：在单一代码库中，不同项目和模块可以轻松地共享和复用代码，降低了重复开发的成本
+2. **依赖管理**：更容易管理项目间的依赖关系，减少版本冲突和升级问题
+3. **原子提交**：允许在一个提交中更新多个项目或模块，保持代码的一致性
+4. **简化工作流程**：简化构建、测试和部署等工作流程，提高开发效率
+
+#### Monorepo 的缺点
+
+1. **代码库规模**：随着项目和代码的增长，Monorepo 的规模可能变得庞大，影响性能和存储需求
+2. **权限管理**：在大型代码库中管理访问权限可能变得复杂，特别是在多团队协作的情况下
+3. **潜在的耦合**：可能导致不同项目之间的耦合过于紧密，影响项目的独立性和灵活性
+
+### 为什么选择 pnpm
+
+pnpm 是一个快速、节省磁盘空间的包管理器，特别适合管理 Monorepo 项目：
+
+1. **磁盘空间和安装速度的优化**：通过使用硬链接和符号链接，pnpm 能够显著减少项目的磁盘空间占用和安装时间
+2. **更严格的依赖关系管理**：pnpm 更严格地遵循包的依赖关系，确保应用程序只访问在其 package.json 中声明的依赖项
+3. **原生 Monorepo 支持**：通过 pnpm workspaces 功能，pnpm 支持原生 Monorepo，使跨项目的包管理变得更加简单
+
+### 配置 pnpm workspace
+
+要在 Monorepo 中使用 pnpm，需要在项目根目录下创建一个名为 `pnpm-workspace.yaml` 的文件，并在其中定义工作区：
+
+```yaml
+packages:
+  # 包含 packages 目录下的所有直接子目录
+  - 'packages/*'
+  # 包含 components 目录下的所有子目录
+  - 'components/**'
+  # 排除 test 目录下的所有包
+  - '!**/test/**'
+```
+
+### 防止使用其他包管理器
+
+为了防止团队成员意外使用其他包管理器（如 npm 或 yarn），可以在项目根目录的 `package.json` 中添加以下脚本：
+
+```json
+{
+  "scripts": {
+    "preinstall": "npx -y only-allow pnpm"
+  }
+}
+```
+
+这样，当有人尝试运行 `npm install` 或 `yarn install` 时，会触发错误提示，只允许使用 pnpm。
+
+### 依赖管理的最佳实践
+
+在 Monorepo 中管理依赖是一个复杂的任务，以下是一些最佳实践：
+
+#### 1. 在需要的包中安装依赖
+
+对于大部分 Monorepo 项目，建议直接在需要依赖项的包中的 `package.json` 中显式声明依赖，无论是外部依赖还是内部包之间的依赖。
+
+在多个包中安装相同依赖的命令：
+
+```bash
+# 在 web 和 mobile 包中安装 jest
+pnpm install jest --save-dev --filter=web --filter=mobile
+```
+
+优势：
+- **可维护性**：每个包的 `package.json` 都会声明其需要的依赖，开发者可以更容易地理解和处理依赖
+- **灵活性**：在大型、复杂的 Monorepo 中，不同的包可能需要不同版本的依赖
+
+#### 2. 简洁的根目录依赖
+
+根目录的 `package.json` 中应该只包含管理项目所需的工具依赖，如：
+- Turborepo
+- Husky
+- lint-staged
+- Changesets
+
+而构建和库的依赖应该安装在各自的包中。
+
+#### 3. 包之间的相互依赖
+
+使用 pnpm 的 `workspace:` 协议可以方便地在包之间建立依赖关系：
+
+```bash
+# 在 monorepo-pkg-b 中添加对 monorepo-pkg-a 的依赖
+pnpm add @sway/monorepo-pkg-a --filter @sway/monorepo-pkg-b
+```
+
+这会在 `monorepo-pkg-b` 的 `package.json` 中添加：
+
+```json
+"dependencies": {
+  "@sway/monorepo-pkg-a": "workspace:^"
+}
+```
+
+推荐使用 `workspace:*` 来保持依赖的版本是工作空间里的最新版本。当执行 `pnpm publish` 时，会自动将 `workspace:` 修正为对应的版本号。
+
+### 工作空间协议 (workspace:)
+
+pnpm 支持 `workspace:` 协议，用于引用工作空间中的包：
+
+1. **精确版本**：`"foo": "workspace:*"`
+2. **通过别名引用**：`"bar": "workspace:foo@*"`
+3. **通过相对路径引用**：`"foo": "workspace:../foo"`
+
+在发布时，这些引用会被转换为常规的版本规范：
+- `workspace:*` → `1.5.0`
+- `workspace:~` → `~1.5.0`
+- `workspace:^` → `^1.5.0`
+
+### 使用 Changesets 管理版本和发布
+
+Changesets 是 pnpm 官方推荐的版本管理工具，用于管理 Monorepo 中的包版本和发布。
+
+#### 安装和初始化
+
+```bash
+# 安装 changesets
+pnpm i -Dw @changesets/cli
+
+# 初始化
+pnpm changeset init
+```
+
+初始化后，项目根目录会创建一个 `.changeset` 目录，其中包含配置文件。
+
+#### 生成 changeset 文件
+
+当你修改了某个包的代码并准备发布新版本时：
+
+```bash
+pnpm changeset
+```
+
+这个命令会引导你选择要发布的包以及版本类型（patch、minor、major），并添加变更说明。
+
+#### 发布测试版本
+
+```bash
+# 进入预发布模式（如 beta）
+pnpm changeset pre enter beta
+
+# 更新版本号
+pnpm changeset version
+
+# 构建并发布
+pnpm run build && pnpm changeset publish
+
+# 退出预发布模式
+pnpm changeset pre exit
+```
+
+#### 发布正式版本
+
+```bash
+# 更新版本号
+pnpm changeset version
+
+# 构建并发布
+pnpm run build && pnpm changeset publish
+```
+
+### Catalogs 协议（pnpm 9.5.0+）
+
+Catalogs 是 pnpm 的新特性，用于在工作空间中统一管理依赖版本。
+
+#### 配置 Catalogs
+
+在 `pnpm-workspace.yaml` 中定义：
+
+```yaml
+packages:
+  - 'packages/**'
+
+# 定义默认 Catalog
+catalog:
+  react: ^18.3.1
+  react-dom: ^18.3.1
+
+# 定义具名 Catalogs
+catalogs:
+  # 可通过 "catalog:react17" 引用
+  react17:
+    react: ^17.0.2
+    react-dom: ^17.0.2
+```
+
+#### 在 package.json 中使用
+
+```json
+{
+  "dependencies": {
+    // 使用默认配置
+    "react": "catalog:",
+    // 使用具名配置
+    "react-dom": "catalog:react17"
+  }
+}
+```
+
+发布后会转换为：
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^17.0.2"
+  }
+}
+```
+
+#### 使用 codemod 快速重构
+
+```bash
+pnpx codemod pnpm/catalog
+```
+
+这个命令会自动将项目中的依赖版本转换为 Catalog 协议。
+
+### 常见命令和参数
+
+1. **-w, --workspace-root**：在工作空间根目录安装依赖
+   ```bash
+   pnpm add -w eslint
+   ```
+
+2. **--filter**：限制命令只在特定包中执行
+   ```bash
+   pnpm build --filter @sway/monorepo-pkg-a
+   ```
+
+3. **-r, --recursive**：在所有包中执行命令（不包括根目录）
+   ```bash
+   pnpm -r run build
+   ```
+
+4. **--parallel**：忽略依赖顺序，并行执行命令
+   ```bash
+   pnpm --parallel -r run watch
+   ```
+
+### 知名项目示例
+
+以下是一些使用 pnpm 工作空间的知名开源项目：
+
+- Next.js
+- Material UI
+- Vite
+- Nuxt
+- Vue
+- Astro
+- Prisma
+- Turborepo
+
+### 参考资料
+
+- [pnpm 官方文档 - 工作空间](https://pnpm.io/zh/workspaces)
+- [pnpm 官方文档 - Catalogs](https://pnpm.io/zh/catalogs)
+- [pnpm 官方文档 - 使用 Changesets](https://pnpm.io/zh/using-changesets)
