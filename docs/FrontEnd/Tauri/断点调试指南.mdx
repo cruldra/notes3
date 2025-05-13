@@ -1,0 +1,286 @@
+---
+sidebar_position: 2
+---
+
+
+在开发Tauri应用时，能够有效地调试前端(TSX)和后端(Rust)代码是提高开发效率的关键。本文将详细介绍如何在VS Code中设置断点调试环境，帮助您更好地排查和解决问题。
+
+## 前端(TSX)部分的调试
+
+Tauri应用的前端本质上是一个Web应用，因此可以使用浏览器的开发者工具进行调试。
+
+### 方法一：使用内置开发者工具
+
+1. **启用开发者工具**：
+   - 在开发模式下，右键点击应用界面，选择"检查元素"
+   - 或者通过代码打开开发者工具：
+
+```typescript
+import { appWindow } from '@tauri-apps/api/window';
+
+// 打开DevTools
+appWindow.webviewWindow.openDevTools();
+```
+
+2. **在Tauri配置中启用开发者工具**：
+   - 在`src-tauri/Cargo.toml`中添加`devtools`特性：
+
+```toml
+[dependencies]
+tauri = { version = "1.x", features = ["...", "devtools"] }
+```
+
+3. **在应用启动时自动打开开发者工具**：
+
+```rust
+// src-tauri/src/main.rs
+fn main() {
+  tauri::Builder::default()
+    // ...其他配置
+    .setup(|app| {
+      #[cfg(debug_assertions)]
+      {
+        let window = app.get_window("main").unwrap();
+        window.open_devtools();
+      }
+      Ok(())
+    })
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
+}
+```
+
+### 方法二：使用VS Code调试前端
+
+1. **安装浏览器调试扩展**：
+   - 安装"Debugger for Chrome"或"Debugger for Microsoft Edge"扩展
+
+2. **配置launch.json**：
+   - 添加前端调试配置：
+
+```json
+{
+  "type": "chrome",
+  "request": "launch",
+  "name": "Debug Frontend",
+  "url": "http://localhost:1420", // 替换为您的开发服务器URL
+  "webRoot": "${workspaceFolder}"
+}
+```
+
+## 后端(Rust)部分的调试
+
+VS Code提供了两种主要的调试Rust后端的方法。
+
+### 方法一：使用vscode-lldb扩展(适用于所有平台)
+
+1. **安装必要的扩展**：
+   - 安装[vscode-lldb](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)扩展
+
+2. **配置launch.json文件**：
+   - 在项目根目录创建`.vscode/launch.json`文件：
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Tauri Development Debug",
+      "cargo": {
+        "args": [
+          "build",
+          "--manifest-path=./src-tauri/Cargo.toml",
+          "--no-default-features"
+        ]
+      },
+      "preLaunchTask": "ui:dev"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Tauri Production Debug",
+      "cargo": {
+        "args": ["build", "--release", "--manifest-path=./src-tauri/Cargo.toml"]
+      },
+      "preLaunchTask": "ui:build"
+    }
+  ]
+}
+```
+
+3. **配置tasks.json文件**：
+   - 创建`.vscode/tasks.json`文件：
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ui:dev",
+      "type": "shell",
+      "isBackground": true,
+      "command": "yarn", // 或npm、pnpm等
+      "args": ["dev"]
+    },
+    {
+      "label": "ui:build",
+      "type": "shell",
+      "command": "yarn", // 或npm、pnpm等
+      "args": ["build"]
+    }
+  ]
+}
+```
+
+### 方法二：使用Visual Studio Windows调试器(仅Windows平台)
+
+1. **安装必要的扩展**：
+   - 安装[C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)扩展
+   - 安装Visual Studio Windows调试器
+
+2. **配置launch.json文件**：
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch App Debug",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/src-tauri/target/debug/your-app-name-here.exe",
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "dev"
+    }
+  ]
+}
+```
+
+3. **配置tasks.json文件**：
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build:debug",
+      "type": "cargo",
+      "command": "build",
+      "options": {
+        "cwd": "${workspaceRoot}/src-tauri"
+      }
+    },
+    {
+      "label": "ui:dev",
+      "type": "shell",
+      "isBackground": true,
+      "command": "yarn", // 或npm、pnpm等
+      "args": ["dev"]
+    },
+    {
+      "label": "dev",
+      "dependsOn": ["build:debug", "ui:dev"],
+      "group": {
+        "kind": "build"
+      }
+    }
+  ]
+}
+```
+
+## 调试流程
+
+1. **设置断点**：
+   - 在Rust代码(如`src-tauri/src/main.rs`)中点击行号设置断点
+   - 在TSX文件中设置断点(通过开发者工具或VS Code)
+   - 或者在代码中添加`debugger;`语句(前端)
+
+2. **启动调试**：
+   - 按下F5或点击VS Code调试面板中的"开始调试"按钮
+   - 选择相应的调试配置(Development或Production)
+
+3. **调试操作**：
+   - 当程序执行到断点时，执行将暂停
+   - 检查变量值、调用栈、内存等
+   - 使用调试控制(继续、单步执行、单步跳过等)控制程序执行
+
+## 调试Rust命令
+
+Tauri应用中，前端通常通过调用Rust命令与后端交互。调试这些命令的流程如下：
+
+1. **在Rust命令函数中设置断点**：
+
+```rust
+#[tauri::command]
+fn my_command(name: &str) -> String {
+    // 在这里设置断点
+    format!("Hello, {}!", name)
+}
+```
+
+2. **在前端调用命令的地方设置断点**：
+
+```typescript
+import { invoke } from '@tauri-apps/api/tauri';
+
+async function callMyCommand() {
+  // 在这里设置断点
+  const result = await invoke('my_command', { name: 'World' });
+  console.log(result);
+}
+```
+
+3. **启动调试并触发命令**：
+   - 启动应用并执行会触发命令的操作
+   - 观察前端和后端断点的触发情况
+
+## 注意事项
+
+1. **调试配置不使用Tauri CLI**：
+   - 上述配置直接使用`cargo`构建应用，不使用Tauri CLI
+   - 这意味着一些Tauri CLI特有的功能可能不会执行
+
+2. **前后端调试协同**：
+   - 前端和后端调试通常需要分别设置
+   - 可以同时运行两个调试会话(一个用于前端，一个用于后端)
+
+3. **性能考虑**：
+   - Windows平台上，Visual Studio调试器通常比LLDB更快
+   - LLDB在处理Rust枚举等特性时可能有一些限制
+
+4. **调试发布版本**：
+   - 要调试发布版本，使用"Tauri Production Debug"配置
+   - 注意发布版本的优化可能会影响调试体验
+
+5. **热重载与调试**：
+   - 前端热重载通常不会影响断点
+   - 但Rust代码的更改需要重新编译和启动调试会话
+
+## 常见问题解决
+
+1. **断点不触发**：
+   - 确保代码路径正确
+   - 检查是否有优化导致代码被跳过
+   - 尝试重新设置断点
+
+2. **无法连接到调试器**：
+   - 检查端口是否被占用
+   - 确保调试配置正确
+   - 重启VS Code和调试会话
+
+3. **调试信息不完整**：
+   - 在Rust代码中使用`#[derive(Debug)]`
+   - 使用`println!`或`dbg!`宏输出更多信息
+   - 考虑使用日志库记录详细信息
+
+## 结论
+
+通过正确配置VS Code的调试环境，您可以有效地调试Tauri应用的前端(TSX)和后端(Rust)代码。这不仅能提高开发效率，还能帮助您更好地理解应用的运行机制和解决复杂问题。
+
+## 参考资源
+
+- [Tauri官方文档 - 调试](https://v2.tauri.app/develop/debug/vscode/)
+- [VS Code调试文档](https://code.visualstudio.com/docs/editor/debugging)
+- [Rust调试指南](https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html)

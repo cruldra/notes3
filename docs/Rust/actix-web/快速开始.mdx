@@ -1,0 +1,239 @@
+
+## 添加依赖
+
+```toml
+[dependencies]
+actix-web = "4.10.2"
+actix-files = "0.6.5"
+```
+
+## 示例
+
+```rust
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, get, post};
+use actix_files;
+use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::fs;
+use tauri::Emitter;
+use tokio::runtime::Runtime;
+use config::{Config, ConfigError, Environment, File};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Settings {
+    // 必须在配置中指定，没有默认值
+    pub conversation_list_dir: String,
+    pub get_latest_msg_requests_dir: String,
+}
+
+impl Settings {
+    pub fn load() -> Result<Self, ConfigError> {
+        // Create configuration builder
+        let config_builder = Config::builder()
+            // Add in settings from the config file if it exists
+            // Try multiple possible locations for the config file
+            .add_source(File::with_name("config.yaml").required(false))
+            // Add in settings from the environment
+            // Prefix variables with "APP_" to avoid conflicts
+            // For example, APP_CONVERSATION_LIST_DIR=path/to/dir
+            .add_source(Environment::with_prefix("APP").separator("_"));
+
+        // Build the configuration
+        let config = config_builder.build()?;
+
+        // Deserialize the configuration into our Settings struct
+        config.try_deserialize()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Conversation {
+    pub name: String,
+    pub avatar: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ConversationList(Vec<Conversation>);
+
+impl ConversationList {
+    pub fn new() -> Self {
+        ConversationList(Vec::new())
+    }
+
+    pub fn add(&mut self, conversation: Conversation) {
+        self.0.push(conversation);
+    }
+
+    pub fn as_vec(&self) -> &Vec<Conversation> {
+        &self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+// Message request structure
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MessageRequest {
+    pub id: String,
+    pub name: String,
+    pub msg: String,
+}
+
+// Shared state for the HTTP server
+pub struct AppState {
+    pub app_handle: Arc<Mutex<Option<tauri::AppHandle>>>,
+    pub settings: Settings,
+}
+
+// HTTP endpoint to get conversation list
+#[get("/api/conversation-list")]
+async fn receive_conversation_list(
+    data: web::Data<AppState>,
+) -> impl Responder {
+    println!("Scanning conversation list from directory");
+
+    // Get the directory from app state
+    let dir_path = &data.settings.conversation_list_dir;
+
+    // Create a new conversation list
+    let mut conversation_list = ConversationList::new();
+
+    // Scan the directory
+    match fs::read_dir(dir_path) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    // Get the file name
+                    if let Some(file_name) = entry.file_name().to_str() {
+                        // Remove file extension from the name
+                        let name_without_extension = if let Some(dot_pos) = file_name.rfind('.') {
+                            &file_name[0..dot_pos]
+                        } else {
+                            file_name // If no extension found, use the original name
+                        };
+
+                        // Create a conversation object
+                        let conversation = Conversation {
+                            name: name_without_extension.to_string(),
+                            avatar: format!("http://127.0.0.1:3030/imgs/{}", file_name),
+                        };
+
+                        // Print before adding to the list
+                        println!("Added conversation: name={} (original filename: {})", conversation.name, file_name);
+
+                        // Add to the list
+                        conversation_list.add(conversation);
+                    }
+                }
+            }
+
+            println!("Found {} conversations", conversation_list.len());
+
+            // Emit event to frontend
+            if let Some(app_handle) = data.app_handle.lock().unwrap().as_ref() {
+                // Use the emit method to send the event to the frontend
+                let _ = app_handle.emit("conversation_list_received", conversation_list.as_vec().clone());
+            }
+
+            HttpResponse::Ok().json(serde_json::json!({
+                "status": "success",
+                "count": conversation_list.len()
+            }))
+        },
+        Err(e) => {
+            println!("Error reading directory: {}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "status": "error",
+                "message": format!("Failed to read directory: {}", e)
+            }))
+        }
+    }
+}
+
+// HTTP endpoint to receive latest message
+#[post("/api/latest-message")]
+async fn receive_latest_message(
+    data: web::Data<AppState>,
+    message: web::Json<MessageRequest>,
+) -> impl Responder {
+    println!("Received latest message for conversation ID: {}", message.name);
+    println!("Message content: {}", message.msg);
+    println!("Message ID: {}", message.id);
+
+    // Emit event to frontend
+    if let Some(app_handle) = data.app_handle.lock().unwrap().as_ref() {
+        // Use the emit method to send the event to the frontend
+        let _ = app_handle.emit("latest_message_received", message.0);
+        println!("Emitted latest_message_received event");
+    }
+
+    HttpResponse::Ok().json(serde_json::json!({
+        "status": "success"
+    }))
+}
+
+// Start the HTTP server
+pub fn start_http_server(app_handle: tauri::AppHandle) {
+    // Clone the app handle to move into the thread
+    let app_handle_clone = app_handle.clone();
+
+    // Load settings at application startup
+    let settings = match Settings::load() {
+        Ok(settings) => {
+            println!("Loaded configuration: conversation_list_dir={}", settings.conversation_list_dir);
+            settings
+        },
+        Err(e) => {
+            eprintln!("错误: 无法加载配置: {}", e);
+            eprintln!("请确保在配置文件中设置了 conversation_list_dir 路径");
+            eprintln!("您可以通过以下方式设置:");
+            eprintln!("1. 在 client/config/default.yaml 文件中设置 conversation_list_dir");
+            eprintln!("2. 设置环境变量 APP_CONVERSATION_LIST_DIR");
+            panic!("缺少必要的配置: conversation_list_dir");
+        }
+    };
+
+    // Verify that the directory exists
+    if !std::path::Path::new(&settings.conversation_list_dir).exists() {
+        println!("Warning: Directory '{}' does not exist. Creating it...", settings.conversation_list_dir);
+        // Try to create the directory
+        match std::fs::create_dir_all(&settings.conversation_list_dir) {
+            Ok(_) => println!("Directory created successfully."),
+            Err(e) => println!("Failed to create directory: {}", e),
+        }
+    }
+
+    // Start the HTTP server in a separate thread
+    thread::spawn(move || {
+        // Create a tokio runtime
+        let rt = Runtime::new().unwrap();
+
+        // Run the HTTP server in the tokio runtime
+        rt.block_on(async {
+            // Create app state with settings
+            let app_state = web::Data::new(AppState {
+                app_handle: Arc::new(Mutex::new(Some(app_handle_clone))),
+                settings: settings.clone(),
+            });
+
+            HttpServer::new(move || {
+                App::new()
+                    .app_data(app_state.clone())
+                    .service(receive_conversation_list)
+                    .service(receive_latest_message)
+                    .service(actix_files::Files::new("/imgs", &settings.conversation_list_dir))
+            })
+            .bind("127.0.0.1:3030")
+            .unwrap()
+            .run()
+            .await
+            .unwrap();
+        });
+    });
+
+    println!("HTTP server started on http://127.0.0.1:3030");
+}
+```

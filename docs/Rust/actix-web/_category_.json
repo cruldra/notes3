@@ -1,0 +1,8 @@
+{
+  "label": "Actix-web",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Actix Web是基于Rust的异步Web框架,它提供了快速、可扩展、可靠的Web应用程序开发工具包."
+  }
+}

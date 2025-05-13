@@ -1,0 +1,325 @@
+---
+sidebar_position: 1
+---
+
+结构体(struct)是Rust中一种非常重要的自定义数据类型，它允许我们将多个相关的值组合成一个有意义的整体。与元组类似，结构体可以包含不同类型的数据，但与元组不同的是，结构体中的每个数据都有一个名称，这使得访问和使用结构体中的数据更加直观和方便。
+
+## 结构体的定义与创建
+
+### 定义结构体
+
+在Rust中，使用`struct`关键字来定义结构体：
+
+```rust
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+```
+
+结构体定义包括：
+- 使用`struct`关键字
+- 结构体名称（通常使用大驼峰命名法）
+- 花括号内的字段列表，每个字段都有名称和类型
+
+### 创建结构体实例
+
+定义结构体后，我们可以通过为每个字段指定具体值来创建该结构体的实例：
+
+```rust
+let user1 = User {
+    email: String::from("someone@example.com"),
+    username: String::from("someusername123"),
+    active: true,
+    sign_in_count: 1,
+};
+```
+
+创建实例时需要注意：
+- 必须为每个字段提供值
+- 字段的顺序可以与定义时不同
+- 使用键值对的形式指定字段值
+
+### 访问和修改结构体字段
+
+使用点表示法可以访问结构体中的特定字段：
+
+```rust
+let email = user1.email;
+```
+
+如果结构体实例是可变的，也可以修改其字段值：
+
+```rust
+let mut user1 = User {
+    email: String::from("someone@example.com"),
+    username: String::from("someusername123"),
+    active: true,
+    sign_in_count: 1,
+};
+
+user1.email = String::from("anotheremail@example.com");
+```
+
+需要注意的是，Rust不允许只将某个字段标记为可变，整个结构体实例要么是可变的，要么是不可变的。
+
+### 简化结构体创建
+
+当函数参数与结构体字段同名时，可以使用字段初始化简写语法：
+
+```rust
+fn build_user(email: String, username: String) -> User {
+    User {
+        email,      // 等同于 email: email
+        username,   // 等同于 username: username
+        active: true,
+        sign_in_count: 1,
+    }
+}
+```
+
+### 结构体更新语法
+
+基于现有的结构体实例创建新实例时，可以使用结构体更新语法：
+
+```rust
+let user2 = User {
+    email: String::from("another@example.com"),
+    ..user1  // 其余字段使用user1的值
+};
+```
+
+`..user1`语法表示剩余未显式设置的字段应从`user1`中获取对应值。这种语法必须放在结构体定义的末尾。
+
+需要注意的是，结构体更新语法使用的是类似赋值的操作，因此如果字段类型没有实现`Copy`特征（如`String`），所有权将从旧实例转移到新实例。
+
+## 结构体的类型
+
+Rust中有三种结构体类型：
+
+### 1. 命名字段结构体
+
+这是最常见的结构体形式，每个字段都有名称和类型：
+
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+```
+
+### 2. 元组结构体
+
+元组结构体有名称但字段没有名称，类似于带名称的元组：
+
+```rust
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+
+let black = Color(0, 0, 0);
+let origin = Point(0, 0, 0);
+```
+
+元组结构体在你需要给整个元组命名，但不关心各个字段名称时很有用。
+
+### 3. 单元结构体
+
+没有任何字段的结构体称为单元结构体：
+
+```rust
+struct AlwaysEqual;
+
+let subject = AlwaysEqual;
+```
+
+单元结构体通常用于实现特征，但不需要存储任何数据的情况。
+
+## 结构体的所有权
+
+结构体可以存储引用，但这需要使用生命周期参数：
+
+```rust
+struct User {
+    username: &str,  // 错误：缺少生命周期参数
+    email: &str,     // 错误：缺少生命周期参数
+    sign_in_count: u64,
+    active: bool,
+}
+```
+
+正确的写法应该是：
+
+```rust
+struct User<'a> {
+    username: &'a str,
+    email: &'a str,
+    sign_in_count: u64,
+    active: bool,
+}
+```
+
+通常，我们会选择拥有所有权的类型（如`String`而不是`&str`）作为结构体字段，这样整个结构体就拥有其所有数据，只要结构体有效，其数据也就有效。
+
+## 为结构体实现方法
+
+### 定义方法
+
+使用`impl`块为结构体定义方法：
+
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+```
+
+方法的第一个参数总是`self`，代表调用该方法的结构体实例：
+- `&self`：借用结构体实例（不可变）
+- `&mut self`：可变借用结构体实例
+- `self`：获取结构体实例的所有权（较少使用）
+
+### 调用方法
+
+使用点表示法调用结构体方法：
+
+```rust
+let rect1 = Rectangle { width: 30, height: 50 };
+println!("Area: {}", rect1.area());
+```
+
+### 关联函数
+
+在`impl`块中定义的不以`self`为第一个参数的函数称为关联函数（而不是方法）：
+
+```rust
+impl Rectangle {
+    fn new(width: u32, height: u32) -> Rectangle {
+        Rectangle { width, height }
+    }
+}
+```
+
+关联函数通常用作构造函数，使用双冒号语法调用：
+
+```rust
+let rect = Rectangle::new(30, 50);
+```
+
+### 多个impl块
+
+可以为同一个结构体定义多个`impl`块，这在实现特征或组织代码时很有用：
+
+```rust
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+```
+
+## 结构体与泛型
+
+结构体定义可以使用泛型参数，增加代码的灵活性：
+
+```rust
+struct Point<T> {
+    x: T,
+    y: T,
+}
+
+let integer_point = Point { x: 5, y: 10 };
+let float_point = Point { x: 1.0, y: 4.0 };
+```
+
+如果需要x和y可以是不同类型，可以使用多个泛型参数：
+
+```rust
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
+
+let mixed_point = Point { x: 5, y: 4.0 };
+```
+
+为泛型结构体实现方法时，也需要在`impl`后声明泛型参数：
+
+```rust
+impl<T> Point<T> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+}
+```
+
+还可以为特定类型的结构体实现特定的方法：
+
+```rust
+impl Point<f32> {
+    fn distance_from_origin(&self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+}
+```
+
+## 结构体的内存布局
+
+结构体在内存中是连续存储的，但对于包含String或Vec等拥有所有权的类型，实际数据存储在堆上，结构体中只存储指向这些数据的指针：
+
+```rust
+struct File {
+    name: String,
+    data: Vec<u8>,
+}
+```
+
+在这个例子中，`File`结构体本身包含两个字段，但它们都是指向堆内存的指针。
+
+## 结构体的调试与打印
+
+要打印结构体内容，可以使用`#[derive(Debug)]`注解并使用`{:?}`或`{:#?}`格式说明符：
+
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+    println!("rect is {:?}", rect);  // 紧凑打印
+    println!("rect is {:#?}", rect); // 美化打印
+}
+```
+
+另外，还可以使用`dbg!`宏进行调试打印：
+
+```rust
+dbg!(&rect);
+```
+
+## 总结
+
+结构体是Rust中组织相关数据的强大工具，它们：
+- 允许创建自定义类型
+- 可以包含不同类型的数据
+- 提供了字段名称以增强代码可读性
+- 可以拥有方法和关联函数
+- 支持泛型以增加代码灵活性
+
+掌握结构体的使用对于编写清晰、组织良好的Rust代码至关重要。

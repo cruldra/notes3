@@ -1,0 +1,8 @@
+{
+  "label": "Tauri",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Tauri是用于构建用户界面的JavaScript库, 它允许开发者使用Rust/JavaScript/HTML/CSS等技术构建跨平台的桌面应用."
+  }
+}
