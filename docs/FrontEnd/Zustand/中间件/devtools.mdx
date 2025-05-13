@@ -1,0 +1,152 @@
+---
+title: devtools
+comment: false
+editLink: false
+prev: false
+next: false
+order: 1
+---
+
+## 简介
+
+[Zustand](https://zustand-demo.pmnd.rs/)提供了一个`devtools`
+中间件用于和[ReduxDevTools](https://chromewebstore.google.com/detail/lmhkpmbekcpmknklioeibfkpmmfibljd)
+集成,**它可以让你用可视化的方式追踪状态的变化以确保其符合预期.**
+
+## 一个简单的例子
+
+在浏览器中安装[ReduxDevTools](https://chromewebstore.google.com/detail/lmhkpmbekcpmknklioeibfkpmmfibljd)
+插件后打开控制台,然后看看下面这个例子:
+
+```ts
+import {devtools} from "zustand/middleware";
+import create from "zustand";
+import {StateCreator} from "zustand/vanilla";
+//定义状态的类型
+type TestStore = {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+};
+//创建存储库
+const createStore: StateCreator<TestStore, [["zustand/devtools", never]]> = (
+    set, get
+) => {
+    console.log(set)
+    return({
+        count: 0,
+        increment: () => set((state) => ({count: state.count + 1})),
+        decrement: () => set((state) => ({count: state.count - 1})),
+    })
+};
+
+export const useTestStore = create<TestStore>(
+    devtools(createStore, {
+        name: "Notes_Zustand_Devtools",
+    }),
+); 
+```
+
+```tsx
+import {useTestStore} from './store';
+
+export default () => {
+    const [count, increment, decrement] = useTestStore((s) => [
+        s.count,
+        s.increment,
+        s.decrement,
+    ]);
+    return <div>
+        <h1>{count}</h1>
+        <button onClick={increment}>+</button>
+        <button onClick={decrement}>-</button>
+    </div>;
+}
+```
+
+点击`+`或者`-`按钮,可以在Redux DevTools中看到状态的变化。
+
+## 在复杂的状态库中使用动作命名空间
+
+在上面的例子中,点击`+`或者`-`按钮虽然可以看到状态的变化,但是并不知道是哪个动作导致了状态的变化,**在调试大型应用时,这一点很重要**.
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240204/image.3t85i2aj6cu0.png)
+
+图中标红的部分就是动作的命名空间,`devtools`中间件扩展了`Zustand`的`set`方法
+
+现在我们修改一下`store.ts`文件,为`increment`和`decrement`动作添加命名空间:
+
+```ts
+increment: () => set((state) => ({count: state.count + 1}) ,false,'increment'),
+decrement: () => set((state) => ({count: state.count - 1}),false,'decrement'),
+multiply: (x:number,y:number) => set((state) => ({count: x*y }),false,{
+    type:'multiply',
+    payload:{
+        x,
+        y
+    }
+    }),
+```
+
+完整示例：
+
+```ts
+import {devtools} from "zustand/middleware";
+import create from "zustand";
+import {StateCreator} from "zustand/vanilla";
+//定义状态的类型
+type TestStore = {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+    multiply: (x:number,y:number) => void;
+};
+//创建存储库
+const createStore: StateCreator<TestStore, [["zustand/devtools", never]]> = (
+    set, get
+) => {
+    console.log(set)
+    return({
+        count: 0,
+        increment: () => set((state) => ({count: state.count + 1}) ,false,'increment'),
+        decrement: () => set((state) => ({count: state.count - 1}),false,'decrement'),
+        multiply: (x:number,y:number) => set((state) => ({count: x*y }),false,{
+            type:'multiply',
+            payload:{
+                x,
+                y
+            }
+        }),
+    })
+};
+
+export const useTestStore = create<TestStore>(
+    devtools(createStore, {
+        name: "Notes_Zustand_Devtools",
+    }),
+); 
+```
+
+```tsx
+import {useTestStore} from './store';
+
+export default () => {
+    const [count, increment, decrement ,multiply] = useTestStore((s) => [
+        s.count,
+        s.increment,
+        s.decrement,
+        s.multiply,
+    ]);
+ const xClick = (e) => {
+     multiply(3,5)
+ }
+    return <div>
+        <h1>{count}</h1>
+        <button onClick={increment}>+</button>
+        <button onClick={decrement}>-</button>
+        <button onClick={xClick }>x</button>
+    </div>;
+}
+```
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240204/image.4aqip4a1f7s0.png)

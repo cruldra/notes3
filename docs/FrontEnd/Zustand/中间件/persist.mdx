@@ -1,0 +1,165 @@
+---
+title: persist
+comment: false
+editLink: false
+prev: false
+next: false
+---
+
+## 简介
+
+`persist`中间件用于将状态持久化到诸如`localstorage`或`sessionstorage`等存储介质中,这样让用户下次再打开应用时能够恢复到他们离开时的状态.
+
+## PersistOptions
+
+`PersistOptions`接口定义了一些配置项,这些配置项用于控制状态持久化的行为.
+
+```ts
+interface PersistOptions {
+    //存储的名称（必须唯一）。
+    name: string;
+    //将状态写入持久化存储介质时使用的序列化器
+    serialize?: (state: StorageValue<S>) => string | Promise<string>;
+    // 从持久化存储介质中读取状态时使用的反序列化器
+    deserialize?: (str: string) => StorageValue<PersistedState> | Promise<StorageValue<PersistedState>>;
+    // 使用自定义持久化存储
+    storage?: PersistStorage<PersistedState> | undefined;
+    // 筛选器，用于决定哪些状态片段需要持久化
+    partialize?: (state: S) => PersistedState;
+    //在状态重新水合之前调用的函数。返回的函数将在状态重新水合后或发生错误时调用。
+    onRehydrateStorage?: (state: S) => ((state?: S, error?: unknown) => void) | void;
+    //如果存储状态的版本与此处指定的版本不匹配，将不使用存储。这在向存储添加破坏性更改时很有用。
+    version?: number;
+    // 一个可选的布尔值，将阻止持久化中间件在初始化时触发水合。这使您可以在应用的渲染生命周期的特定点调用rehydrate()。这在SSR应用中很有用。
+    skipHydration?: boolean;
+}
+```
+
+## 示例1-使用`localstorage`持久化状态
+
+```ts
+import {persist, PersistOptions} from "zustand/middleware";
+import create from "zustand";
+import {StateCreator} from "zustand/vanilla";
+//定义状态的类型
+type TestStore = {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+};
+const persistOptions: PersistOptions<TestStore> = {
+    name: "TestStore",
+    version: 0,
+    storeage: localStorage
+}
+//创建存储库
+const createStore: StateCreator<TestStore, [["zustand/devtools", never]]> = (
+    set, get
+) => {
+    console.log(set)
+    return ({
+        count: 0,
+        increment: () => set((state) => ({count: state.count + 1})),
+        decrement: () => set((state) => ({count: state.count - 1})),
+    })
+};
+
+export const useTestStore = create<TestStore>(persist(createStore, persistOptions),); 
+```
+
+```tsx
+import {useTestStore} from './store';
+
+export default () => {
+    const [count, increment, decrement] = useTestStore((s) => [
+        s.count,
+        s.increment,
+        s.decrement,
+    ]);
+    return <div>
+        <h1>{count}</h1>
+        <button onClick={increment}>+</button>
+        <button onClick={decrement}>-</button>
+    </div>;
+}
+```
+
+打开控制台,点击`+`或者`-`按钮,可以看到`count`值被实时保存到了`localstorage`中:
+
+![](https://cdn.jsdelivr.net/gh/hhypygy/images@master/20240204/image.3uw0ojqnwac0.png)
+
+## 在`SSR`中使用
+
+`persist`中间件默认会在初始化时触发`水合(指从持久化存储介质中读取状态)`
+
+如果页面或者组件使用的是`SSR`渲染,此时就会报错,因为`localstorage`是浏览器环境下的`API`,在`SSR`环境下是不可用的.
+
+所以对于那些可能会被使用`SSR`渲染的组件访问的存储库,要通过`skipHydration`选项来阻止`persist`中间件在初始化时触发`水合`
+,然后由客户端在合适的时机手动调用`rehydrate`方法来触发`水合`
+
+下面我们模拟这种情况:
+
+```ts
+import {persist, PersistOptions} from "zustand/middleware";
+import create from "zustand";
+import {StateCreator} from "zustand/vanilla";
+//定义状态的类型
+type TestStore = {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+};
+const persistOptions: PersistOptions<TestStore> = {
+    name: "TestStore",
+    version: 0,
+    storeage: localStorage,
+    skipHydration: true
+}
+//创建存储库
+const createStore: StateCreator<TestStore, [["zustand/devtools", never]]> = (
+    set, get
+) => {
+    console.log(set)
+    return ({
+        count: 0,
+        increment: () => set((state) => ({count: state.count + 1})),
+        decrement: () => set((state) => ({count: state.count - 1})),
+    })
+};
+
+export const useTestStore = create<TestStore>(persist(createStore, persistOptions),); 
+```
+
+上面的例子给`persistOptions`添加了`skipHydration: true`选项,这样就会阻止`persist`中间件在初始化时触发`水合`
+
+现在我们将`count`的值通过`+`调整为`3`,然后再刷新页面会发现`count`的值又变成了初始值`0`,说明`skipHydration:true`生效了
+
+接下来在`useEffect`中手动调用`rehydrate`方法来触发`水合`
+
+```ts
+useEffect(() => {
+     useTestStore.persist.rehydrate()
+ }, [])
+```
+
+完整示例：
+
+```tsx
+import {useTestStore} from './store';
+import {useEffect} from 'react'
+export default () => {
+    const [count, increment, decrement] = useTestStore((s) => [
+        s.count,
+        s.increment,
+        s.decrement,
+    ]);
+     useEffect(() => {
+         useTestStore.persist.rehydrate()
+     }, [])
+    return <div>
+        <h1>{count}</h1>
+        <button onClick={increment}>+</button>
+        <button onClick={decrement}>-</button>
+    </div>;
+}
+```

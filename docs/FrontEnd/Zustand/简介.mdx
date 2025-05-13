@@ -1,0 +1,211 @@
+---
+title: 简介
+comment: false
+editLink: false
+prev: false
+next: false
+order: 1
+---
+
+## 简介
+
+`Zustand`是一个非常轻量级的状态管理库,它可以用于`React`应用程序中.它的主要优点包括:
+
+* **简单、轻量** - `Zustand`的API非常简单和直观,易于上手,无需`Redux`那样繁琐的配置和样板代码,代码体积很小并且不依赖中间件就能处理异步逻辑或副作用
+* **可切片的状态** - `Zustand`的状态是可切片的,可以根据需要将状态分割成多个`store`,每个`store`
+  都可以独立订阅和更新,这有助于防止不必要的组件重新渲染
+* **无需上下文提供者** - 状态可以直接被访问和更新,无需使用`React`的`ContextAPI`.
+* **可变性与不可变性** - `Zustand`允许你选择是使用可变状态还是不可变状态,这样你可以根据项目需求灵活选择.
+* **中间件和插件支持** - 尽管`Zustand`本身不需要中间件,但它支持中间件和插件,这意味着你可以扩展其功能以适应更复杂的场景.
+* **不限于React** - 虽然`Zustand`在`React`中很流行,但它实际上是一个独立的库,可以用在任何`JavaScript`项目中.
+* **TypeScript友好** - `Zustand`支持`TypeScript`,这意味着你可以享受到类型检查和自动完成等特性.
+* **DevTools集成** - `Zustand`可以与`ReduxDevTools`集成,提供了状态时间旅行等调试功能.
+
+## 安装
+
+```bash
+pnpm add zustand
+```
+
+## 创建存储库
+
+### 使用`create`
+```ts
+import create from "zustand";
+
+//定义状态的类型
+type State = {
+    count: number;
+    increment: () => void;
+    decrement: () => void;
+};
+
+//创建存储
+export const useStore = create<State>((set) => ({
+    count: 0,
+    increment: () => set((state) => ({count: state.count + 1})),
+    decrement: () => set((state) => ({count: state.count - 1})),
+}));
+```
+
+使用示例：
+
+```tsx
+import {useStore} from './store';
+
+export default () => {
+    const [count, increment, decrement] = useStore((s) => [
+        s.count,
+        s.increment,
+        s.decrement,
+    ]);
+    return <div>
+        <h1>{count}</h1>
+        <button onClick={increment}>+</button>
+        <button onClick={decrement}>-</button>
+    </div>;
+}
+```
+
+### 使用`createWithEqualityFn`
+
+`createWithEqualityFn`相比于`create`多了一个`equalityFn`参数,允许自定义`相等性比较函数`
+用于比较新旧状态是否相等,如果相等则不会触发更新,默认使用`Object.is`进行比较.
+
+`createWithEqualityFn`一般用作复杂状态对象的性能优化,通过比较前后状态的**特定部分**来避免不必要的更新
+
+下面这个例子展示了如何使用`createWithEqualityFn`来优化性能
+
+```tsx
+import create from 'zustand';
+import {createWithEqualityFn} from 'zustand';
+import shallow from 'zustand/shallow';
+
+// 假设状态包含用户信息和主题信息
+const useStore = createWithEqualityFn((set) => ({
+    userInfo: {name: 'Alice', age: 30},
+    theme: 'light',
+    setUserInfo: (userInfo) => set({userInfo}),
+    setTheme: (theme) => set({theme}),
+}), shallow); // 使用浅比较函数来检查状态更新
+
+// 在组件中使用
+function UserInfo() {
+    // 这个组件只关心 userInfo 的变化
+    const userInfo = useStore((state) => state.userInfo, shallow);
+    // ...
+}
+
+function ThemeSwitcher() {
+    // 这个组件只关心 theme 的变化
+    const theme = useStore((state) => state.theme, shallow);
+    // ...
+}
+```
+
+在上面这个例子中,当你在`ThemeSwitcher`组件中修改主题设置时,`shallow`函数会比较新旧状态对象中的顶层属性(分别是`userInfo`
+和`theme`),发现只有`theme`属性发生了变化,所以不会通知`UserInfo`组件重新渲染
+
+而`create`函数则是简单的比较两次新旧状态对象的引用是否相等,如果不相等则通知所有订阅此状态对象的组件重新渲染
+
+### 使用中间件
+
+`zustand`的`中间件`非常强大和灵活,它们用于扩展`Zustand`的功能,下面这个例子展示了`persist`和`devtools`这两个中间件的使用
+
+首先是`persist`中间件,它用于将状态持久化到`localstorage`这种永久性存储介质中,这样即使在页面刷新或关闭后,状态也能够保持
+
+```tsx
+//创建持久化中间件的配置
+
+const persistOptions: PersistOptions<AuthenticationStore> = {
+  name: persistName,
+
+  // 手动控制 Hydration ，避免 ssr 报错
+  skipHydration: true,
+
+  storage:  {
+    getItem(name: string): StorageValue<AuthenticationStore> | Promise<StorageValue<AuthenticationStore> | null> | null {
+      return undefined;
+    }, removeItem(name: string): void | Promise<void> {
+      return undefined;
+    }, setItem(name: string, value: StorageValue<AuthenticationStore>): void | Promise<void> {
+      return undefined;
+    }
+  },
+  version: 0,
+};
+```
+
+然后是`devtools`中间件,它用于与`ReduxDevTools`集成,提供了状态时间旅行等调试功能,这个中间件没有什么复杂的配置所以就不单独创建配置了
+
+最后`create`或者`createWithEqualityFn`创建状态存储并应用这些中间件
+
+```tsx
+const createStore: StateCreator<AuthenticationStore> = (setState) => ({
+  token: "",
+  setToken: (token) => {
+    setState({ token });
+  },
+});
+export const useAuthenticationStore =
+    createWithEqualityFn<AuthenticationStore>()(
+            persist(
+                    devtools(createStore, {
+                      name: persistName + (isDev ? "_DEV" : ""),
+                    }),
+                    persistOptions,
+            ),
+            shallow,
+    );
+```
+
+## 使用存储库
+
+### 在`React`函数组件中使用
+
+```tsx
+const Counter = () => {
+    //使用存储
+    const {count, increment, decrement} = useStore();
+    return (
+        <div>
+            <h1>{count}</h1>
+            <button onClick={increment}>+</button>
+            <button onClick={decrement}>-</button>
+        </div>
+    );
+};
+```
+
+### 在`React`函数组件外部使用
+
+像`create`或者`createWithEqualityFn`这样的函数会返回`hook`函数,`React`的规则是不能在函数组件外部调用`hook`函数,所以如果你在普通的`js`文件中像下面这样:
+
+```ts
+const {count, increment, decrement} = useStore();
+```
+会抛出`Hooks can only be called inside of the body of a function component`这个错误
+
+正确的做法不要加上`()`调用这个`hook`函数,而是把它当作`zustand store`类调用其中的相关`api`方法
+
+```js
+// 直接从你的 store 导入 API 方法
+import { useAuthenticationStore } from './whereYourStoreIs';
+
+// 获取状态
+const currentState = useAuthenticationStore.getState();
+
+// 设置状态
+useAuthenticationStore.setState({ token: 'newToken' });
+
+// 订阅状态变化
+const unsubscribe = useAuthenticationStore.subscribe(
+  token => {
+    // ... 当 token 更新时执行操作
+  },
+  state => state.token // 只订阅 token 的变化
+);
+
+// 当不再需要订阅时取消订阅
+unsubscribe();
+```

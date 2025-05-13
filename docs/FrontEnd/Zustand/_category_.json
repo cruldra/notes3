@@ -1,0 +1,8 @@
+{
+  "label": "Zustand",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Zustand是一个轻量级的状态管理库,它使用了React hooks的概念,使得状态管理更加简单、直观、高效."
+  }
+}

@@ -1,0 +1,127 @@
+---
+title: subscribeWithSelector
+comment: false
+editLink: false
+prev: false
+next: false
+order: 1
+---
+
+## 简介
+
+`subscribeWithSelector`中间件用于发布状态片段的变化.它可以让你只关注感兴趣的状态片段的变化,这有助于防止不必要的组件重新渲染.
+
+## 一个简单的例子
+
+```ts
+import {subscribeWithSelector} from "zustand/middleware";
+import create from "zustand";
+import {StateCreator} from "zustand/vanilla";
+//定义状态的类型
+type TestStore = {
+    count: number;
+    avg: number;
+    incrementCount: () => void;
+    decrementCount: () => void;
+};
+//创建存储库
+const createStore: StateCreator<TestStore> = (
+    set, get
+) => ({
+    count: 0,
+    avg: 0,
+    incrementCount: () => set((state) => ({count: state.count + 1})),
+    decrementCount: () => set((state) => ({count: state.count - 1})),
+    incrementAvg: () => set((state) => ({avg: state.avg + 1})),
+    decrementAvg: () => set((state) => ({avg: state.avg - 1})),
+})
+
+export const useTestStore = create<TestStore>(
+    subscribeWithSelector(createStore),
+); 
+```
+
+```tsx
+import {useTestStore} from './store';
+import {useEffect} from 'react'
+
+export default () => {
+    const [count, avg, incrementCount, decrementCount, incrementAvg, decrementAvg] = useTestStore((s) => [
+        s.count,
+        s.avg,
+        s.incrementCount,
+        s.decrementCount,
+        s.incrementAvg,
+        s.decrementAvg
+    ]);
+
+    useEffect(() => {
+        const unsubscribe = useTestStore.subscribe(
+            (s) => s.count,
+            (a) => {
+                alert(`count:${a}`)
+            },
+        );
+        return () => {
+            unsubscribe();
+        };
+    }, [])
+    return <div>
+        <h1>count:{count}</h1>
+        <button onClick={incrementCount}>+</button>
+        <button onClick={decrementCount}>-</button>
+        <h1>avg:{avg}</h1>
+        <button onClick={incrementAvg}>+</button>
+        <button onClick={decrementAvg}>-</button>
+    </div>;
+}
+```
+
+上面的例子中使用`subscribeWithSelector`中间件来创建状态库:
+
+```ts
+export const useTestStore = create<TestStore>(
+    subscribeWithSelector(createStore),
+); 
+```
+
+然后使用`subscribe`方法来订阅状态片段的变化:
+
+```tsx
+import {useTestStore} from './store';
+
+useEffect(() => {
+    const unsubscribe = useTestStore.subscribe(
+        (s) => s.count,
+        (a) => {
+            alert(`count:${a}`)
+        },
+    );
+    return () => {
+        unsubscribe();
+    };
+}, [])
+```
+
+现在点击`Count`下面的`+`和`-`号时,浏览器弹框会显示`count`的值,而点击`Avg`下面的`+`和`-`
+号时不会有任何反应,这是因为我们只订阅了`count`的变化.
+
+## 订阅多个状态片段
+
+`subscribe`方法的第一个参数可以是一个数组,用于订阅多个状态片段的变化:
+
+```tsx
+import {useTestStore} from './store';
+
+useEffect(() => {
+    const unsubscribe = useTestStore.subscribe(
+        (s) => [s.count,s.avg],
+        ([count,avg]) => {
+            alert(`count:${count},avg:${avg}`)
+        },
+    );
+    return () => {
+        unsubscribe();
+    };
+}, [])
+```
