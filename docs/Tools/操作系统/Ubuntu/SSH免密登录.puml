@@ -1,0 +1,75 @@
+@startuml SSH免密登录流程
+!theme plain
+skinparam backgroundColor white
+skinparam handwritten false
+skinparam shadowing false
+
+title SSH免密登录完整流程
+
+participant "SSH客户端" as Client
+participant "SSH服务端" as Server
+participant "授权密钥文件\n(~/.ssh/authorized_keys)" as AuthKeys
+
+== 初始化阶段 ==
+note over Client
+生成密钥对:
+- 私钥: ~/.ssh/id_rsa
+- 公钥: ~/.ssh/id_rsa.pub
+end note
+
+Client -> Server: 手动复制公钥到服务端
+note over Server
+将公钥内容追加到
+~/.ssh/authorized_keys
+设置适当的文件权限
+end note
+
+== 连接认证阶段 ==
+Client -> Server: 1. SSH连接请求
+note over Client
+ssh user@hostname
+end note
+
+Server -> Client: 2. 发送随机挑战字符串
+note over Server
+生成随机数据用于验证
+客户端私钥的有效性
+end note
+
+Client -> Client: 3. 使用私钥对挑战进行签名
+note over Client
+使用 ~/.ssh/id_rsa 私钥
+对挑战字符串进行数字签名
+end note
+
+Client -> Server: 4. 发送签名结果
+
+Server -> AuthKeys: 5. 查找匹配的公钥
+note over Server
+在 authorized_keys 中
+查找对应的公钥
+end note
+
+AuthKeys -> Server: 6. 返回公钥信息
+
+Server -> Server: 7. 验证签名
+note over Server
+使用公钥验证客户端
+发送的签名是否正确
+end note
+
+alt 验证成功
+    Server -> Client: 8a. 认证通过，建立连接
+    note over Client, Server
+    成功登录，无需密码
+    建立安全的SSH会话
+    end note
+else 验证失败
+    Server -> Client: 8b. 认证失败
+    note over Server
+    拒绝连接或要求
+    其他认证方式
+    end note
+end
+
+@enduml

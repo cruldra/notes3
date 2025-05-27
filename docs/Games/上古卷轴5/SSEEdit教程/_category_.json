@@ -1,0 +1,8 @@
+{
+  "label": "SSEEdit教程",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "SSEEdit是一款上古卷轴5的插件编辑器，用于修改游戏中的数据。本教程将指导您如何使用SSEEdit来创建和修改插件。"
+  }
+}
