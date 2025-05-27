@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">ESL转换和插件优化 | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="ESL转换和插件优化 | Cruldra"><meta data-rh="true" name="description" content="上古卷轴5：天际特别版引入了一种新的插件格式——ESL（轻量级插件），这种格式可以帮助玩家突破传统的255个ESP/ESM插件限制。同时，SSEEdit还提供了多种插件优化功能，可以提高游戏性能和稳定性。本教程将详细介绍如何使用SSEEdit进行ESL转换和插件优化。"><meta data-rh="true" property="og:description" content="上古卷轴5：天际特别版引入了一种新的插件格式——ESL（轻量级插件），这种格式可以帮助玩家突破传统的255个ESP/ESM插件限制。同时，SSEEdit还提供了多种插件优化功能，可以提高游戏性能和稳定性。本教程将详细介绍如何使用SSEEdit进行ESL转换和插件优化。"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.e0961402.css">
+<script src="/notes3/assets/js/runtime~main.ced07729.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.0799bda8.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();null!==e?t(e):window.matchMedia("(prefers-color-scheme: dark)").matches?t("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,t("light"))}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/notes3/img/logo.svg"><style data-mantine-styles="classes">@media (max-width: 35.99375em) {.mantine-visible-from-xs {display: none !important;}}@media (min-width: 36em) {.mantine-hidden-from-xs {display: none !important;}}@media (max-width: 47.99375em) {.mantine-visible-from-sm {display: none !important;}}@media (min-width: 48em) {.mantine-hidden-from-sm {display: none !important;}}@media (max-width: 61.99375em) {.mantine-visible-from-md {display: none !important;}}@media (min-width: 62em) {.mantine-hidden-from-md {display: none !important;}}@media (max-width: 74.99375em) {.mantine-visible-from-lg {display: none !important;}}@media (min-width: 75em) {.mantine-hidden-from-lg {display: none !important;}}@media (max-width: 87.99375em) {.mantine-visible-from-xl {display: none !important;}}@media (min-width: 88em) {.mantine-hidden-from-xl {display: none !important;}}</style><div role="region" aria-label="Skip to main content"><a class="skipToContent_jUK1" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/notes3/"><div class="navbar__logo"><img src="/notes3/img/logo.svg" alt="My Site Logo" class="themedComponent_NDc0 themedComponent--light_Q2B5"><img src="/notes3/img/logo.svg" alt="My Site Logo" class="themedComponent_NDc0 themedComponent--dark_X4oY"></div><b class="navbar__title text--truncate">Cruldra</b></a><a class="navbar__item navbar__link" href="/notes3/docs/category/设计模式">JVM</a><a class="navbar__item navbar__link" href="/notes3/docs/category/css">前端</a><a class="navbar__item navbar__link" href="/notes3/docs/Tools/OpenAI">工具</a><a class="navbar__item navbar__link" href="/notes3/docs/category/器物搜索小程序">个人</a><a class="navbar__item navbar__link" href="/notes3/docs/AI/Agno/介绍">AI</a><a class="navbar__item navbar__link" href="/notes3/docs/category/内置模块">Python</a><a class="navbar__item navbar__link" href="/notes3/docs/category/actix-web">Rust</a><a class="navbar__item navbar__link" href="/notes3/docs/category/数据库系统">软件工程</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/notes3/docs/category/上古卷轴5">游戏</a></div><div class="navbar__items navbar__items--right"><div class="navbarSearchContainer_PO1c"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_L7Es"><div class="docsWrapper_rTw6"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_Rqg4" type="button"></button><div class="docRoot_avrE"><aside class="theme-doc-sidebar-container docSidebarContainer_k2_I"><div class="sidebarViewport_ES3Y"><div class="sidebar_sCdl"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_vSAy"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" href="/notes3/docs/category/上古卷轴5">上古卷轴5</a><button aria-label="Collapse sidebar category &#x27;上古卷轴5&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" tabindex="0" href="/notes3/docs/category/sseedit教程">SSEEdit教程</a><button aria-label="Collapse sidebar category &#x27;SSEEdit教程&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/安装和使用">安装和使用</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化">ESL转换和插件优化</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/创建补丁和合并插件">创建补丁和合并插件</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/清理插件和解决冲突">清理插件和解决冲突</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" tabindex="0" href="/notes3/docs/category/模组汉化">模组汉化</a><button aria-label="Expand sidebar category &#x27;模组汉化&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/notes3/docs/Games/上古卷轴5/Mods/Become High King of Skyrim TNG">Mods</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/SKSE64中文说明">SKSE(Skyrim Script Extender 64)</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/上古卷轴5名词对照表">上古卷轴5名词对照表</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/参考">参考</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/notes3/docs/Games/上古卷轴5/版本比较">各版本比较</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/notes3/docs/Games/Mod Organizer/">Mod Organizer 2 使用教程</a><button aria-label="Expand sidebar category &#x27;Mod Organizer 2 使用教程&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li></ul></nav></div></div></aside><main class="docMainContainer_ufT7"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_tqIq"><div class="docItemContainer_Wzve"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_HozQ" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/notes3/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_SXdq"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/notes3/docs/category/上古卷轴5"><span itemprop="name">上古卷轴5</span></a><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/notes3/docs/category/sseedit教程"><span itemprop="name">SSEEdit教程</span></a><meta itemprop="position" content="2"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">ESL转换和插件优化</span><meta itemprop="position" content="3"></li></ul></nav><div class="tocCollapsible_xUmY theme-doc-toc-mobile tocMobile_QBgZ"><button type="button" class="clean-btn tocCollapsibleButton_DuXa">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>ESL转换和插件优化</h1></header><p>上古卷轴5：天际特别版引入了一种新的插件格式——ESL（轻量级插件），这种格式可以帮助玩家突破传统的255个ESP/ESM插件限制。同时，SSEEdit还提供了多种插件优化功能，可以提高游戏性能和稳定性。本教程将详细介绍如何使用SSEEdit进行ESL转换和插件优化。</p>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="esl插件格式介绍">ESL插件格式介绍<a href="#esl插件格式介绍" class="hash-link" aria-label="Direct link to ESL插件格式介绍" title="Direct link to ESL插件格式介绍">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="espesm和esl的区别">ESP、ESM和ESL的区别<a href="#espesm和esl的区别" class="hash-link" aria-label="Direct link to ESP、ESM和ESL的区别" title="Direct link to ESP、ESM和ESL的区别">​</a></h3>
+<ol>
+<li>
+<p><strong>ESP（Elder Scrolls Plugin）</strong>：</p>
+<ul>
+<li>传统的插件格式</li>
+<li>使用前两位16进制数作为排序</li>
+<li>后六位用于存储FormID数据</li>
+<li>每个ESP计入255插件限制</li>
+</ul>
+</li>
+<li>
+<p><strong>ESM（Elder Scrolls Master）</strong>：</p>
+<ul>
+<li>主文件格式</li>
+<li>加载顺序优先于ESP</li>
+<li>每个ESM计入255插件限制</li>
+<li>其他插件可以作为主文件依赖</li>
+</ul>
+</li>
+<li>
+<p><strong>ESL（Elder Scrolls Light）</strong>：</p>
+<ul>
+<li>天际特别版新增的轻量级插件格式</li>
+<li>不计入255插件限制</li>
+<li>使用固定的FE作为前两位（排序在第254位）</li>
+<li>中间三位用于ESL插件排序</li>
+<li>最多可以有4096个ESL插件</li>
+<li>每个ESL最多可以包含4096个FormID</li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="esl的优势和限制">ESL的优势和限制<a href="#esl的优势和限制" class="hash-link" aria-label="Direct link to ESL的优势和限制" title="Direct link to ESL的优势和限制">​</a></h3>
+<p><strong>优势</strong>：</p>
+<ul>
+<li>不计入255插件限制</li>
+<li>允许安装更多小型MOD</li>
+<li>加载速度通常更快</li>
+</ul>
+<p><strong>限制</strong>：</p>
+<ul>
+<li>每个ESL最多只能包含4096个FormID</li>
+<li>不适合大型MOD</li>
+<li>转换现有ESP可能会影响存档</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="esp转esl的条件和方法">ESP转ESL的条件和方法<a href="#esp转esl的条件和方法" class="hash-link" aria-label="Direct link to ESP转ESL的条件和方法" title="Direct link to ESP转ESL的条件和方法">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="判断esp是否可以转换为esl">判断ESP是否可以转换为ESL<a href="#判断esp是否可以转换为esl" class="hash-link" aria-label="Direct link to 判断ESP是否可以转换为ESL" title="Direct link to 判断ESP是否可以转换为ESL">​</a></h3>
+<p>一个ESP插件必须满足以下条件才能安全地转换为ESL：</p>
+<ol>
+<li><strong>FormID条件</strong>：所有新添加的FormID的3、4、5位必须全为0（即格式为xx000xxx）</li>
+<li><strong>数量条件</strong>：新添加的FormID总数不超过4096个</li>
+<li><strong>类型条件</strong>：不包含会影响存档的复杂脚本或特殊记录</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="使用sseedit检查esp是否可以转换为esl">使用SSEEdit检查ESP是否可以转换为ESL<a href="#使用sseedit检查esp是否可以转换为esl" class="hash-link" aria-label="Direct link to 使用SSEEdit检查ESP是否可以转换为ESL" title="Direct link to 使用SSEEdit检查ESP是否可以转换为ESL">​</a></h3>
+<ol>
+<li>启动SSEEdit并加载要检查的插件</li>
+<li>右键点击任何插件，选择&quot;Apply Script&quot;</li>
+<li>选择&quot;Find ESP plugins which could be turned into ESL&quot;脚本</li>
+<li>脚本会分析所有加载的ESP插件，并在消息窗口中显示结果</li>
+<li>结果会显示哪些插件可以直接转换为ESL，哪些需要先压缩FormID</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="esp转esl的具体方法">ESP转ESL的具体方法<a href="#esp转esl的具体方法" class="hash-link" aria-label="Direct link to ESP转ESL的具体方法" title="Direct link to ESP转ESL的具体方法">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="方法一直接添加esl标记适用于符合条件的esp">方法一：直接添加ESL标记（适用于符合条件的ESP）<a href="#方法一直接添加esl标记适用于符合条件的esp" class="hash-link" aria-label="Direct link to 方法一：直接添加ESL标记（适用于符合条件的ESP）" title="Direct link to 方法一：直接添加ESL标记（适用于符合条件的ESP）">​</a></h3>
+<ol>
+<li>在SSEEdit中加载要转换的ESP插件</li>
+<li>点击插件名称，在右侧面板中找到&quot;Record Header&quot;部分</li>
+<li>双击&quot;Record Flags&quot;字段</li>
+<li>在弹出的对话框中勾选&quot;ESL&quot;选项</li>
+<li>点击&quot;OK&quot;确认</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="方法二压缩formid后添加esl标记适用于需要调整formid的esp">方法二：压缩FormID后添加ESL标记（适用于需要调整FormID的ESP）<a href="#方法二压缩formid后添加esl标记适用于需要调整formid的esp" class="hash-link" aria-label="Direct link to 方法二：压缩FormID后添加ESL标记（适用于需要调整FormID的ESP）" title="Direct link to 方法二：压缩FormID后添加ESL标记（适用于需要调整FormID的ESP）">​</a></h3>
+<ol>
+<li>在SSEEdit中加载要转换的ESP插件</li>
+<li>右键点击插件名称，选择&quot;Compact FormIDs for ESL&quot;</li>
+<li>确认操作（注意：此操作会修改所有FormID，可能影响现有存档）</li>
+<li>等待操作完成</li>
+<li>按照方法一的步骤添加ESL标记</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="方法三使用批处理脚本转换多个esp">方法三：使用批处理脚本转换多个ESP<a href="#方法三使用批处理脚本转换多个esp" class="hash-link" aria-label="Direct link to 方法三：使用批处理脚本转换多个ESP" title="Direct link to 方法三：使用批处理脚本转换多个ESP">​</a></h3>
+<ol>
+<li>在SSEEdit中加载所有要转换的ESP插件</li>
+<li>右键点击任何插件，选择&quot;Apply Script&quot;</li>
+<li>选择&quot;ESLify&quot;脚本（如果可用）</li>
+<li>按照脚本提示操作</li>
+<li>等待操作完成</li>
+<li>保存更改</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="不同类型esp的esl转换案例">不同类型ESP的ESL转换案例<a href="#不同类型esp的esl转换案例" class="hash-link" aria-label="Direct link to 不同类型ESP的ESL转换案例" title="Direct link to 不同类型ESP的ESL转换案例">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="案例一不含覆盖数据的简单esp">案例一：不含覆盖数据的简单ESP<a href="#案例一不含覆盖数据的简单esp" class="hash-link" aria-label="Direct link to 案例一：不含覆盖数据的简单ESP" title="Direct link to 案例一：不含覆盖数据的简单ESP">​</a></h3>
+<p>以SkyUI为例：</p>
+<ol>
+<li>SkyUI.esp中的所有FormID的3、4、5位全为0</li>
+<li>不包含覆盖原版游戏数据的记录</li>
+<li>可以直接添加ESL标记，不需要压缩FormID</li>
+<li>转换后不会影响现有存档</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="案例二仅包含覆盖数据的补丁类esp">案例二：仅包含覆盖数据的补丁类ESP<a href="#案例二仅包含覆盖数据的补丁类esp" class="hash-link" aria-label="Direct link to 案例二：仅包含覆盖数据的补丁类ESP" title="Direct link to 案例二：仅包含覆盖数据的补丁类ESP">​</a></h3>
+<p>以某个补丁ESP为例：</p>
+<ol>
+<li>补丁ESP只包含对其他插件数据的修改和覆盖</li>
+<li>不包含新添加的FormID</li>
+<li>可以直接添加ESL标记</li>
+<li>注意：转换后补丁会在加载顺序中排在最后</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="案例三包含新formid且需要压缩的esp">案例三：包含新FormID且需要压缩的ESP<a href="#案例三包含新formid且需要压缩的esp" class="hash-link" aria-label="Direct link to 案例三：包含新FormID且需要压缩的ESP" title="Direct link to 案例三：包含新FormID且需要压缩的ESP">​</a></h3>
+<p>以某个添加新物品的MOD为例：</p>
+<ol>
+<li>ESP包含新添加的FormID，但3、4、5位不全为0</li>
+<li>需要先压缩FormID</li>
+<li>压缩后再添加ESL标记</li>
+<li>注意：此类转换会影响现有存档，建议在新游戏中使用</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="插件优化技术">插件优化技术<a href="#插件优化技术" class="hash-link" aria-label="Direct link to 插件优化技术" title="Direct link to 插件优化技术">​</a></h2>
+<p>除了ESL转换外，SSEEdit还提供了多种插件优化功能，可以提高游戏性能和稳定性。</p>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="删除未引用记录">删除未引用记录<a href="#删除未引用记录" class="hash-link" aria-label="Direct link to 删除未引用记录" title="Direct link to 删除未引用记录">​</a></h3>
+<p>未引用记录是指没有被任何其他记录引用的记录，这些记录通常是无用的：</p>
+<ol>
+<li>在SSEEdit中加载要优化的插件</li>
+<li>右键点击插件名称，选择&quot;Apply Script&quot;</li>
+<li>选择&quot;Remove &#x27;Identical to Master&#x27; records&quot;脚本</li>
+<li>等待操作完成</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="优化脚本">优化脚本<a href="#优化脚本" class="hash-link" aria-label="Direct link to 优化脚本" title="Direct link to 优化脚本">​</a></h3>
+<p>过多或低效的脚本可能导致游戏卡顿：</p>
+<ol>
+<li>在SSEEdit中加载包含脚本的插件</li>
+<li>展开&quot;Script&quot;类别</li>
+<li>检查脚本是否有冗余或低效代码</li>
+<li>如有必要，编辑或删除问题脚本</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="优化纹理和网格引用">优化纹理和网格引用<a href="#优化纹理和网格引用" class="hash-link" aria-label="Direct link to 优化纹理和网格引用" title="Direct link to 优化纹理和网格引用">​</a></h3>
+<p>不正确的纹理和网格引用可能导致游戏加载缓慢或崩溃：</p>
+<ol>
+<li>在SSEEdit中加载包含模型或纹理引用的插件</li>
+<li>展开相关类别（如&quot;Armor&quot;、&quot;Weapon&quot;等）</li>
+<li>检查模型和纹理路径是否正确</li>
+<li>修复任何错误的路径</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="优化单元格数据">优化单元格数据<a href="#优化单元格数据" class="hash-link" aria-label="Direct link to 优化单元格数据" title="Direct link to 优化单元格数据">​</a></h3>
+<p>过于复杂的单元格数据可能导致游戏在特定区域卡顿：</p>
+<ol>
+<li>在SSEEdit中加载包含单元格修改的插件</li>
+<li>展开&quot;Cell&quot;或&quot;Worldspace&quot;类别</li>
+<li>检查单元格中的对象数量和复杂度</li>
+<li>如有必要，减少不必要的对象</li>
+<li>保存更改</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="高级esl管理技巧">高级ESL管理技巧<a href="#高级esl管理技巧" class="hash-link" aria-label="Direct link to 高级ESL管理技巧" title="Direct link to 高级ESL管理技巧">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="创建esl标记的espesp-fe">创建ESL标记的ESP（ESP-FE）<a href="#创建esl标记的espesp-fe" class="hash-link" aria-label="Direct link to 创建ESL标记的ESP（ESP-FE）" title="Direct link to 创建ESL标记的ESP（ESP-FE）">​</a></h3>
+<p>ESP-FE是一种特殊类型的插件，它同时具有ESP和ESL的特性：</p>
+<ol>
+<li>它是一个ESP文件，但带有ESL标记</li>
+<li>不计入255插件限制</li>
+<li>在文件管理器中显示为.esp扩展名</li>
+<li>在游戏和MOD管理器中显示为轻量级插件</li>
+</ol>
+<p>创建ESP-FE的步骤：</p>
+<ol>
+<li>按照前面介绍的方法将ESP转换为ESL</li>
+<li>不更改文件扩展名，保持为.esp</li>
+<li>保存更改</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="创建esl标记的esmesm-fe">创建ESL标记的ESM（ESM-FE）<a href="#创建esl标记的esmesm-fe" class="hash-link" aria-label="Direct link to 创建ESL标记的ESM（ESM-FE）" title="Direct link to 创建ESL标记的ESM（ESM-FE）">​</a></h3>
+<p>ESM-FE同时具有ESM和ESL的特性：</p>
+<ol>
+<li>它是一个ESM文件，但带有ESL标记</li>
+<li>不计入255插件限制</li>
+<li>在加载顺序中优先于ESP</li>
+<li>其他插件可以将其作为主文件依赖</li>
+</ol>
+<p>创建ESM-FE的步骤：</p>
+<ol>
+<li>在SSEEdit中加载要转换的插件</li>
+<li>点击插件名称，在右侧面板中找到&quot;Record Header&quot;部分</li>
+<li>双击&quot;Record Flags&quot;字段</li>
+<li>在弹出的对话框中同时勾选&quot;ESM&quot;和&quot;ESL&quot;选项</li>
+<li>点击&quot;OK&quot;确认</li>
+<li>保存更改，可以选择将文件扩展名更改为.esm</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="管理大量esl插件">管理大量ESL插件<a href="#管理大量esl插件" class="hash-link" aria-label="Direct link to 管理大量ESL插件" title="Direct link to 管理大量ESL插件">​</a></h3>
+<p>当你有大量ESL插件时，管理它们可能变得复杂：</p>
+<ol>
+<li>
+<p><strong>使用MOD管理器的分组功能</strong>：</p>
+<ul>
+<li>在MO2中创建ESL插件组</li>
+<li>将相关的ESL插件放在同一组中</li>
+</ul>
+</li>
+<li>
+<p><strong>创建合并的ESL插件</strong>：</p>
+<ul>
+<li>使用SSEEdit或专用合并工具合并多个小型ESL</li>
+<li>确保合并后的插件仍然符合ESL条件</li>
+</ul>
+</li>
+<li>
+<p><strong>使用命名约定</strong>：</p>
+<ul>
+<li>为ESL插件添加前缀或后缀（如&quot;[ESL]&quot;）</li>
+<li>帮助快速识别哪些插件是ESL格式</li>
+</ul>
+</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="常见问题和解决方案">常见问题和解决方案<a href="#常见问题和解决方案" class="hash-link" aria-label="Direct link to 常见问题和解决方案" title="Direct link to 常见问题和解决方案">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="esl转换后游戏崩溃">ESL转换后游戏崩溃<a href="#esl转换后游戏崩溃" class="hash-link" aria-label="Direct link to ESL转换后游戏崩溃" title="Direct link to ESL转换后游戏崩溃">​</a></h3>
+<p>可能的原因和解决方案：</p>
+<ol>
+<li>
+<p><strong>FormID冲突</strong>：</p>
+<ul>
+<li>检查是否有多个ESL插件使用相同的FormID范围</li>
+<li>重新压缩FormID，使用不同的起始ID</li>
+</ul>
+</li>
+<li>
+<p><strong>依赖关系问题</strong>：</p>
+<ul>
+<li>确保所有依赖插件都正确加载</li>
+<li>检查加载顺序是否正确</li>
+</ul>
+</li>
+<li>
+<p><strong>不兼容的记录类型</strong>：</p>
+<ul>
+<li>某些特殊记录可能不适合ESL格式</li>
+<li>恢复为原始ESP格式</li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_lsIj" id="无法压缩formid">无法压缩FormID<a href="#无法压缩formid" class="hash-link" aria-label="Direct link to 无法压缩FormID" title="Direct link to 无法压缩FormID">​</a></h3>
+<p>可能的原因和解决方案：</p>
+<ol>
+<li>
+<p><strong>插件过于复杂</strong>：</p>
+<ul>
+<li>插件可能包含太多相互引用的记录</li>
+<li>考虑将插件拆分为多个较小的插件</li>
+</ul>
+</li>
+<li>
+<p><strong>硬编码的FormID</strong>：</p>
+<ul>
+<li>某些MOD可能在脚本中硬编码了FormID</li>
+<li>这类插件通常不适合转换为ESL</li>
+</ul>
+</li>
+<li>
+<p><strong>工具限制</strong>：</p>
+<ul>
+<li>尝试使用最新版本的SSEEdit</li>
+<li>或尝试其他工具，如zEdit</li>
+</ul>
+</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_lsIj" id="结语">结语<a href="#结语" class="hash-link" aria-label="Direct link to 结语" title="Direct link to 结语">​</a></h2>
+<p>ESL转换和插件优化是管理大型MOD列表的重要技术，可以帮助你突破插件限制并提高游戏性能。通过本教程中的方法，你可以有效地管理和优化你的MOD，创造更加稳定和个性化的游戏体验。</p>
+<p>记住，虽然ESL格式提供了很大的灵活性，但并非所有插件都适合转换。始终在转换前备份你的插件和存档，并在新游戏中测试转换后的插件，以确保一切正常运行。</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/Games/上古卷轴5/SSEEdit教程/ESL转换和插件优化.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_DekG" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_FVfe"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/安装和使用"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">安装和使用</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/notes3/docs/Games/上古卷轴5/SSEEdit教程/创建补丁和合并插件"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">创建补丁和合并插件</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_cs9P thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#esl插件格式介绍" class="table-of-contents__link toc-highlight">ESL插件格式介绍</a><ul><li><a href="#espesm和esl的区别" class="table-of-contents__link toc-highlight">ESP、ESM和ESL的区别</a></li><li><a href="#esl的优势和限制" class="table-of-contents__link toc-highlight">ESL的优势和限制</a></li></ul></li><li><a href="#esp转esl的条件和方法" class="table-of-contents__link toc-highlight">ESP转ESL的条件和方法</a><ul><li><a href="#判断esp是否可以转换为esl" class="table-of-contents__link toc-highlight">判断ESP是否可以转换为ESL</a></li><li><a href="#使用sseedit检查esp是否可以转换为esl" class="table-of-contents__link toc-highlight">使用SSEEdit检查ESP是否可以转换为ESL</a></li></ul></li><li><a href="#esp转esl的具体方法" class="table-of-contents__link toc-highlight">ESP转ESL的具体方法</a><ul><li><a href="#方法一直接添加esl标记适用于符合条件的esp" class="table-of-contents__link toc-highlight">方法一：直接添加ESL标记（适用于符合条件的ESP）</a></li><li><a href="#方法二压缩formid后添加esl标记适用于需要调整formid的esp" class="table-of-contents__link toc-highlight">方法二：压缩FormID后添加ESL标记（适用于需要调整FormID的ESP）</a></li><li><a href="#方法三使用批处理脚本转换多个esp" class="table-of-contents__link toc-highlight">方法三：使用批处理脚本转换多个ESP</a></li></ul></li><li><a href="#不同类型esp的esl转换案例" class="table-of-contents__link toc-highlight">不同类型ESP的ESL转换案例</a><ul><li><a href="#案例一不含覆盖数据的简单esp" class="table-of-contents__link toc-highlight">案例一：不含覆盖数据的简单ESP</a></li><li><a href="#案例二仅包含覆盖数据的补丁类esp" class="table-of-contents__link toc-highlight">案例二：仅包含覆盖数据的补丁类ESP</a></li><li><a href="#案例三包含新formid且需要压缩的esp" class="table-of-contents__link toc-highlight">案例三：包含新FormID且需要压缩的ESP</a></li></ul></li><li><a href="#插件优化技术" class="table-of-contents__link toc-highlight">插件优化技术</a><ul><li><a href="#删除未引用记录" class="table-of-contents__link toc-highlight">删除未引用记录</a></li><li><a href="#优化脚本" class="table-of-contents__link toc-highlight">优化脚本</a></li><li><a href="#优化纹理和网格引用" class="table-of-contents__link toc-highlight">优化纹理和网格引用</a></li><li><a href="#优化单元格数据" class="table-of-contents__link toc-highlight">优化单元格数据</a></li></ul></li><li><a href="#高级esl管理技巧" class="table-of-contents__link toc-highlight">高级ESL管理技巧</a><ul><li><a href="#创建esl标记的espesp-fe" class="table-of-contents__link toc-highlight">创建ESL标记的ESP（ESP-FE）</a></li><li><a href="#创建esl标记的esmesm-fe" class="table-of-contents__link toc-highlight">创建ESL标记的ESM（ESM-FE）</a></li><li><a href="#管理大量esl插件" class="table-of-contents__link toc-highlight">管理大量ESL插件</a></li></ul></li><li><a href="#常见问题和解决方案" class="table-of-contents__link toc-highlight">常见问题和解决方案</a><ul><li><a href="#esl转换后游戏崩溃" class="table-of-contents__link toc-highlight">ESL转换后游戏崩溃</a></li><li><a href="#无法压缩formid" class="table-of-contents__link toc-highlight">无法压缩FormID</a></li></ul></li><li><a href="#结语" class="table-of-contents__link toc-highlight">结语</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_gcmg"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_gcmg"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_gcmg"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/notes3/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_gcmg"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
