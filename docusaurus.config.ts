@@ -61,7 +61,10 @@ const config: Config = {
                     // customCss: 'node_modules/@mantine/core/styles.css',
                 },
             } satisfies Preset.Options,
-        ],
+        ],    ],
+
+    themes: [
+        '@saucelabs/theme-github-codeblock'
     ],
 
     themeConfig: {

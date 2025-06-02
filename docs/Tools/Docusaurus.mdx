@@ -1,0 +1,433 @@
+Docusaurus 是由 Facebook（现Meta）开源的现代化静态网站生成器，专门为构建文档网站而设计。它基于 React 构建，提供了开箱即用的文档功能，让开发者能够快速创建美观、功能丰富的文档网站。
+
+## 核心特性
+
+### 🚀 现代化技术栈
+- **React 驱动**：基于 React 构建，支持 JSX 和现代 JavaScript 特性
+- **TypeScript 支持**：完整的 TypeScript 支持，提供更好的开发体验
+- **快速构建**：使用 Webpack 进行打包，支持热重载和快速开发
+
+### 📚 文档优先
+- **MDX 支持**：支持在 Markdown 中使用 React 组件
+- **自动侧边栏**：根据文件结构自动生成导航
+- **多版本文档**：支持维护多个版本的文档
+- **全文搜索**：内置搜索功能，支持 Algolia DocSearch
+
+### 🎨 主题定制
+- **内置主题**：提供专业的默认主题
+- **自定义样式**：支持 CSS 变量和自定义样式
+- **响应式设计**：移动端友好的响应式布局
+- **暗黑模式**：内置明暗主题切换
+
+### 🌐 国际化
+- **多语言支持**：完整的国际化解决方案
+- **本地化**：支持 RTL 语言和本地化配置
+
+## 快速开始
+
+### 安装
+
+```bash
+# 使用 npm
+npx create-docusaurus@latest my-website classic
+
+# 使用 yarn
+yarn create docusaurus my-website classic
+
+# 使用 pnpm
+pnpm create docusaurus my-website classic
+```
+
+### 项目结构
+
+```
+my-website/
+├── blog/
+│   ├── 2019-05-28-hola.md
+│   ├── 2019-05-29-hello-world.md
+│   └── 2020-05-30-welcome.md
+├── docs/
+│   ├── doc1.md
+│   ├── doc2.md
+│   ├── doc3.md
+│   └── mdx.mdx
+├── src/
+│   ├── components/
+│   │   └── HomepageFeatures/
+│   ├── css/
+│   │   └── custom.css
+│   └── pages/
+│       ├── styles.module.css
+│       └── index.js
+├── static/
+│   └── img/
+├── docusaurus.config.js
+├── package.json
+├── README.md
+├── sidebars.js
+└── yarn.lock
+```
+
+### 开发运行
+
+```bash
+cd my-website
+npm start
+```
+
+## 核心配置
+
+### docusaurus.config.js
+
+这是 Docusaurus 的核心配置文件：
+
+```javascript
+const config = {
+  title: 'My Site',
+  tagline: 'Dinosaurs are cool',
+  url: 'https://your-docusaurus-site.example.com',
+  baseUrl: '/',
+  
+  // GitHub pages 部署配置
+  organizationName: 'facebook',
+  projectName: 'docusaurus',
+  
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
+  
+  // 国际化配置
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+  
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: require.resolve('./sidebars.js'),
+        },
+        blog: {
+          showReadingTime: true,
+        },
+        theme: {
+          customCss: require.resolve('./src/css/custom.css'),
+        },
+      },
+    ],
+  ],
+  
+  themeConfig: {
+    navbar: {
+      title: 'My Site',
+      logo: {
+        alt: 'My Site Logo',
+        src: 'img/logo.svg',
+      },
+      items: [
+        {
+          type: 'doc',
+          docId: 'intro',
+          position: 'left',
+          label: 'Tutorial',
+        },
+        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          href: 'https://github.com/facebook/docusaurus',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+  },
+};
+```
+
+### 侧边栏配置 (sidebars.js)
+
+```javascript
+const sidebars = {
+  tutorialSidebar: [
+    'intro',
+    'hello',
+    {
+      type: 'category',
+      label: 'Tutorial',
+      items: ['tutorial-basics/create-a-document'],
+    },
+  ],
+};
+```
+
+## MDX 支持
+
+Docusaurus 支持 MDX，可以在 Markdown 中使用 React 组件：
+
+```mdx
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Hello MDX
+
+<Tabs>
+  <TabItem value="apple" label="Apple" default>
+    This is an apple 🍎
+  </TabItem>
+  <TabItem value="orange" label="Orange">
+    This is an orange 🍊
+  </TabItem>
+  <TabItem value="banana" label="Banana">
+    This is a banana 🍌
+  </TabItem>
+</Tabs>
+```
+
+## 内置组件
+
+### 警告框 (Admonitions)
+
+```markdown
+:::note
+这是一个普通提示。
+:::
+
+:::tip
+这是一个技巧提示。
+:::
+
+:::info
+这是一个信息提示。
+:::
+
+:::caution
+这是一个注意提示。
+:::
+
+:::danger
+这是一个危险警告。
+:::
+```
+
+### 代码块
+
+支持语法高亮和行号：
+
+````markdown
+```javascript title="example.js" showLineNumbers
+function helloWorld() {
+  console.log('Hello, world!');
+}
+```
+````
+
+### GitHub 代码块插件
+
+Docusaurus 支持通过 `@saucelabs/theme-github-codeblock` 插件直接从 GitHub 仓库引用代码块，这对于文档维护非常有用。
+
+#### 安装配置
+
+```bash
+# 安装插件
+npm install @saucelabs/theme-github-codeblock
+# 或
+pnpm add @saucelabs/theme-github-codeblock
+```
+
+在 `docusaurus.config.js` 中添加主题：
+
+```javascript
+module.exports = {
+  // ...
+  themes: [
+    '@saucelabs/theme-github-codeblock'
+  ],
+  // ...
+};
+```
+
+#### 使用方法
+
+**基本语法：**
+
+````markdown
+```javascript title="https://github.com/facebook/react/blob/main/packages/react/src/React.js#L1-L10"
+// 这里的代码会自动从 GitHub 拉取
+```
+````
+
+**支持的格式：**
+
+1. **完整文件引用：**
+````markdown
+```javascript title="https://github.com/owner/repo/blob/branch/path/to/file.js"
+```
+````
+
+2. **指定行范围：**
+````markdown
+```javascript title="https://github.com/owner/repo/blob/branch/path/to/file.js#L10-L20"
+```
+````
+
+3. **单行引用：**
+````markdown
+```javascript title="https://github.com/owner/repo/blob/branch/path/to/file.js#L15"
+```
+````
+
+#### 实际例子
+
+引用 React 源码：
+
+````markdown
+```javascript title="https://github.com/facebook/react/blob/main/packages/react/src/React.js#L13-L25"
+```
+````
+
+引用配置文件：
+
+````markdown
+```json title="https://github.com/facebook/docusaurus/blob/main/package.json#L1-L10"
+```
+````
+
+#### 优势特点
+
+- **实时同步**：代码块会从 GitHub 实时拉取，保持最新
+- **减少维护**：无需手动复制粘贴和更新代码
+- **版本控制**：支持指定分支、commit hash
+- **语法高亮**：自动检测语言并提供语法高亮
+- **行号显示**：可以精确引用特定行范围
+
+#### 注意事项
+
+- 需要确保引用的 GitHub 仓库是公开的
+- 网络连接问题可能影响代码块加载
+- 建议在重要文档中备份关键代码片段
+- 支持大多数主流编程语言的语法高亮
+
+## 部署
+
+### GitHub Pages
+
+```bash
+# 使用 GitHub Actions
+npm run deploy
+```
+
+### Vercel
+
+```bash
+# 在 Vercel 中连接 GitHub 仓库即可自动部署
+```
+
+### Netlify
+
+```bash
+# Build command: npm run build
+# Publish directory: build
+```
+
+## 插件生态
+
+### 官方插件
+
+- **@docusaurus/plugin-content-docs**：文档插件
+- **@docusaurus/plugin-content-blog**：博客插件
+- **@docusaurus/plugin-google-analytics**：Google Analytics
+- **@docusaurus/plugin-sitemap**：站点地图生成
+
+### 社区插件
+
+- **docusaurus-plugin-sass**：Sass 支持
+- **@docusaurus/plugin-pwa**：PWA 支持
+- **docusaurus-lunr-search**：本地搜索
+- **@saucelabs/theme-github-codeblock**：GitHub 代码块引用
+
+## 最佳实践
+
+### 1. 文件组织
+
+```
+docs/
+├── getting-started/
+│   ├── installation.md
+│   └── quick-start.md
+├── api/
+│   ├── authentication.md
+│   └── endpoints.md
+└── guides/
+    ├── deployment.md
+    └── configuration.md
+```
+
+### 2. Front Matter 使用
+
+```markdown
+---
+id: my-doc-id
+title: My Document Title
+description: My document description
+slug: /my-custom-url
+---
+
+# Document Content
+```
+
+### 3. 图片资源管理
+
+```markdown
+<!-- 使用相对路径 -->
+![Screenshot](./screenshot.png)
+
+<!-- 使用 static 目录 -->
+![Logo](/img/logo.png)
+```
+
+### 4. 版本管理
+
+```bash
+# 创建新版本
+npm run docusaurus docs:version 1.0.0
+
+# 版本目录结构
+versioned_docs/
+├── version-1.0.0/
+└── version-2.0.0/
+```
+
+## 优势与适用场景
+
+### 优势
+- **开箱即用**：无需复杂配置即可开始
+- **现代化**：基于最新的前端技术栈
+- **SEO 友好**：服务端渲染，利于搜索引擎收录
+- **高性能**：静态站点，加载速度快
+- **可扩展**：丰富的插件系统
+
+### 适用场景
+- **产品文档**：API 文档、用户手册
+- **技术博客**：技术分享、教程
+- **开源项目**：项目文档、贡献指南
+- **知识库**：团队知识管理
+
+## 与其他工具对比
+
+| 特性 | Docusaurus | GitBook | VuePress | Jekyll |
+|------|------------|---------|-----------|---------|
+| 技术栈 | React | 专有 | Vue | Ruby |
+| 学习成本 | 中等 | 低 | 中等 | 高 |
+| 定制性 | 高 | 中 | 高 | 高 |
+| 性能 | 优秀 | 良好 | 优秀 | 良好 |
+| 社区支持 | 活跃 | 商业化 | 活跃 | 成熟 |
+
+## 总结
+
+Docusaurus 是一个功能强大、易于使用的现代化文档网站生成器。它特别适合需要快速搭建专业文档网站的项目，无论是开源项目的文档、产品手册还是技术博客，都能通过 Docusaurus 快速实现。
+
+其基于 React 的架构使得它具有很强的可扩展性，而丰富的内置功能又让开发者能够专注于内容创作，而不用过多关心技术实现细节。
+
+:::tip 推荐使用场景
+如果你需要创建一个现代化的文档网站，并且希望有良好的用户体验、SEO 优化和移动端适配，Docusaurus 是一个很好的选择。
+:::
