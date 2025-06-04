@@ -1,0 +1,517 @@
+Mock（模拟）是软件测试中的一种技术，它创建一个**虚假但可控的替代品**来代替真实的依赖项。简单来说，就是用假的东西替换真的东西，让测试更加可控和可靠。
+
+```typescript
+// 真实的 API 调用
+const users = await fetch('/api/users').then(res => res.json())
+
+// Mock 的 API 调用
+const mockFetch = vi.fn().mockResolvedValue({
+  json: () => Promise.resolve([{ id: 1, name: 'Alice' }])
+})
+```
+
+## 为什么需要 Mock？
+
+### 🚫 不用 Mock 的痛点
+
+让我们看一个实际场景：
+
+```typescript
+// UserProfile.tsx - 没有 Mock 的噩梦
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState(null)
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/users/${userId}`),
+      fetch(`/api/users/${userId}/posts`),
+      fetch(`/api/users/${userId}/followers`)
+    ])
+    .then(responses => Promise.all(responses.map(r => r.json())))
+    .then(([userData, postsData, followersData]) => {
+      setUser(userData)
+      setPosts(postsData)
+      setFollowers(followersData)
+      setLoading(false)
+    })
+    .catch(err => {
+      setError(err.message)
+      setLoading(false)
+    })
+  }, [userId])
+  
+  return (
+    <div>
+      {loading && <div>加载中...</div>}
+      {error && <div>错误: {error}</div>}
+      {user && <div>{user.name}</div>}
+    </div>
+  )
+}
+```
+
+**测试这个组件时遇到的问题：**
+
+1. **依赖外部服务** 🌐
+   ```bash
+   # 测试失败的原因
+   ❌ API 服务器挂了
+   ❌ 网络连接不稳定  
+   ❌ 数据库没有测试数据
+   ❌ 第三方服务限流
+   ```
+
+2. **测试环境不稳定** 📈
+   ```bash
+   # 今天测试通过，明天可能失败
+   ✅ 周一：API 正常，测试通过
+   ❌ 周二：API 维护，测试失败
+   ❌ 周三：数据变了，断言失败
+   ✅ 周四：恢复正常，测试通过
+   ```
+
+3. **无法测试边界情况** 🚨
+   ```typescript
+   // 这些情况在真实环境中很难复现
+   - 网络超时怎么办？
+   - 服务器返回 500 错误怎么办？
+   - 数据格式不正确怎么办？
+   - 用户没有权限怎么办？
+   ```
+
+### ✅ 使用 Mock 的优势
+
+```typescript
+// UserProfile.test.tsx - Mock 版本
+import { vi } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+
+// Mock 所有的 API 调用
+global.fetch = vi.fn()
+
+describe('UserProfile', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+  
+  it('显示用户信息', async () => {
+    // 🎯 完全控制返回的数据
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve({ id: 1, name: 'Alice' })
+      })
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve([{ id: 1, title: 'Post 1' }])
+      })
+      .mockResolvedValueOnce({
+        json: () => Promise.resolve([{ id: 2, name: 'Bob' }])
+      })
+    
+    render(<UserProfile userId="1" />)
+    
+    // ✅ 测试稳定，不依赖外部服务
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+    })
+  })
+  
+  it('处理加载状态', async () => {
+    // 🎯 模拟慢速网络
+    vi.mocked(fetch).mockImplementation(
+      () => new Promise(resolve => setTimeout(resolve, 100))
+    )
+    
+    render(<UserProfile userId="1" />)
+    
+    // ✅ 确保加载状态正确显示
+    expect(screen.getByText('加载中...')).toBeInTheDocument()
+  })
+  
+  it('处理错误情况', async () => {
+    // 🎯 轻松模拟错误场景
+    vi.mocked(fetch).mockRejectedValue(new Error('Network Error'))
+    
+    render(<UserProfile userId="1" />)
+    
+    // ✅ 验证错误处理逻辑
+    await waitFor(() => {
+      expect(screen.getByText('错误: Network Error')).toBeInTheDocument()
+    })
+  })
+})
+```
+
+## Mock 的核心价值
+
+### 1. 🎯 测试隔离 - 专注被测对象
+
+```typescript
+// 假设你在测试购物车逻辑
+class ShoppingCart {
+  constructor(
+    private paymentService: PaymentService,
+    private inventoryService: InventoryService,
+    private emailService: EmailService
+  ) {}
+  
+  async checkout(items: CartItem[]) {
+    // 检查库存
+    const available = await this.inventoryService.checkStock(items)
+    if (!available) throw new Error('库存不足')
+    
+    // 处理支付
+    const payment = await this.paymentService.charge(this.getTotal(items))
+    if (!payment.success) throw new Error('支付失败')
+    
+    // 发送确认邮件
+    await this.emailService.sendConfirmation(payment.id)
+    
+    return { orderId: payment.id, success: true }
+  }
+}
+```
+
+**不用 Mock 的问题：**
+```typescript
+// ❌ 这样测试会发生什么？
+it('checkout process', async () => {
+  const cart = new ShoppingCart(
+    new RealPaymentService(),    // 💳 真的会扣钱！
+    new RealInventoryService(),  // 📦 真的会减库存！
+    new RealEmailService()       // 📧 真的会发邮件！
+  )
+  
+  // 这个测试会：
+  // 1. 真的从信用卡扣钱
+  // 2. 真的减少商品库存
+  // 3. 真的发送邮件给客户
+  // 4. 依赖网络和外部服务
+})
+```
+
+**使用 Mock 的解决方案：**
+```typescript
+// ✅ 使用 Mock，专注测试购物车逻辑
+it('successful checkout process', async () => {
+  // Mock 所有依赖
+  const mockPayment = vi.fn().mockResolvedValue({ success: true, id: 'order123' })
+  const mockInventory = vi.fn().mockResolvedValue(true)
+  const mockEmail = vi.fn().mockResolvedValue(true)
+  
+  const cart = new ShoppingCart(
+    { charge: mockPayment },
+    { checkStock: mockInventory },
+    { sendConfirmation: mockEmail }
+  )
+  
+  const result = await cart.checkout([{ id: 1, quantity: 2 }])
+  
+  // 验证购物车的业务逻辑
+  expect(mockInventory).toHaveBeenCalledWith([{ id: 1, quantity: 2 }])
+  expect(mockPayment).toHaveBeenCalled()
+  expect(mockEmail).toHaveBeenCalledWith('order123')
+  expect(result.success).toBe(true)
+})
+
+it('handles payment failure', async () => {
+  // 🎯 轻松测试支付失败场景
+  const mockPayment = vi.fn().mockResolvedValue({ success: false })
+  const mockInventory = vi.fn().mockResolvedValue(true)
+  const mockEmail = vi.fn()
+  
+  const cart = new ShoppingCart(
+    { charge: mockPayment },
+    { checkStock: mockInventory },
+    { sendConfirmation: mockEmail }
+  )
+  
+  await expect(cart.checkout([{ id: 1, quantity: 2 }])).rejects.toThrow('支付失败')
+  
+  // 验证支付失败时不发送邮件
+  expect(mockEmail).not.toHaveBeenCalled()
+})
+```
+
+### 2. 🚀 测试速度 - 快如闪电
+
+```typescript
+// 真实的文件上传测试
+describe('FileUploader - Real', () => {
+  it('uploads large file', async () => {
+    // ❌ 这个测试需要：
+    // - 创建真实的大文件 (100MB)
+    // - 上传到真实的服务器
+    // - 等待网络传输
+    // - 验证服务器存储
+    // 总时间：30-60 秒
+  })
+})
+
+// Mock 版本的文件上传测试
+describe('FileUploader - Mock', () => {
+  it('uploads large file', async () => {
+    // ✅ Mock 版本：
+    const mockUpload = vi.fn().mockResolvedValue({ 
+      success: true, 
+      url: 'https://cdn.example.com/file123.jpg' 
+    })
+    
+    const uploader = new FileUploader({ uploadService: { upload: mockUpload } })
+    const result = await uploader.upload('large-file.jpg')
+    
+    expect(result.success).toBe(true)
+    expect(mockUpload).toHaveBeenCalledWith('large-file.jpg')
+    // 总时间：< 1 秒
+  })
+})
+```
+
+### 3. 🧪 边界测试 - 覆盖所有情况
+
+```typescript
+describe('WeatherWidget', () => {
+  // ✅ 各种天气情况
+  it.each([
+    ['sunny', '☀️'],
+    ['rainy', '🌧️'],
+    ['snowy', '❄️'],
+    ['stormy', '⛈️'],
+    ['unknown', '❓']
+  ])('displays correct icon for %s weather', async (weather, expectedIcon) => {
+    vi.mocked(getWeather).mockResolvedValue({ condition: weather })
+    
+    render(<WeatherWidget city="Beijing" />)
+    
+    await waitFor(() => {
+      expect(screen.getByText(expectedIcon)).toBeInTheDocument()
+    })
+  })
+  
+  // ✅ 网络问题
+  it('handles network timeout', async () => {
+    vi.mocked(getWeather).mockImplementation(
+      () => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      )
+    )
+    
+    render(<WeatherWidget city="Beijing" />)
+    
+    await waitFor(() => {
+      expect(screen.getByText('网络超时')).toBeInTheDocument()
+    })
+  })
+  
+  // ✅ API 限流
+  it('handles rate limit error', async () => {
+    vi.mocked(getWeather).mockRejectedValue({ 
+      status: 429, 
+      message: 'Too Many Requests' 
+    })
+    
+    render(<WeatherWidget city="Beijing" />)
+    
+    await waitFor(() => {
+      expect(screen.getByText('请求过于频繁，请稍后再试')).toBeInTheDocument()
+    })
+  })
+})
+```
+
+## Mock 的正确理解
+
+### ❌ 常见误区
+
+```typescript
+// 误区1：测试 Mock 本身
+it('API returns user data', () => {
+  const mockUser = { id: 1, name: 'Alice' }
+  vi.mocked(getUser).mockResolvedValue(mockUser)
+  
+  // ❌ 这没有意义，当然会返回我们设置的值
+  expect(getUser()).resolves.toEqual(mockUser)
+})
+
+// 误区2：Mock 得太细致
+it('button changes color', () => {
+  const mockSetState = vi.fn()
+  vi.mock('react', () => ({
+    useState: () => ['blue', mockSetState]
+  }))
+  
+  // ❌ 这破坏了组件的内部实现
+  render(<ColorButton />)
+})
+```
+
+### ✅ 正确用法
+
+```typescript
+// ✅ 测试组件对 Mock 数据的处理
+it('displays user profile correctly', async () => {
+  const mockUser = { 
+    id: 1, 
+    name: 'Alice', 
+    avatar: 'https://example.com/avatar.jpg',
+    bio: 'Frontend Developer'
+  }
+  vi.mocked(getUser).mockResolvedValue(mockUser)
+  
+  render(<UserProfile userId="1" />)
+  
+  // 测试组件是否正确渲染数据
+  await waitFor(() => {
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument()
+    expect(screen.getByRole('img')).toHaveAttribute('src', mockUser.avatar)
+  })
+})
+
+// ✅ 测试交互逻辑
+it('handles user click events', async () => {
+  const mockOnFollow = vi.fn()
+  
+  render(<UserCard user={mockUser} onFollow={mockOnFollow} />)
+  
+  await userEvent.click(screen.getByText('关注'))
+  
+  // 测试事件是否正确触发
+  expect(mockOnFollow).toHaveBeenCalledWith(mockUser.id)
+})
+```
+
+## 实际项目中的 Mock 策略
+
+### 针对不同类型的依赖
+
+```typescript
+// 1. HTTP 请求
+vi.mock('axios', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  }
+}))
+
+// 2. 本地存储
+vi.mock('@/utils/storage', () => ({
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn()
+}))
+
+// 3. 路由导航
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: '/test' })
+}))
+
+// 4. 时间相关
+vi.mock('@/utils/date', () => ({
+  getCurrentTime: vi.fn(() => '2024-01-01 12:00:00'),
+  formatDate: vi.fn((date) => '2024年1月1日')
+}))
+```
+
+### 智能 Mock 策略
+
+```typescript
+// utils/test-helpers.ts
+export function createMockUser(overrides = {}) {
+  return {
+    id: Math.random().toString(),
+    name: 'Test User',
+    email: 'test@example.com',
+    avatar: 'https://example.com/avatar.jpg',
+    createdAt: new Date().toISOString(),
+    ...overrides
+  }
+}
+
+export function createMockApiResponse<T>(data: T, success = true) {
+  return {
+    success,
+    data: success ? data : null,
+    error: success ? null : 'Mock error',
+    message: success ? 'Success' : 'Something went wrong'
+  }
+}
+
+// 使用
+it('renders user list', async () => {
+  const mockUsers = [
+    createMockUser({ name: 'Alice' }),
+    createMockUser({ name: 'Bob' }),
+    createMockUser({ name: 'Charlie' })
+  ]
+  
+  vi.mocked(getUsers).mockResolvedValue(
+    createMockApiResponse(mockUsers)
+  )
+  
+  render(<UserList />)
+  
+  await waitFor(() => {
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.getByText('Bob')).toBeInTheDocument()
+    expect(screen.getByText('Charlie')).toBeInTheDocument()
+  })
+})
+```
+
+## 什么时候不用 Mock？
+
+### 集成测试
+```typescript
+// e2e/user-flow.spec.ts
+test('用户完整流程', async ({ page }) => {
+  // 使用真实的后端 API
+  await page.goto('/login')
+  await page.fill('[name="email"]', 'test@example.com')
+  await page.fill('[name="password"]', 'password123')
+  await page.click('button[type="submit"]')
+  
+  // 验证真实的用户流程
+  await expect(page).toHaveURL('/dashboard')
+  await expect(page.locator('text=欢迎回来')).toBeVisible()
+})
+```
+
+### 算法和工具函数测试
+```typescript
+// 纯函数不需要 Mock
+describe('calculateDiscount', () => {
+  it('calculates 10% discount correctly', () => {
+    expect(calculateDiscount(100, 0.1)).toBe(90)
+    expect(calculateDiscount(50, 0.2)).toBe(40)
+  })
+})
+```
+
+## 总结
+
+Mock 的核心价值是**让测试变得可控、快速、全面**：
+
+### 🎯 三个关键原则
+1. **隔离性** - 只测试当前单元，不测试依赖
+2. **可控性** - 精确控制依赖的行为和返回值  
+3. **全面性** - 轻松测试各种边界和异常情况
+
+### 📋 使用指南
+- ✅ **单元测试** - 大量使用 Mock
+- ⚠️ **集成测试** - 适度使用 Mock
+- ❌ **E2E 测试** - 不使用 Mock
+
+### 💡 记住这个比喻
+Mock 就像是**电影拍摄中的道具**：
+- 🎬 演员（组件）专注于表演（业务逻辑）
+- 🏠 道具（Mock）提供必要的环境
+- 🎯 导演（测试）控制整个场景
+- ⚡ 不用等真实的房子建好才能拍戏
+
+**Mock 不是为了欺骗，而是为了专注。** 它让我们能够在可控的环境中，专注测试组件的核心逻辑，确保代码的质量和可靠性。

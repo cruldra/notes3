@@ -1,0 +1,295 @@
+[Testing Library](https://testing-library.com/) 是一个简单且完整的测试工具集合，它鼓励良好的测试实践。
+
+## 什么是 Testing Library？
+
+Testing Library 是一个用于测试 JavaScript 应用的轻量级解决方案。它提供了简单且完整的测试工具，专注于测试组件的行为而不是实现细节。
+
+## 解决的核心问题
+
+### 1. 传统测试的问题
+- 过分关注组件的内部实现细节
+- 测试代码与具体实现强耦合
+- 测试不能真实反映用户如何使用应用
+- 重构代码时测试容易失败
+
+### 2. Testing Library 的解决方案
+- **以用户为中心的测试**：测试应该尽可能接近软件的实际使用方式
+- **避免实现细节**：专注于组件的输出和行为，而不是内部状态
+- **提高测试质量**：编写更有意义、更可靠的测试
+
+## 核心思想
+
+### The Guiding Principles (指导原则)
+
+1. **测试应该越接近软件的使用方式越好**
+   ```javascript
+   // ❌ 不好的做法 - 测试实现细节
+   expect(component.state.isVisible).toBe(true);
+   
+   // ✅ 好的做法 - 测试用户看到的结果
+   expect(screen.getByText('Welcome')).toBeInTheDocument();
+   ```
+
+2. **优先级查询顺序**
+   - 每个人都能访问的查询（可访问性友好）
+   - 语义化查询
+   - 测试 ID（作为最后的手段）
+
+## 核心组件和 API
+
+### 1. 查询方法 (Queries)
+
+Testing Library 提供三种类型的查询：
+
+#### getBy* 查询
+- 返回匹配的元素，没找到就抛出错误
+- 用于断言元素存在
+
+```javascript
+import { render, screen } from '@testing-library/react';
+
+const button = screen.getByRole('button', { name: /submit/i });
+const heading = screen.getByText('Welcome to our app');
+const input = screen.getByLabelText('Username');
+```
+
+#### queryBy* 查询
+- 返回匹配的元素，没找到返回 null
+- 用于断言元素不存在
+
+```javascript
+const errorMessage = screen.queryByText('Error occurred');
+expect(errorMessage).not.toBeInTheDocument();
+```
+
+#### findBy* 查询
+- 返回 Promise，等待元素出现
+- 用于异步元素
+
+```javascript
+const asyncData = await screen.findByText('Data loaded');
+```
+
+### 2. 主要查询方法
+
+#### 按角色查询 (ByRole) - 推荐
+```javascript
+// 按钮
+screen.getByRole('button', { name: /submit/i })
+
+// 链接
+screen.getByRole('link', { name: /home/i })
+
+// 输入框
+screen.getByRole('textbox', { name: /username/i })
+
+// 标题
+screen.getByRole('heading', { name: /welcome/i })
+```
+
+#### 按标签文本查询 (ByLabelText)
+```javascript
+screen.getByLabelText('Password');
+screen.getByLabelText(/username/i);
+```
+
+#### 按文本内容查询 (ByText)
+```javascript
+screen.getByText('Submit');
+screen.getByText(/hello world/i);
+```
+
+#### 按测试 ID 查询 (ByTestId) - 最后手段
+```javascript
+screen.getByTestId('custom-element');
+```
+
+### 3. 用户交互 (User Events)
+
+使用 `@testing-library/user-event` 模拟用户操作：
+
+```javascript
+import userEvent from '@testing-library/user-event';
+
+test('user interactions', async () => {
+  const user = userEvent.setup();
+  
+  // 点击
+  await user.click(screen.getByRole('button'));
+  
+  // 输入文本
+  await user.type(screen.getByRole('textbox'), 'Hello World');
+  
+  // 选择下拉选项
+  await user.selectOptions(screen.getByRole('combobox'), 'option1');
+  
+  // 上传文件
+  const file = new File(['hello'], 'hello.png', { type: 'image/png' });
+  await user.upload(screen.getByLabelText(/upload/i), file);
+});
+```
+
+## 具体使用示例
+
+### 1. React 组件测试
+
+```javascript
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import LoginForm from './LoginForm';
+
+test('should submit form with user credentials', async () => {
+  const user = userEvent.setup();
+  const mockSubmit = jest.fn();
+  
+  render(<LoginForm onSubmit={mockSubmit} />);
+  
+  // 查找表单元素
+  const usernameInput = screen.getByLabelText(/username/i);
+  const passwordInput = screen.getByLabelText(/password/i);
+  const submitButton = screen.getByRole('button', { name: /login/i });
+  
+  // 模拟用户输入
+  await user.type(usernameInput, 'testuser');
+  await user.type(passwordInput, 'password123');
+  
+  // 提交表单
+  await user.click(submitButton);
+  
+  // 验证结果
+  expect(mockSubmit).toHaveBeenCalledWith({
+    username: 'testuser',
+    password: 'password123'
+  });
+});
+```
+
+### 2. 异步操作测试
+
+```javascript
+test('should display loading and then data', async () => {
+  render(<DataComponent />);
+  
+  // 验证初始加载状态
+  expect(screen.getByText(/loading/i)).toBeInTheDocument();
+  
+  // 等待数据加载完成
+  const dataElement = await screen.findByText(/data loaded successfully/i);
+  expect(dataElement).toBeInTheDocument();
+  
+  // 验证加载状态消失
+  expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+});
+```
+
+### 3. 可访问性测试
+
+```javascript
+import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
+
+test('should not have accessibility violations', async () => {
+  const { container } = render(<MyComponent />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+## 最佳实践
+
+### 1. 查询优先级
+1. `getByRole` - 最好的选择
+2. `getByLabelText` - 表单元素的好选择
+3. `getByText` - 非交互元素
+4. `getByTestId` - 最后的选择
+
+### 2. 避免的反模式
+
+```javascript
+// ❌ 避免测试实现细节
+expect(component.state.count).toBe(1);
+
+// ✅ 测试用户看到的结果
+expect(screen.getByText('Count: 1')).toBeInTheDocument();
+
+// ❌ 避免使用容器查询
+container.querySelector('.my-class');
+
+// ✅ 使用语义化查询
+screen.getByRole('button', { name: /submit/i });
+```
+
+### 3. 编写可维护的测试
+
+```javascript
+// 使用自定义渲染函数
+function renderWithProviders(ui, options = {}) {
+  const providers = ({ children }) => (
+    <ThemeProvider>
+      <Router>
+        {children}
+      </Router>
+    </ThemeProvider>
+  );
+  
+  return render(ui, { wrapper: providers, ...options });
+}
+
+// 使用页面对象模式
+class LoginPage {
+  get usernameInput() {
+    return screen.getByLabelText(/username/i);
+  }
+  
+  get passwordInput() {
+    return screen.getByLabelText(/password/i);
+  }
+  
+  get submitButton() {
+    return screen.getByRole('button', { name: /login/i });
+  }
+  
+  async login(username, password) {
+    const user = userEvent.setup();
+    await user.type(this.usernameInput, username);
+    await user.type(this.passwordInput, password);
+    await user.click(this.submitButton);
+  }
+}
+```
+
+## 生态系统
+
+### 主要包
+- `@testing-library/react` - React 组件测试
+- `@testing-library/vue` - Vue 组件测试
+- `@testing-library/angular` - Angular 组件测试
+- `@testing-library/user-event` - 用户交互模拟
+- `@testing-library/jest-dom` - Jest 匹配器扩展
+
+### 配置示例
+
+```javascript
+// jest.config.js
+module.exports = {
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  testEnvironment: 'jsdom',
+};
+
+// 在测试文件中
+import '@testing-library/jest-dom';
+```
+
+## 总结
+
+Testing Library 通过以下方式改变了前端测试的方式：
+
+1. **用户中心的测试方法**：关注用户如何与应用交互
+2. **避免实现细节**：测试行为而不是内部状态
+3. **提高可访问性**：鼓励编写语义化的 HTML
+4. **更可靠的测试**：减少因重构导致的测试失败
+
+这种测试方法不仅提高了测试质量，还促进了更好的代码设计和用户体验。

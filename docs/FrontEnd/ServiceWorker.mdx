@@ -1,0 +1,225 @@
+[Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)本质上是一个运行在浏览器后台的JavaScript脚本，作为Web应用和网络之间的代理层，为现代Web应用提供了强大的离线和性能优化能力。
+
+## 应用场景
+
+### 离线访问和缓存管理
+
+- 允许网页在没有网络连接时仍能正常运行
+- 智能缓存静态资源（HTML、CSS、JS、图片等）
+- 提供更好的用户体验，减少网络依赖
+
+### 网络请求拦截和处理
+
+- 拦截页面发出的所有网络请求
+- 可以修改请求、提供缓存响应或转发到网络
+- 实现自定义的缓存策略（如缓存优先、网络优先等）
+
+### 后台同步
+
+- 即使用户关闭了网页，也能在后台执行任务
+- 支持后台数据同步，如用户离线时的数据上传
+- 处理延迟的网络操作
+
+### 推送通知
+
+- 接收服务器推送的消息
+- 向用户显示通知，即使网页未打开
+- 提升用户参与度和留存率
+
+### 性能优化
+
+- 预缓存关键资源
+- 减少网络请求次数
+- 提供更快的页面加载速度
+- 改善移动设备上的体验
+
+### PWA（渐进式Web应用）基础
+
+- 是构建PWA的核心技术
+- 让Web应用具备类似原生应用的体验
+- 支持离线使用、添加到主屏幕等功能
+
+
+## 核心概念
+
+### 1. 生命周期
+
+Service Worker 具有独立的生命周期，包含以下几个主要阶段：
+
+- **注册 (Register)**: 通过 `navigator.serviceWorker.register()` 注册 Service Worker
+- **安装 (Install)**: 第一次注册或文件更新时触发 `install` 事件
+- **激活 (Activate)**: 安装完成后触发 `activate` 事件，清理旧缓存
+- **空闲 (Idle)**: 等待事件触发
+- **终止 (Terminated)**: 浏览器可能会终止空闲的 Service Worker 以节省内存
+
+### 2. 作用域 (Scope)
+
+- Service Worker 只能控制其作用域内的页面
+- 默认作用域是 Service Worker 文件所在的目录及子目录
+- 可以通过 `scope` 参数限制作用域范围
+
+### 3. 线程隔离
+
+- Service Worker 运行在独立的工作线程中
+- 无法直接访问 DOM 和主线程的变量
+- 通过 `postMessage` 与主线程通信
+
+## 核心组件
+
+### 1. Cache API
+
+用于管理缓存存储的核心API：
+
+```javascript
+// 打开缓存
+const cache = await caches.open('my-cache-v1');
+
+// 添加资源到缓存
+await cache.addAll([
+  '/index.html',
+  '/styles.css',
+  '/script.js'
+]);
+
+// 从缓存中获取响应
+const response = await cache.match('/index.html');
+```
+
+### 2. Fetch Event
+
+拦截和处理网络请求：
+
+```javascript
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // 缓存命中，返回缓存的响应
+        if (response) {
+          return response;
+        }
+        // 缓存未命中，发起网络请求
+        return fetch(event.request);
+      })
+  );
+});
+```
+
+### 3. Install Event
+
+处理 Service Worker 安装：
+
+```javascript
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open('my-cache-v1')
+      .then(cache => {
+        return cache.addAll([
+          '/',
+          '/index.html',
+          '/styles.css',
+          '/script.js'
+        ]);
+      })
+  );
+});
+```
+
+### 4. Activate Event
+
+处理 Service Worker 激活和清理：
+
+```javascript
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== 'my-cache-v1') {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+```
+
+### 5. Push Event
+
+处理推送通知：
+
+```javascript
+self.addEventListener('push', event => {
+  const options = {
+    body: event.data.text(),
+    icon: '/icon.png',
+    badge: '/badge.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('新消息', options)
+  );
+});
+```
+
+### 6. Background Sync
+
+处理后台同步：
+
+```javascript
+self.addEventListener('sync', event => {
+  if (event.tag === 'background-sync') {
+    event.waitUntil(doBackgroundSync());
+  }
+});
+
+async function doBackgroundSync() {
+  // 执行后台同步逻辑
+  const data = await getOfflineData();
+  await sendDataToServer(data);
+}
+```
+
+## 常用缓存策略
+
+### 1. Cache First (缓存优先)
+
+```javascript
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});
+```
+
+### 2. Network First (网络优先)
+
+```javascript
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request)
+      .catch(() => caches.match(event.request))
+  );
+});
+```
+
+### 3. Stale While Revalidate (过期重新验证)
+
+```javascript
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.open('my-cache').then(cache => {
+      return cache.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+        return cachedResponse || fetchPromise;
+      });
+    })
+  );
+});
+```
+

@@ -1,0 +1,325 @@
+Vitest 是一个现代化的 JavaScript/TypeScript 测试框架，由 Vite 团队开发。它专为 Vite 生态系统设计，但也可以在非 Vite 项目中使用。Vitest 继承了 Vite 的快速构建和热重载特性，为前端开发者提供了极速的测试体验。
+
+## 核心特性
+
+### 🚀 极速运行
+- **原生 ESM 支持**：无需额外的转换配置
+- **智能监听模式**：只重新运行相关的测试文件
+- **并行执行**：默认并行运行测试以提升速度
+- **Vite 驱动**：利用 Vite 的快速 HMR 和构建能力
+
+### 🔧 开箱即用
+- **零配置启动**：大部分项目可以直接开始使用
+- **TypeScript 原生支持**：无需额外配置即可测试 TS 代码
+- **JSX/TSX 支持**：直接支持 React、Vue 等组件测试
+- **CSS 处理**：自动处理 CSS 模块和预处理器
+
+### 🧪 丰富的测试功能
+- **Jest 兼容 API**：可以无缝迁移 Jest 测试
+- **快照测试**：支持快照测试和内联快照
+- **模拟功能**：强大的 Mock 和 Spy 功能
+- **覆盖率报告**：内置代码覆盖率统计
+
+## 安装和设置
+
+### 基础安装
+
+```bash
+# 使用 npm
+npm install -D vitest
+
+# 使用 pnpm
+pnpm add -D vitest
+
+# 使用 yarn
+yarn add -D vitest
+```
+
+### 配置文件
+
+创建 `vitest.config.ts`：
+
+```typescript
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    // 测试环境
+    environment: 'jsdom', // 或 'node', 'happy-dom'
+    
+    // 全局设置
+    globals: true,
+    
+    // 测试文件匹配模式
+    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    
+    // 覆盖率配置
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html']
+    }
+  }
+})
+```
+
+### package.json 脚本
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui"
+  }
+}
+```
+
+## 基本用法
+
+### 简单测试示例
+
+```javascript
+// math.js
+export function add(a, b) {
+  return a + b
+}
+
+export function multiply(a, b) {
+  return a * b
+}
+```
+
+```javascript
+// math.test.js
+import { describe, it, expect } from 'vitest'
+import { add, multiply } from './math.js'
+
+describe('Math functions', () => {
+  it('should add two numbers correctly', () => {
+    expect(add(2, 3)).toBe(5)
+    expect(add(-1, 1)).toBe(0)
+  })
+
+  it('should multiply two numbers correctly', () => {
+    expect(multiply(3, 4)).toBe(12)
+    expect(multiply(0, 5)).toBe(0)
+  })
+})
+```
+
+### 异步测试
+
+```javascript
+import { describe, it, expect } from 'vitest'
+
+// 测试 Promise
+describe('Async tests', () => {
+  it('should handle promises', async () => {
+    const result = await fetchUserData(1)
+    expect(result.name).toBe('John Doe')
+  })
+
+  it('should handle async/await', async () => {
+    await expect(asyncFunction()).resolves.toBe('success')
+  })
+
+  it('should handle rejections', async () => {
+    await expect(failingFunction()).rejects.toThrow('Error message')
+  })
+})
+```
+
+### Mock 功能
+
+```javascript
+import { describe, it, expect, vi } from 'vitest'
+import { getUserData } from './api.js'
+
+// Mock 模块
+vi.mock('./api.js', () => ({
+  getUserData: vi.fn()
+}))
+
+describe('Mock tests', () => {
+  it('should mock function calls', () => {
+    // 设置 mock 返回值
+    getUserData.mockResolvedValue({ id: 1, name: 'John' })
+    
+    // 测试
+    const result = await getUserData(1)
+    expect(result.name).toBe('John')
+    expect(getUserData).toHaveBeenCalledWith(1)
+  })
+})
+```
+
+## 高级功能
+
+### 测试环境配置
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    // DOM 测试环境
+    environment: 'jsdom',
+    
+    // 环境选项
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable'
+      }
+    },
+    
+    // 设置文件
+    setupFiles: ['./tests/setup.ts']
+  }
+})
+```
+
+### 快照测试
+
+```javascript
+import { describe, it, expect } from 'vitest'
+import { render } from '@testing-library/react'
+import Component from './Component.jsx'
+
+describe('Component', () => {
+  it('should match snapshot', () => {
+    const { container } = render(<Component name="John" />)
+    expect(container.firstChild).toMatchSnapshot()
+  })
+
+  it('should match inline snapshot', () => {
+    expect(formatName('john doe')).toMatchInlineSnapshot('"John Doe"')
+  })
+})
+```
+
+### 测试覆盖率
+
+```bash
+# 运行覆盖率测试
+vitest --coverage
+
+# 指定覆盖率阈值
+vitest --coverage --coverage.statements=80
+```
+
+## 与其他测试框架对比
+
+### Vitest vs Jest
+
+| 特性 | Vitest | Jest |
+|------|--------|------|
+| 启动速度 | ⚡ 极快 | 🐌 较慢 |
+| ESM 支持 | ✅ 原生支持 | ⚠️ 需要配置 |
+| TypeScript | ✅ 开箱即用 | ⚠️ 需要配置 |
+| 配置复杂度 | 🟢 简单 | 🟡 中等 |
+| 生态系统 | 🟡 新兴 | 🟢 成熟 |
+
+### 迁移指南
+
+从 Jest 迁移到 Vitest：
+
+1. **安装 Vitest**：
+   ```bash
+   npm uninstall jest
+   npm install -D vitest
+   ```
+
+2. **更新导入**：
+   ```javascript
+   // 从
+   import { test, expect } from '@jest/globals'
+   
+   // 改为
+   import { test, expect } from 'vitest'
+   ```
+
+3. **配置转换**：
+   大部分 Jest 配置可以直接在 `vitest.config.ts` 中使用
+
+## 实践建议
+
+### 项目结构
+
+```
+src/
+├── components/
+│   ├── Button.tsx
+│   └── Button.test.tsx
+├── utils/
+│   ├── helpers.ts
+│   └── helpers.test.ts
+└── __tests__/
+    ├── setup.ts
+    └── integration/
+```
+
+### 测试策略
+
+1. **单元测试**：测试独立的函数和组件
+2. **集成测试**：测试组件间的交互
+3. **端到端测试**：结合 Playwright 或 Cypress
+
+### 性能优化
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    // 并行运行
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: false
+      }
+    },
+    
+    // 文件并行
+    fileParallelism: true,
+    
+    // 隔离控制
+    isolate: false // 谨慎使用，可能影响测试独立性
+  }
+})
+```
+
+## 常用插件和工具
+
+### UI 界面
+```bash
+npm install -D @vitest/ui
+vitest --ui
+```
+
+### 浏览器测试
+```bash
+npm install -D @vitest/browser playwright
+```
+
+### 覆盖率增强
+```bash
+npm install -D @vitest/coverage-v8
+# 或
+npm install -D @vitest/coverage-istanbul
+```
+
+## 总结
+
+Vitest 是现代前端开发的理想测试解决方案，特别适合：
+
+- 🔥 **Vite 项目**：天然集成，零配置启动
+- ⚡ **注重速度的项目**：极快的测试执行和反馈
+- 🎯 **TypeScript 项目**：原生支持，无需额外配置
+- 🔄 **从 Jest 迁移**：API 兼容，迁移成本低
+
+选择 Vitest，让测试变得更快、更简单、更愉悦！
+
+## 相关资源
+
+- [Vitest 官方文档](https://vitest.dev/)
+- [Vite 官方文档](https://vitejs.dev/)
+- [测试最佳实践](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
