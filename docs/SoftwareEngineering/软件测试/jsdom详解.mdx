@@ -1,0 +1,582 @@
+**jsdom** 是一个用纯 JavaScript 实现的 DOM 和 HTML 标准库，它在 Node.js 环境中模拟浏览器的 DOM API。简单来说，jsdom 让你可以在没有浏览器的服务器环境中操作 DOM 元素。
+
+```javascript
+// 没有 jsdom 的 Node.js 环境
+console.log(typeof window)     // ❌ undefined
+console.log(typeof document)   // ❌ undefined
+console.log(typeof Element)    // ❌ undefined
+
+// 使用 jsdom 后
+import { JSDOM } from 'jsdom'
+const dom = new JSDOM('<!DOCTYPE html><div>Hello World</div>')
+global.window = dom.window
+global.document = dom.window.document
+
+console.log(typeof window)     // ✅ object
+console.log(typeof document)   // ✅ object
+console.log(typeof Element)    // ✅ function
+```
+
+## 为什么需要 jsdom？
+
+### 🌍 环境差异问题
+
+**浏览器环境 vs Node.js 环境**
+
+```javascript
+// 浏览器环境 - 天然支持
+const button = document.createElement('button')
+button.textContent = 'Click me'
+document.body.appendChild(button)
+
+// Node.js 环境 - 不支持
+// ReferenceError: document is not defined
+// ReferenceError: window is not defined
+```
+
+### 🧪 测试需求
+
+现代前端测试需要 DOM 环境：
+
+```typescript
+// React 组件测试
+import { render, screen } from '@testing-library/react'
+
+function Button({ onClick, children }: ButtonProps) {
+  return <button onClick={onClick}>{children}</button>
+}
+
+// 这个测试需要 DOM API
+test('button renders correctly', () => {
+  // render() 内部需要调用：
+  // - document.createElement()
+  // - element.appendChild()  
+  // - element.querySelector()
+  // - addEventListener()
+  
+  render(<Button>Click me</Button>)
+  expect(screen.getByRole('button')).toHaveTextContent('Click me')
+})
+```
+
+## jsdom 的核心功能
+
+### 🏗️ DOM 操作
+
+```javascript
+import { JSDOM } from 'jsdom'
+
+const dom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+    <body>
+      <div id="app"></div>
+    </body>
+  </html>
+`)
+
+const { window } = dom
+const { document } = window
+
+// 创建元素
+const button = document.createElement('button')
+button.textContent = 'Hello jsdom'
+button.id = 'my-button'
+
+// DOM 操作
+const app = document.getElementById('app')
+app.appendChild(button)
+
+// 查询元素
+const foundButton = document.querySelector('#my-button')
+console.log(foundButton.textContent) // "Hello jsdom"
+
+// 修改样式
+foundButton.style.backgroundColor = 'blue'
+```
+
+### 🎯 事件处理
+
+```javascript
+// 创建和分发事件
+const button = document.createElement('button')
+let clicked = false
+
+button.addEventListener('click', () => {
+  clicked = true
+})
+
+// 创建点击事件
+const clickEvent = new window.Event('click')
+button.dispatchEvent(clickEvent)
+
+console.log(clicked) // true
+```
+
+### 🔧 浏览器 API 模拟
+
+```javascript
+const { window } = new JSDOM('', {
+  url: 'https://example.com/',
+  referrer: 'https://google.com/',
+  contentType: 'text/html',
+  storageQuota: 10000000
+})
+
+// Location API
+console.log(window.location.href)     // "https://example.com/"
+console.log(window.location.hostname) // "example.com"
+
+// Storage API
+window.localStorage.setItem('key', 'value')
+console.log(window.localStorage.getItem('key')) // "value"
+
+// Timer API
+window.setTimeout(() => {
+  console.log('Timer executed')
+}, 100)
+
+// Console API
+window.console.log('Hello from jsdom')
+```
+
+## 在测试框架中的应用
+
+### 🚀 Vitest 配置
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    // 使用 jsdom 作为测试环境
+    environment: 'jsdom',
+    
+    // 全局配置
+    globals: true,
+    
+    // 设置文件
+    setupFiles: ['./src/test/setup.ts']
+  }
+})
+```
+
+```typescript
+// src/test/setup.ts
+import { beforeAll, afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
+
+// 每个测试后清理 DOM
+afterEach(() => {
+  cleanup()
+})
+
+// 全局 DOM 扩展
+beforeAll(() => {
+  // 添加自定义 matchers
+  expect.extend({
+    toBeInTheDocument(received) {
+      const pass = received !== null && document.body.contains(received)
+      return {
+        message: () => `expected element to be in the document`,
+        pass
+      }
+    }
+  })
+})
+```
+
+### 🎭 Jest 配置
+
+```javascript
+// jest.config.js
+module.exports = {
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup.js']
+}
+```
+
+### 📦 直接使用
+
+```javascript
+// 不依赖测试框架的直接使用
+import { JSDOM } from 'jsdom'
+
+describe('DOM Tests', () => {
+  let dom, window, document
+  
+  beforeEach(() => {
+    dom = new JSDOM('<!DOCTYPE html><div id="root"></div>')
+    window = dom.window
+    document = window.document
+    
+    // 设置全局变量
+    global.window = window
+    global.document = document
+  })
+  
+  afterEach(() => {
+    dom.window.close()
+  })
+  
+  test('DOM manipulation', () => {
+    const root = document.getElementById('root')
+    const p = document.createElement('p')
+    p.textContent = 'Hello World'
+    root.appendChild(p)
+    
+    expect(document.querySelector('p').textContent).toBe('Hello World')
+  })
+})
+```
+
+## React 测试实践
+
+### 🎯 组件测试
+
+```typescript
+// Button.tsx
+interface ButtonProps {
+  variant?: 'primary' | 'secondary'
+  disabled?: boolean
+  onClick?: () => void
+  children: React.ReactNode
+}
+
+export function Button({ 
+  variant = 'primary', 
+  disabled = false, 
+  onClick, 
+  children 
+}: ButtonProps) {
+  return (
+    <button
+      className={`btn btn-${variant}`}
+      disabled={disabled}
+      onClick={onClick}
+      data-testid="button"
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+```typescript
+// Button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { Button } from './Button'
+
+describe('Button Component', () => {
+  test('renders with correct text', () => {
+    render(<Button>Click me</Button>)
+    
+    // jsdom 提供的 DOM API
+    const button = screen.getByRole('button')
+    expect(button).toBeInTheDocument()
+    expect(button).toHaveTextContent('Click me')
+  })
+  
+  test('applies correct CSS classes', () => {
+    render(<Button variant="secondary">Secondary</Button>)
+    
+    const button = screen.getByTestId('button')
+    expect(button).toHaveClass('btn', 'btn-secondary')
+  })
+  
+  test('handles click events', () => {
+    const handleClick = vi.fn()
+    render(<Button onClick={handleClick}>Click me</Button>)
+    
+    const button = screen.getByRole('button')
+    fireEvent.click(button) // jsdom 处理事件
+    
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+  
+  test('disables when disabled prop is true', () => {
+    render(<Button disabled>Disabled</Button>)
+    
+    const button = screen.getByRole('button')
+    expect(button).toBeDisabled()
+  })
+})
+```
+
+### 🔄 交互测试
+
+```typescript
+// SearchBox.tsx
+export function SearchBox({ onSearch }: { onSearch: (query: string) => void }) {
+  const [query, setQuery] = useState('')
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSearch(query)
+  }
+  
+  return (
+    <form onSubmit={handleSubmit} data-testid="search-form">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="搜索课程..."
+        data-testid="search-input"
+      />
+      <button type="submit">搜索</button>
+    </form>
+  )
+}
+```
+
+```typescript
+// SearchBox.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+describe('SearchBox', () => {
+  test('submits search query', async () => {
+    const user = userEvent.setup()
+    const mockOnSearch = vi.fn()
+    
+    render(<SearchBox onSearch={mockOnSearch} />)
+    
+    const input = screen.getByTestId('search-input')
+    const form = screen.getByTestId('search-form')
+    
+    // 用户输入
+    await user.type(input, 'React 课程')
+    
+    // 表单提交
+    fireEvent.submit(form)
+    
+    expect(mockOnSearch).toHaveBeenCalledWith('React 课程')
+  })
+  
+  test('updates input value', async () => {
+    const user = userEvent.setup()
+    render(<SearchBox onSearch={vi.fn()} />)
+    
+    const input = screen.getByTestId('search-input')
+    
+    await user.type(input, 'TypeScript')
+    
+    expect(input).toHaveValue('TypeScript')
+  })
+})
+```
+
+## jsdom vs 其他测试环境
+
+### 🚀 jsdom vs happy-dom
+
+```typescript
+// jsdom - 功能完整但较重
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    // 优点：完整的 DOM API 支持
+    // 缺点：启动较慢，内存占用大
+  }
+})
+
+// happy-dom - 轻量但功能少
+export default defineConfig({
+  test: {
+    environment: 'happy-dom',
+    // 优点：启动快，内存占用小
+    // 缺点：API 覆盖不如 jsdom 完整
+  }
+})
+```
+
+### 🌐 环境选择策略
+
+```typescript
+// 按文件类型选择环境
+export default defineConfig({
+  test: {
+    // 默认使用 node（最快）
+    environment: 'node',
+    
+    // 针对不同文件使用不同环境
+    environmentMatchGlobs: [
+      // React 组件测试用 jsdom
+      ['**/*.component.test.{ts,tsx}', 'jsdom'],
+      ['**/*.integration.test.{ts,tsx}', 'jsdom'],
+      
+      // 纯逻辑测试用 node
+      ['**/*.utils.test.{ts,tsx}', 'node'],
+      ['**/*.service.test.{ts,tsx}', 'node'],
+    ]
+  }
+})
+```
+
+## 高级配置和优化
+
+### ⚙️ jsdom 详细配置
+
+```javascript
+const dom = new JSDOM(html, {
+  // 页面 URL
+  url: 'https://localhost:3000/',
+  
+  // 引用页面
+  referrer: 'https://google.com/',
+  
+  // 内容类型
+  contentType: 'text/html',
+  
+  // 包含的功能
+  resources: 'usable', // 或 'disable'
+  
+  // 运行脚本
+  runScripts: 'dangerously', // 或 'outside-only'
+  
+  // 存储配额
+  storageQuota: 10000000,
+  
+  // 预定义全局变量
+  beforeParse(window) {
+    window.APP_CONFIG = {
+      apiUrl: 'http://localhost:3001'
+    }
+  }
+})
+```
+
+### 🎭 Mock 浏览器 API
+
+```typescript
+// 测试设置文件
+beforeAll(() => {
+  // Mock window.matchMedia
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }))
+  })
+  
+  // Mock ResizeObserver
+  global.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }))
+  
+  // Mock IntersectionObserver
+  global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }))
+})
+```
+
+### 📊 性能优化
+
+```typescript
+// 性能优化配置
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    
+    // 环境选项
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+        runScripts: 'dangerously',
+        
+        // 禁用不需要的功能
+        features: {
+          FetchExternalResources: false,
+          ProcessExternalResources: false,
+          SkipExternalResources: true
+        }
+      }
+    },
+    
+    // 测试隔离
+    isolate: true,
+    
+    // 并行测试
+    pool: 'threads'
+  }
+})
+```
+
+## 常见问题和解决方案
+
+### ❓ 常见错误
+
+```typescript
+// 1. TypeError: Cannot read property 'getComputedStyle' of null
+// 解决：确保设置了 jsdom 环境
+test.skip('problematic test', () => {
+  // 临时跳过有问题的测试
+})
+
+// 2. ReferenceError: fetch is not defined
+// 解决：手动添加 fetch polyfill
+import { vi } from 'vitest'
+
+beforeAll(() => {
+  global.fetch = vi.fn()
+})
+
+// 3. 样式相关测试失败
+// 解决：jsdom 不渲染 CSS，需要 mock 或使用快照测试
+expect(element).toMatchSnapshot()
+```
+
+### 🔧 调试技巧
+
+```typescript
+// 调试 DOM 状态
+test('debug DOM', () => {
+  render(<ComplexComponent />)
+  
+  // 打印整个 DOM 树
+  screen.debug()
+  
+  // 打印特定元素
+  const element = screen.getByRole('button')
+  screen.debug(element)
+  
+  // 查看 DOM HTML
+  console.log(document.body.innerHTML)
+})
+```
+
+## 总结
+
+### 🎯 核心价值
+1. **环境一致性** - 在 Node.js 中模拟浏览器 DOM
+2. **测试可行性** - 让前端组件测试成为可能
+3. **API 完整性** - 提供接近真实浏览器的 API
+4. **开发效率** - 无需真实浏览器即可测试
+
+### 📋 使用建议
+- ✅ **React/Vue 组件测试** - 必须使用
+- ✅ **DOM 操作测试** - 理想选择
+- ⚠️ **纯逻辑测试** - 考虑使用 node 环境
+- ❌ **真实浏览器交互** - 使用 E2E 测试
+
+### 💡 最佳实践
+1. **按需选择环境** - 不是所有测试都需要 DOM
+2. **合理配置** - 禁用不需要的功能提升性能
+3. **适当 Mock** - 补充 jsdom 不支持的 API
+4. **清理资源** - 测试后清理 DOM 状态
+
+jsdom 是现代前端测试不可或缺的工具，它让我们能够在快速的 Node.js 环境中测试复杂的 DOM 交互，是单元测试和集成测试的重要基础设施。
