@@ -1,0 +1,86 @@
+在Windows 11基于WSL2的Docker Desktop环境中，执行`docker pull`命令时遇到以下错误：
+
+```bash
+Error response from daemon: Get "https://registry-1.docker.io/v2/": proxyconnect tcp: dial tcp 127.0.0.1:7890: connect: connection refused
+```
+
+## 环境信息
+
+- 操作系统：Windows 11
+- Docker：Docker Desktop (基于WSL2)
+- 代理端口：7890
+
+## 问题分析
+
+虽然本地7890代理端口正常工作（使用`curl google`可以正常访问），但Docker无法通过该代理连接到Docker Hub。
+
+这个问题的根本原因是WSL2的网络架构导致的。在WSL2环境中，Docker运行在Linux子系统内，而代理服务运行在Windows主机上。由于网络隔离，WSL2内的Docker无法直接访问Windows主机的`127.0.0.1:7890`代理地址。
+
+## 问题原理
+
+详细的技术原理可以参考这篇文章：[Docker在WSL2环境中的代理问题](https://lulu010722.com/docker%E5%9C%A8wsl2%E7%8E%AF%E5%A2%83%E4%B8%AD%E7%9A%84%E4%BB%A3%E7%90%86%E9%97%AE%E9%A2%98/#%E8%AF%9D%E8%AF%B4%E4%B8%AD%E5%9B%BDdocker)
+
+简单来说，WSL2使用了虚拟化技术，创建了一个独立的Linux内核环境。这导致：
+
+1. WSL2有自己的网络栈
+2. `127.0.0.1`在WSL2中指向的是WSL2自身，而不是Windows主机
+3. Docker在WSL2内无法直接访问Windows主机的代理服务
+
+## 解决方案
+
+在Windows用户目录下创建或修改`.wslconfig`文件（通常位于`C:\Users\<用户名>\.wslconfig`），添加以下配置：
+
+```ini
+[wsl2]
+networkingMode=mirrored          # 开启镜像网络
+autoMemoryReclaim=gradual        # gradual | dropcache | disabled
+dnsTunneling=true                # 启用DNS隧道
+firewall=false                   # 禁用防火墙
+autoProxy=false                  # 禁用自动代理
+
+[experimental]
+hostAddressLoopback=true         # 启用主机地址回环
+```
+
+## 配置说明
+
+- **networkingMode=mirrored**：启用镜像网络模式，使WSL2的网络配置镜像Windows主机
+- **autoMemoryReclaim=gradual**：内存回收策略，有助于系统性能
+- **dnsTunneling=true**：启用DNS隧道，改善网络连接
+- **firewall=false**：禁用WSL2防火墙，避免网络阻塞
+- **autoProxy=false**：禁用自动代理检测
+- **hostAddressLoopback=true**：允许WSL2访问Windows主机的回环地址
+
+## 应用配置
+
+1. 保存`.wslconfig`文件后，需要重启WSL2：
+
+```powershell
+wsl --shutdown
+```
+
+2. 重新启动Docker Desktop
+
+3. 验证配置是否生效：
+
+```bash
+docker pull hello-world
+```
+
+## 注意事项
+
+- 修改`.wslconfig`后必须重启WSL2才能生效
+- 这些配置可能会影响WSL2的其他网络行为，请根据实际情况调整
+- 如果遇到其他网络问题，可以尝试逐一调整各项配置
+
+## 其他解决方法
+
+如果上述配置不生效，还可以尝试：
+
+1. 在Docker Desktop设置中配置代理
+2. 使用Windows主机的实际IP地址替代127.0.0.1
+3. 配置WSL2使用Windows主机的网络适配器
+
+---
+
+*记录时间：2025年6月*
