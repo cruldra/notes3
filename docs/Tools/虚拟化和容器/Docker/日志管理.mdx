@@ -1,0 +1,222 @@
+Docker容器的日志管理是运维中的重要环节，如果不加以限制，日志文件可能会无限增长，最终占满磁盘空间。本文介绍如何有效地限制和管理Docker容器的日志大小。
+
+## 日志驱动类型
+
+Docker支持多种日志驱动：
+
+- **json-file**（默认）：将日志存储为JSON格式的文件
+- **syslog**：将日志发送到syslog守护进程
+- **journald**：将日志发送到systemd journal
+- **gelf**：将日志发送到GELF端点
+- **fluentd**：将日志发送到fluentd收集器
+- **awslogs**：将日志发送到Amazon CloudWatch Logs
+- **none**：禁用日志记录
+
+## 全局日志配置
+
+### 修改daemon.json
+
+在`/etc/docker/daemon.json`中配置全局日志设置：
+
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+```
+
+配置说明：
+- `max-size`：单个日志文件的最大大小
+- `max-file`：保留的日志文件数量
+
+### 重启Docker服务
+
+```powershell
+# Windows
+Restart-Service docker
+
+# Linux
+sudo systemctl restart docker
+```
+
+## 容器级别日志配置
+
+### 运行时配置
+
+```bash
+docker run -d \
+  --log-driver json-file \
+  --log-opt max-size=10m \
+  --log-opt max-file=3 \
+  nginx
+```
+
+### Docker Compose配置
+
+```yaml
+version: '3.8'
+services:
+  web:
+    image: nginx
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+## 常用日志大小单位
+
+- `k` 或 `kb`：千字节
+- `m` 或 `mb`：兆字节
+- `g` 或 `gb`：千兆字节
+
+示例：
+- `max-size: "100k"`：100KB
+- `max-size: "10m"`：10MB
+- `max-size: "1g"`：1GB
+
+## 日志轮转机制
+
+当日志文件达到`max-size`限制时，Docker会：
+
+1. 将当前日志文件重命名（添加序号后缀）
+2. 创建新的日志文件
+3. 删除超过`max-file`数量的旧日志文件
+
+例如，设置`max-file: "3"`时，会保留：
+- `container-id-json.log`（当前）
+- `container-id-json.log.1`
+- `container-id-json.log.2`
+
+## 查看日志配置
+
+### 查看容器日志配置
+
+```bash
+docker inspect <container_name> | grep -A 10 "LogConfig"
+```
+
+### 查看日志文件位置
+
+```bash
+docker inspect <container_name> | grep "LogPath"
+```
+
+## 禁用日志记录
+
+对于不需要日志的容器：
+
+```bash
+docker run -d --log-driver none nginx
+```
+
+或在Docker Compose中：
+
+```yaml
+services:
+  web:
+    image: nginx
+    logging:
+      driver: none
+```
+
+## 实时日志监控
+
+### 查看实时日志
+
+```bash
+# 查看最新日志
+docker logs <container_name>
+
+# 实时跟踪日志
+docker logs -f <container_name>
+
+# 查看最近100行日志
+docker logs --tail 100 <container_name>
+
+# 查看指定时间段的日志
+docker logs --since "2024-01-01T00:00:00" --until "2024-01-02T00:00:00" <container_name>
+```
+
+## 外部日志管理
+
+### 使用syslog
+
+```bash
+docker run -d \
+  --log-driver syslog \
+  --log-opt syslog-address=tcp://192.168.1.100:514 \
+  nginx
+```
+
+### 使用fluentd
+
+```bash
+docker run -d \
+  --log-driver fluentd \
+  --log-opt fluentd-address=localhost:24224 \
+  --log-opt tag="docker.{{.Name}}" \
+  nginx
+```
+
+## 最佳实践
+
+### 1. 合理设置日志大小
+
+- 开发环境：`max-size: "10m"`, `max-file: "3"`
+- 生产环境：`max-size: "50m"`, `max-file: "5"`
+- 高负载环境：考虑使用外部日志系统
+
+### 2. 应用程序日志优化
+
+```dockerfile
+# 将应用日志输出到stdout/stderr
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+```
+
+### 3. 监控磁盘使用
+
+```bash
+# 查看Docker根目录磁盘使用
+du -sh /var/lib/docker/
+
+# 查看容器日志目录大小
+du -sh /var/lib/docker/containers/*/
+```
+
+### 4. 定期清理
+
+```bash
+# 清理未使用的容器、网络、镜像
+docker system prune -a
+
+# 清理特定容器的日志（需要重启容器）
+truncate -s 0 /var/lib/docker/containers/<container_id>/<container_id>-json.log
+```
+
+## 故障排查
+
+### 日志配置不生效
+
+1. 检查daemon.json语法是否正确
+2. 确认Docker服务已重启
+3. 新创建的容器才会应用新配置
+
+### 磁盘空间不足
+
+1. 立即清理大日志文件
+2. 调整日志配置参数
+3. 考虑迁移到外部日志系统
+
+### 日志丢失
+
+1. 检查日志驱动配置
+2. 确认外部日志系统连接正常
+3. 验证日志轮转设置
+
+通过合理配置Docker日志管理，可以有效控制磁盘使用，同时保证日志的可用性和可追溯性。

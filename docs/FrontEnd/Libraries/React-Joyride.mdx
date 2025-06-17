@@ -1,0 +1,784 @@
+## 实现流程概览
+
+使用 react-joyride 实现新手引导功能的核心流程分为以下几个步骤：
+
+1. **安装依赖和基础配置**
+2. **定义引导步骤配置**
+3. **创建状态管理**
+4. **实现引导组件**
+5. **页面元素标记**
+6. **集成到应用**
+7. **调试和优化**
+
+---
+
+## 第一步：安装依赖和基础配置
+
+### 1.1 安装必要依赖
+
+```bash
+pnpm add react-joyride zustand
+```
+
+### 1.2 项目文件结构
+
+```
+src/core/components/OnboardingTour/
+├── OnboardingTour.tsx          # 主引导组件
+├── GlobalOnboarding.tsx        # 全局引导组件
+├── useOnboardingStore.ts       # 状态管理
+├── useSimpleTour.ts           # 引导Hook
+├── tourSteps.ts               # 引导步骤配置
+└── debug.ts                   # 调试工具
+```
+
+---
+
+## 第二步：定义引导步骤配置
+
+### 2.1 直接路径映射（推荐方式）
+
+在 `tourSteps.ts` 中直接使用页面路径作为引导步骤的键，无需额外的类型转换。
+
+**优势：**
+
+- 🎯 **直观明确**：路径即配置，一目了然
+- 🚀 **性能更好**：减少了中间转换层，提升性能
+- 🔧 **维护简单**：无需维护路径到类型的映射关系
+- 📈 **扩展性强**：新增页面只需添加对应路径的配置
+- 🐛 **调试友好**：直接通过路径就能找到对应配置
+
+```typescript
+// tourSteps.ts
+import { Step } from "react-joyride";
+
+/**
+ * 根据路径获取匹配的引导步骤键
+ * 支持精确匹配和前缀匹配
+ */
+export const getStepKeyFromPath = (pathname: string): string => {
+  // 精确匹配
+  if (tourSteps[pathname]) {
+    return pathname;
+  }
+
+  // 前缀匹配 - 找到最长匹配的路径
+  const matchingPaths = Object.keys(tourSteps).filter(
+    (path) => pathname.startsWith(path) && path !== "/"
+  );
+
+  if (matchingPaths.length > 0) {
+    // 返回最长匹配的路径
+    return matchingPaths.reduce((longest, current) =>
+      current.length > longest.length ? current : longest
+    );
+  }
+
+  return "";
+};
+```
+
+### 2.2 定义引导步骤
+
+直接使用页面路径作为键来定义引导步骤：
+
+```typescript
+/**
+ * 引导步骤配置 - 直接基于页面路径映射
+ */
+export const tourSteps: { [key: string]: Step[] } = {
+  // 对话页面引导
+  "/chat": [
+    {
+      target: '[data-tour="chat-input"]',
+      content: "在这里输入您想要询问的问题。按 Shift+Enter 可以发送。",
+      placement: "top",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="chat-send"]',
+      content: "点击发送按钮或按 Enter 键发送消息。",
+      placement: "top",
+    },
+  ],
+
+  // 智能体市场引导
+  "/agent/marketplace": [
+    {
+      target: '[data-tour="agent-categories"] .mantine-UnstyledButton-root',
+      content: "浏览不同类别的智能体，找到最适合您需求的AI助手。",
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="agent-card"] .mantine-UnstyledButton-root',
+      content: "点击智能体卡片查看详情或购买使用。",
+      placement: "top",
+    },
+  ],
+
+  // 工作流市场引导
+  "/workflow/marketplace": [
+    {
+      target: '[data-tour="agent-categories"] .mantine-UnstyledButton-root',
+      content: "浏览不同类别的工作流，找到适合您业务需求的自动化流程。",
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="agent-card"] .mantine-UnstyledButton-root',
+      content: "点击工作流卡片查看详情，了解自动化流程的功能和使用方法。",
+      placement: "top",
+    },
+  ],
+
+  // 课程市场引导
+  "/course/marketplace": [
+    {
+      target: '[data-tour="course-categories"]',
+      content: "选择您感兴趣的课程类别，系统学习相关知识。",
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="course-card"]',
+      content: "查看课程介绍和价格信息，选择适合的课程开始学习。",
+      placement: "top",
+    },
+  ],
+
+  // 知识库页面引导
+  "/knowledge": [
+    {
+      target: '[data-tour="knowledge-upload"]',
+      content: "上传您的文档、资料，构建个人专属知识库。",
+      placement: "bottom",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="knowledge-list"]',
+      content: "管理您的知识库内容，支持搜索、编辑和删除操作。",
+      placement: "top",
+    },
+  ],
+
+  // 个人中心引导
+  "/ucenter": [
+    {
+      target: '[data-tour="ucenter-assets"]',
+      content: "查看您购买的智能体和课程，管理您的数字资产。",
+      placement: "right",
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="ucenter-usage"]',
+      content: "查看您的使用情况和消费记录，了解服务使用详情。",
+      placement: "right",
+    },
+    {
+      target: '[data-tour="ucenter-account"]',
+      content: "管理您的账号信息，包括个人资料和安全设置。",
+      placement: "right",
+    },
+  ],
+};
+```
+
+### 2.3 实现元素验证机制
+
+为了确保引导功能的稳定性，实现元素验证：
+
+```typescript
+/**
+ * 检查元素是否有效
+ */
+export const isElementValid = (selector: string): boolean => {
+  try {
+    const element = document.querySelector(selector);
+    if (!element) return false;
+
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  } catch {
+    return false;
+  }
+};
+```
+
+---
+
+## 第三步：创建状态管理
+
+### 3.1 定义状态接口
+
+在 `useOnboardingStore.ts` 中创建 Zustand 状态管理：
+
+```typescript
+// useOnboardingStore.ts
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+interface OnboardingState {
+  // 已完成引导的页面
+  completedPages: string[];
+  // 是否正在运行引导
+  isRunning: boolean;
+
+  // Actions
+  markPageCompleted: (page: string) => void;
+  isPageCompleted: (page: string) => boolean;
+  startTour: () => void;
+  stopTour: () => void;
+  resetPageCompleted: (page: string) => void;
+  resetAllCompleted: () => void;
+}
+```
+
+### 3.2 实现状态管理
+
+```typescript
+/**
+ * 新手引导状态管理
+ */
+export const useOnboardingStore = create<OnboardingState>()(
+  persist(
+    (set, get) => ({
+      completedPages: [],
+      isRunning: false,
+
+      markPageCompleted: (page) => {
+        const { completedPages } = get();
+        if (!completedPages.includes(page)) {
+          set({
+            completedPages: [...completedPages, page],
+          });
+        }
+      },
+
+      isPageCompleted: (page) => {
+        const { completedPages } = get();
+        return completedPages.includes(page);
+      },
+
+      startTour: () => {
+        set({ isRunning: true });
+      },
+
+      stopTour: () => {
+        set({ isRunning: false });
+      },
+
+      resetPageCompleted: (page) => {
+        const { completedPages } = get();
+        set({
+          completedPages: completedPages.filter((p) => p !== page),
+        });
+      },
+
+      resetAllCompleted: () => {
+        set({ completedPages: [] });
+      },
+    }),
+    {
+      name: "onboarding-storage",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
+```
+
+---
+
+## 第四步：实现引导组件
+
+### 4.1 创建主引导组件
+
+在 `OnboardingTour.tsx` 中实现核心引导逻辑：
+
+```typescript
+// OnboardingTour.tsx
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
+import { useLocation } from 'react-router-dom';
+import { useOnboardingStore } from './useOnboardingStore';
+import { getPageTypeFromPath, getValidSteps, waitForPageReady } from './tourSteps';
+
+interface OnboardingTourProps {
+  page?: string;
+}
+
+const OnboardingTour: React.FC<OnboardingTourProps> = ({ page }) => {
+  const location = useLocation();
+  const { isRunning, stopTour, markPageCompleted, isPageCompleted } = useOnboardingStore();
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const hasError = useRef(false);
+  const isInitialized = useRef(false);
+  const currentPageRef = useRef<string | null>(null);
+
+  // 确定当前页面
+  const currentPage = page || getPageTypeFromPath(location.pathname);
+
+  // 重置状态
+  const resetState = useCallback(() => {
+    setSteps([]);
+    setIsLoading(false);
+    hasError.current = false;
+    isInitialized.current = false;
+    currentPageRef.current = null;
+  }, []);
+```
+
+### 4.2 实现引导逻辑
+
+```typescript
+// 初始化引导步骤
+const initializeTour = useCallback(async () => {
+  if (!currentPage || !isRunning || isPageCompleted(currentPage)) {
+    return;
+  }
+
+  setIsLoading(true);
+  hasError.current = false;
+  currentPageRef.current = currentPage;
+
+  try {
+    // 等待页面准备就绪
+    const pageReady = await waitForPageReady(currentPage);
+    if (!pageReady) {
+      resetState();
+      return;
+    }
+
+    // 获取有效的引导步骤
+    const validSteps = getValidSteps(currentPage);
+    if (validSteps.length === 0) {
+      resetState();
+      return;
+    }
+
+    setSteps(validSteps);
+    isInitialized.current = true;
+  } catch (error) {
+    hasError.current = true;
+    resetState();
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentPage, isRunning, isPageCompleted, resetState]);
+
+// 处理引导回调
+const handleJoyrideCallback = useCallback(
+  (data: CallBackProps) => {
+    const { status, type, step } = data;
+
+    // 处理错误情况
+    if (type === "error" && step?.target) {
+      hasError.current = true;
+      if (!document.querySelector(step.target as string)) {
+        stopTour();
+        resetState();
+        return;
+      }
+    }
+
+    // 处理完成状态
+    if (
+      !hasError.current &&
+      (status === STATUS.FINISHED || status === STATUS.SKIPPED)
+    ) {
+      markPageCompleted(currentPage);
+      stopTour();
+      resetState();
+    }
+  },
+  [currentPage, markPageCompleted, stopTour, resetState]
+);
+```
+
+### 4.3 渲染 Joyride 组件
+
+```typescript
+  // 检查是否需要显示引导
+  const shouldShowTour = isRunning &&
+                        steps.length > 0 &&
+                        !isPageCompleted(currentPage) &&
+                        !isLoading &&
+                        !hasError.current &&
+                        currentPage === currentPageRef.current &&
+                        isInitialized.current;
+
+  if (!shouldShowTour) return null;
+
+  return (
+    <Joyride
+      steps={steps}
+      run={true}
+      continuous={true}
+      showSkipButton={true}
+      callback={handleJoyrideCallback}
+      disableOverlayClose={false}
+      disableScrolling={false}
+      hideCloseButton={false}
+      spotlightClicks={false}
+      spotlightPadding={8}
+      scrollToFirstStep={true}
+      scrollOffset={100}
+      floaterProps={{
+        disableAnimation: true,
+        options: {
+          preventOverflow: { boundariesElement: 'viewport' },
+        },
+      }}
+      styles={{
+        options: {
+          primaryColor: '#228be6',
+        }
+      }}
+    />
+  );
+};
+
+export default OnboardingTour;
+```
+
+### 4.4 创建全局引导组件
+
+在 `GlobalOnboarding.tsx` 中创建自动检测页面变化的组件：
+
+```typescript
+// GlobalOnboarding.tsx
+import React from "react";
+import OnboardingTour from "./OnboardingTour";
+import { useSimpleTour } from "./useSimpleTour";
+
+/**
+ * 全局引导组件
+ * 自动检测页面变化并触发相应引导
+ */
+const GlobalOnboarding: React.FC = () => {
+  const { currentPage } = useSimpleTour({
+    delay: 1000,
+  });
+
+  return <OnboardingTour page={currentPage} />;
+};
+
+export default GlobalOnboarding;
+```
+
+---
+
+## 第五步：页面元素标记
+
+### 5.1 在组件中添加引导标识
+
+为需要引导的元素添加 `data-tour` 属性：
+
+```tsx
+// 聊天页面示例
+const ChatBox = () => {
+  return (
+    <Box>
+      {/* 输入框 */}
+      <QuillTextArea data-tour="chat-input" />
+
+      <Group>
+        {/* 发送按钮 */}
+        <SendAction data-tour="chat-send" aria-label="Send Message" />
+      </Group>
+    </Box>
+  );
+};
+
+// 智能体市场页面示例
+const AgentMarketplace = () => {
+  return (
+    <Box>
+      {/* 分类标签栏 */}
+      <FilterTabs
+        data-tour="agent-categories"
+        categories={categories}
+        selectedCategory={activeCategory}
+        onCategoryChange={handleCategoryChange}
+      />
+
+      {/* 智能体卡片列表 */}
+      <ModuleList>
+        {agents.map((agent, index) => (
+          <div
+            key={agent.id}
+            data-tour={index === 0 ? "agent-card" : undefined}
+          >
+            <ModuleCard
+              id={agent.id}
+              name={agent.name}
+              description={agent.description}
+              iconUrl={agent.icon}
+              onClick={() => handleOpenModal(agent.id)}
+            />
+          </div>
+        ))}
+      </ModuleList>
+    </Box>
+  );
+};
+```
+
+### 5.2 元素标记规范
+
+- **命名规范**: 使用 `页面-功能` 格式，如 `chat-input`、`agent-card`
+- **唯一性**: 确保每个页面的 `data-tour` 值唯一
+- **语义化**: 使用有意义的名称，便于理解和维护
+- **稳定性**: 避免在动态生成的元素上使用，优先选择稳定的 DOM 结构
+
+---
+
+## 第六步：集成到应用
+
+### 6.1 在主布局中集成
+
+在 `Desktop.tsx` 主布局组件中添加全局引导组件：
+
+```tsx
+// Desktop.tsx
+import GlobalOnboarding from "~/core/components/OnboardingTour/GlobalOnboarding";
+
+const Desktop = () => {
+  return (
+    <>
+      <AppShell>
+        {/* 导航栏 */}
+        <AppShell.Navbar>{/* 导航内容 */}</AppShell.Navbar>
+
+        {/* 主内容区域 */}
+        <AppShell.Main>
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </AppShell.Main>
+      </AppShell>
+
+      {/* 全局新手引导组件 */}
+      <GlobalOnboarding />
+    </>
+  );
+};
+
+export default Desktop;
+```
+
+### 6.2 创建引导 Hook
+
+在 `useSimpleTour.ts` 中创建便于使用的 Hook：
+
+```typescript
+// useSimpleTour.ts
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useOnboardingStore } from "./useOnboardingStore";
+import { getStepKeyFromPath } from "./tourSteps";
+
+export const useSimpleTour = (options?: {
+  pageType?: string;
+  disabled?: boolean;
+  delay?: number;
+}) => {
+  const location = useLocation();
+  const {
+    startTour,
+    isPageCompleted,
+    isRunning,
+    stopTour,
+    markPageCompleted,
+    resetPageCompleted,
+  } = useOnboardingStore();
+
+  const {
+    pageType: customPageType,
+    disabled = false,
+    delay = 1000,
+  } = options || {};
+
+  // 确定当前页面路径
+  const currentPagePath =
+    customPageType || getStepKeyFromPath(location.pathname);
+
+  // 自动启动引导
+  useEffect(() => {
+    if (disabled || !currentPagePath || isPageCompleted(currentPagePath)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!isRunning) {
+        startTour();
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [currentPagePath, disabled, delay, isPageCompleted, isRunning, startTour]);
+
+  // 手动控制函数
+  return {
+    start: () => startTour(),
+    stop: () => stopTour(),
+    complete: () => markPageCompleted(currentPagePath),
+    reset: () => resetPageCompleted(currentPagePath),
+    isCompleted: () => isPageCompleted(currentPagePath),
+    isRunning: () => isRunning,
+    currentPage: currentPagePath,
+  };
+};
+```
+
+---
+
+## 第七步：调试和优化
+
+### 7.1 创建调试工具
+
+在 `debug.ts` 中创建调试工具：
+
+```typescript
+// debug.ts
+import { useOnboardingStore } from "./useOnboardingStore";
+import { getStepKeyFromPath, getValidSteps } from "./tourSteps";
+
+const onboardingDebug = {
+  getCurrentPagePath: () => {
+    const pathname = window.location.pathname;
+    const pagePath = getStepKeyFromPath(pathname);
+    console.log(`当前路径: ${pathname}`);
+    console.log(`匹配的引导路径: ${pagePath || "未识别"}`);
+    return pagePath;
+  },
+
+  getStepsForCurrentPage: () => {
+    const pagePath = onboardingDebug.getCurrentPagePath();
+    if (!pagePath) {
+      console.log("❌ 无法获取页面路径");
+      return [];
+    }
+
+    const steps = getValidSteps(pagePath);
+    console.log(`📋 页面 ${pagePath} 的有效步骤:`, steps);
+    return steps;
+  },
+
+  startTour: () => {
+    const { startTour } = useOnboardingStore.getState();
+    console.log("🚀 手动启动引导");
+    startTour();
+  },
+
+  stopTour: () => {
+    const { stopTour } = useOnboardingStore.getState();
+    console.log("⏹️ 停止引导");
+    stopTour();
+  },
+
+  resetAllCompleted: () => {
+    const { resetAllCompleted } = useOnboardingStore.getState();
+    console.log("🔄 重置所有已完成的页面");
+    resetAllCompleted();
+  },
+
+  checkElements: () => {
+    const pageType = onboardingDebug.getCurrentPageType();
+    if (!pageType) return;
+
+    const elementsToCheck: { [key: string]: string[] } = {
+      chat: ['[data-tour="chat-input"]', '[data-tour="chat-send"]'],
+      agent: ['[data-tour="agent-categories"]', '[data-tour="agent-card"]'],
+      // 其他页面...
+    };
+
+    const selectors = elementsToCheck[pageType] || [];
+
+    selectors.forEach((selector) => {
+      const element = document.querySelector(selector);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const isVisible = rect.width > 0 && rect.height > 0;
+        console.log(
+          `${isVisible ? "✅" : "❌"} ${selector}:`,
+          isVisible ? "可见" : "不可见"
+        );
+      } else {
+        console.log(`❌ ${selector}: 元素不存在`);
+      }
+    });
+  },
+};
+
+// 挂载到全局对象
+if (typeof window !== "undefined") {
+  window.onboardingDebug = onboardingDebug;
+  console.log("🛠️ 新手引导调试工具已加载，使用 window.onboardingDebug 访问");
+}
+
+export default onboardingDebug;
+```
+
+### 7.2 使用调试工具
+
+在浏览器控制台中使用调试工具：
+
+```javascript
+// 获取当前页面类型
+window.onboardingDebug.getCurrentPageType();
+
+// 获取当前页面的引导步骤
+window.onboardingDebug.getStepsForCurrentPage();
+
+// 手动启动引导
+window.onboardingDebug.startTour();
+
+// 停止引导
+window.onboardingDebug.stopTour();
+
+// 重置所有已完成的页面
+window.onboardingDebug.resetAllCompleted();
+
+// 检查引导元素
+window.onboardingDebug.checkElements();
+```
+
+### 7.3 性能优化建议
+
+1. **合理设置延迟时间**: 确保页面完全加载后再启动引导
+2. **使用备用选择器**: 提高元素定位的稳定性
+3. **避免复杂操作**: 引导过程中避免进行复杂的 DOM 操作
+4. **错误恢复机制**: 实现完善的错误处理和恢复逻辑
+
+---
+
+## 核心流程总结
+
+### 实现步骤回顾
+
+1. **第一步 - 安装依赖**: 安装 `react-joyride` 和 `zustand`
+2. **第二步 - 定义配置**: 创建页面映射、引导步骤和备用选择器
+3. **第三步 - 状态管理**: 使用 Zustand 管理引导状态和持久化
+4. **第四步 - 实现组件**: 创建主引导组件和全局组件
+5. **第五步 - 元素标记**: 为页面元素添加 `data-tour` 属性
+6. **第六步 - 集成应用**: 在主布局中集成引导组件
+7. **第七步 - 调试优化**: 创建调试工具和性能优化
+
+### 关键特性
+
+- **自动检测**: 根据路由自动识别页面类型并触发引导
+- **智能定位**: 备用选择器机制确保元素定位的稳定性
+- **状态持久化**: 使用 localStorage 记住用户的引导进度
+- **错误恢复**: 完善的错误处理和降级方案
+- **调试友好**: 丰富的调试工具和日志系统
+
+### 最佳实践
+
+1. **元素标识**: 使用语义化的 `data-tour` 属性，遵循命名规范
+2. **内容编写**: 引导内容简洁明了，突出核心功能
+3. **性能考虑**: 合理设置延迟，使用备用选择器
+4. **错误处理**: 实现元素有效性检查和错误恢复
+
+这个实现方案提供了完整的新手引导功能，具有良好的可维护性和扩展性，能够为用户提供流畅的引导体验。
