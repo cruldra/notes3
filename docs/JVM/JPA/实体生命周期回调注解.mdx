@@ -1,0 +1,89 @@
+---
+title: 实体生命周期回调注解
+---
+
+`@PostUpdate` 这类注解的专业术语是 **JPA 生命周期回调注解 (JPA Lifecycle Callback Annotations)**。它们允许你在实体（Entity）生命周期的特定事件点（如保存、更新、删除、加载）执行自定义的业务逻辑。
+
+这些注解是 Jakarta Persistence API (JPA) 规范的一部分，因此可以在任何兼容 JPA 的框架（如 Hibernate）中使用。
+
+### 作用和分类
+
+这些回调方法可以定义在实体类内部，或者定义在一个单独的监听器类（Entity Listener）中。
+
+以下是主要的生命周期回调注解：
+
+| 注解 | 触发时机 | 常见用途 |
+| :--- | :--- | :--- |
+| **`@PrePersist`** | 在新实体**持久化**（保存）到数据库**之前**调用。 | 设置默认值，如创建时间、UUID 等。 |
+| **`@PostPersist`** | 在新实体成功**持久化**到数据库**之后**调用。 | 记录日志，发送创建通知。 |
+| **`@PreUpdate`** | 在实体**更新**到数据库**之前**调用。 | 更新“最后修改时间”等字段。 |
+| **`@PostUpdate`** | 在实体成功**更新**到数据库**之后**调用。 | 清理相关的缓存，记录更新日志。 |
+| **`@PreRemove`** | 在实体从数据库**删除之前**调用。 | 处理级联删除的业务逻辑，或清理相关资源。 |
+| **`@PostRemove`** | 在实体成功从数据库**删除之后**调用。 | 记录删除日志，发送删除通知。 |
+| **`@PostLoad`** | 在实体从数据库**加载完成之后**调用。 | 对加载的数据进行处理，例如计算瞬时态（`@Transient`）字段的值。 |
+
+### 示例
+
+下面是一个在实体类中直接使用这些注解的例子：
+
+```java
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @Transient
+    private String loadedFromDBMessage;
+
+    @PrePersist
+    public void onPrePersist() {
+        System.out.println("Before persisting product: " + name);
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PostPersist
+    public void onPostPersist() {
+        System.out.println("After persisting product: " + name + " with ID: " + id);
+    }
+
+    @PreUpdate
+    public void onPreUpdate() {
+        System.out.println("Before updating product: " + name);
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PostUpdate
+    public void onPostUpdate() {
+        System.out.println("After updating product: " + name);
+    }
+
+    @PostLoad
+    public void onPostLoad() {
+        this.loadedFromDBMessage = "Product '" + name + "' loaded at " + LocalDateTime.now();
+        System.out.println(this.loadedFromDBMessage);
+    }
+
+    // Getters and Setters
+}
+```
+
+### 与 Spring Data JPA 审计的区别
+
+你可能会注意到 `@PrePersist` 和 `@PreUpdate` 的功能与我们之前讨论的 Spring Data JPA 审计功能有些重叠（例如设置创建/更新时间）。
+
+*   **JPA 生命周期回调**：是 JPA 的标准功能，更底层，更灵活，可以执行任何你想要的操作。但需要你手动在每个需要审计的实体中编写逻辑。
+*   **Spring Data JPA 审计**：是 Spring Data 提供的一个更高层次的抽象。它通过 `@EnableJpaAuditing`、`AuditorAware` 和 `AuditingEntityListener` 帮你自动化地处理了创建人、创建时间、修改人、修改时间这些通用的审计字段，让你不必在每个实体中重复编写 `@PrePersist` 和 `@PreUpdate` 的逻辑，代码更简洁、更易于维护。
+
+总的来说，对于通用的创建/修改人和时间戳的审计，推荐使用 Spring Data JPA 的审计功能。对于特定实体在生命周期中需要执行的特殊业务逻辑，JPA 生命周期回调注解是更合适的选择。

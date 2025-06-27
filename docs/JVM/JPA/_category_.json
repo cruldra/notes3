@@ -1,0 +1,8 @@
+{
+  "label": "JPA",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "JPA(Java Persistence API)是Java平台的ORM规范(JSR 338),它定义了Java对象与关系数据库之间的映射关系,并提供了对象持久化的标准接口."
+  }
+}
