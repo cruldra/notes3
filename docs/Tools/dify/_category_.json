@@ -1,0 +1,8 @@
+{
+  "label": "Dify",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Dify 是一个开源的 LLM 应用开发平台。其直观的界面融合了 Agentic AI 工作流、RAG 流水线、代理功能、模型管理、可观察性功能等，让您能够快速从原型开发过渡到生产环境。"
+  }
+}
