@@ -1,0 +1,279 @@
+---
+title: 反向调用模型
+description: 插件如何反向调用Dify平台内的模型服务
+---
+
+本文档详细介绍了插件如何反向调用Dify平台内的模型服务。它涵盖了反向调用LLM、摘要、文本嵌入、重排序、TTS、语音转文本和内容审核模型的具体方法。每个模型调用都包括其入口点、接口参数描述、实际使用代码示例和调用模型的最佳实践建议。
+
+反向调用模型是指插件能够调用Dify内部的LLM能力，包括平台内所有模型类型和功能，如TTS、重排序等。如果你对反向调用的基本概念不熟悉，请先阅读[Dify服务反向调用](https://docs.dify.ai/plugin-dev-en/9241-reverse-invocation)。
+
+但是，请注意调用模型需要传递一个`ModelConfig`类型参数。其结构可以参考[通用规范定义](https://docs.dify.ai/plugin-dev-en/0411-general-specifications)，这个结构对于不同类型的模型会有细微差异。
+
+例如，对于`LLM`类型模型，它还需要包含`completion_params`和`mode`参数。你可以手动构造这个结构，也可以使用`model-selector`类型参数或配置。
+
+## 调用LLM
+
+### 入口点
+
+```python
+self.session.model.llm
+```
+
+### 端点
+
+```python
+def invoke(
+    self,
+    model_config: LLMModelConfig,
+    prompt_messages: list[PromptMessage],
+    tools: list[PromptMessageTool] | None = None,
+    stop: list[str] | None = None,
+    stream: bool = True,
+) -> Generator[LLMResultChunk, None, None] | LLMResult:
+    pass
+```
+
+请注意，如果你调用的模型没有`tool_call`能力，这里传递的`tools`将不会生效。
+
+### 使用案例
+
+如果你想在`Tool`中调用OpenAI的`gpt-4o-mini`模型，请参考以下示例代码：
+
+```python
+from collections.abc import Generator
+from typing import Any
+
+from dify_plugin import Tool
+from dify_plugin.entities.model.llm import LLMModelConfig
+from dify_plugin.entities.tool import ToolInvokeMessage
+from dify_plugin.entities.model.message import SystemPromptMessage, UserPromptMessage
+
+class LLMTool(Tool):
+    def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
+        response = self.session.model.llm.invoke(
+            model_config=LLMModelConfig(
+                provider='openai',
+                model='gpt-4o-mini',
+                mode='chat',
+                completion_params={}
+            ),
+            prompt_messages=[
+                SystemPromptMessage(
+                    content='you are a helpful assistant'
+                ),
+                UserPromptMessage(
+                    content=tool_parameters.get('query')
+                )
+            ],
+            stream=True
+        )
+
+        for chunk in response:
+            if chunk.delta.message:
+                assert isinstance(chunk.delta.message.content, str)
+                yield self.create_text_message(text=chunk.delta.message.content)
+```
+
+注意代码中传递了`tool_parameters`中的`query`参数。
+
+## 最佳实践
+
+不建议手动构造`LLMModelConfig`。相反，应该允许用户在UI上选择他们想要使用的模型。在这种情况下，你可以通过添加`model`参数来修改工具的参数列表，如下所示：
+
+```yaml
+identity:
+  name: llm
+  author: Dify
+  label:
+    en_US: LLM
+    zh_Hans: LLM
+    pt_BR: LLM
+description:
+  human:
+    en_US: A tool for invoking a large language model
+    zh_Hans: 用于调用大型语言模型的工具
+    pt_BR: A tool for invoking a large language model
+  llm: A tool for invoking a large language model
+parameters:
+  - name: prompt
+    type: string
+    required: true
+    label:
+      en_US: Prompt string
+      zh_Hans: 提示字符串
+      pt_BR: Prompt string
+    human_description:
+      en_US: used for searching
+      zh_Hans: 用于搜索网页内容
+      pt_BR: used for searching
+    llm_description: key words for searching
+    form: llm
+  - name: model
+    type: model-selector
+    scope: llm
+    required: true
+    label:
+      en_US: Model
+      zh_Hans: 使用的模型
+      pt_BR: Model
+    human_description:
+      en_US: Model
+      zh_Hans: 使用的模型
+      pt_BR: Model
+    llm_description: which Model to invoke
+    form: form
+extra:
+  python:
+    source: tools/llm.py
+```
+
+请注意，在这个示例中，`model`的`scope`被指定为`llm`。这意味着用户只能选择`llm`类型参数。因此，前面使用案例中的代码可以修改如下：
+
+```python
+from collections.abc import Generator
+from typing import Any
+
+from dify_plugin import Tool
+from dify_plugin.entities.model.llm import LLMModelConfig
+from dify_plugin.entities.tool import ToolInvokeMessage
+from dify_plugin.entities.model.message import SystemPromptMessage, UserPromptMessage
+
+class LLMTool(Tool):
+    def _invoke(self, tool_parameters: dict[str, Any]) -> Generator[ToolInvokeMessage]:
+        response = self.session.model.llm.invoke(
+            model_config=tool_parameters.get('model'),
+            prompt_messages=[
+                SystemPromptMessage(
+                    content='you are a helpful assistant'
+                ),
+                UserPromptMessage(
+                    content=tool_parameters.get('query') # 假设仍然需要'query'，否则使用参数中的'prompt'
+                )
+            ],
+            stream=True
+        )
+
+        for chunk in response:
+            if chunk.delta.message:
+                assert isinstance(chunk.delta.message.content, str)
+                yield self.create_text_message(text=chunk.delta.message.content)
+```
+
+## 调用摘要
+
+你可以请求这个端点来总结一段文本。它将使用你当前工作空间内的系统模型来总结文本。
+
+### 入口点
+
+```python
+self.session.model.summary
+```
+
+### 端点
+
+`text`是要总结的文本。
+`instruction`是你想要添加的额外指令，允许你按风格总结文本。
+
+```python
+def invoke(
+    self, text: str, instruction: str,
+) -> str:
+    pass
+```
+
+## 调用文本嵌入
+
+### 入口点
+
+```python
+self.session.model.text_embedding
+```
+
+### 端点
+
+```python
+def invoke(
+    self, model_config: TextEmbeddingResult, texts: list[str]
+) -> TextEmbeddingResult:
+    pass
+```
+
+## 调用重排序
+
+### 入口点
+
+```python
+self.session.model.rerank
+```
+
+### 端点
+
+```python
+def invoke(
+    self, model_config: RerankModelConfig, docs: list[str], query: str
+) -> RerankResult:
+    pass
+```
+
+## 调用TTS
+
+### 入口点
+
+```python
+self.session.model.tts
+```
+
+### 端点
+
+```python
+def invoke(
+    self, model_config: TTSModelConfig, content_text: str
+) -> Generator[bytes, None, None]:
+    pass
+```
+
+请注意，`tts`端点返回的`bytes`流是`mp3`音频字节流。每次迭代返回一个完整的音频段。如果你想执行更深入的处理任务，请选择适当的库。
+
+## 调用语音转文本
+
+### 入口点
+
+```python
+self.session.model.speech2text
+```
+
+### 端点
+
+```python
+def invoke(
+    self, model_config: Speech2TextModelConfig, file: IO[bytes]
+) -> str:
+    pass
+```
+
+其中`file`是以`mp3`格式编码的音频文件。
+
+## 调用内容审核
+
+### 入口点
+
+```python
+self.session.model.moderation
+```
+
+### 端点
+
+```python
+def invoke(self, model_config: ModerationModelConfig, text: str) -> bool:
+    pass
+```
+
+如果这个端点返回`true`，表示`text`包含敏感内容。
+
+## 相关资源
+
+- [Dify服务反向调用](https://docs.dify.ai/plugin-dev-en/9241-reverse-invocation) - 了解反向调用的基本概念
+- [应用反向调用](https://docs.dify.ai/plugin-dev-en/9242-reverse-invocation-app) - 学习如何在平台内调用应用
+- [工具反向调用](https://docs.dify.ai/plugin-dev-en/9242-reverse-invocation-tool) - 学习如何调用其他插件
+- [模型插件开发指南](https://docs.dify.ai/plugin-dev-en/0211-getting-started-new-model) - 学习如何开发自定义模型插件
+- [模型设计规则](https://docs.dify.ai/plugin-dev-en/0411-model-designing-rules) - 了解模型插件的设计原则
