@@ -1,0 +1,390 @@
+---
+sidebar_position: 2
+---
+
+AstrBot 提供多种部署方式，适合不同的使用场景和技术水平：
+
+| 部署方式 | 难度 | 适用场景 | 推荐指数 |
+|---------|------|----------|----------|
+| Docker部署 | ⭐⭐ | 服务器部署，生产环境 | ⭐⭐⭐⭐⭐ |
+| 雨云一键部署 | ⭐ | 快速体验，无服务器 | ⭐⭐⭐⭐ |
+| Windows一键部署 | ⭐ | Windows用户，本地测试 | ⭐⭐⭐⭐ |
+| 手动部署 | ⭐⭐⭐ | 自定义环境，开发调试 | ⭐⭐⭐ |
+| 宝塔面板部署 | ⭐⭐ | 宝塔用户，可视化管理 | ⭐⭐⭐ |
+
+## Docker部署(推荐)
+
+### 系统要求
+- Docker 20.10+
+- 2GB+ 内存
+- 10GB+ 存储空间
+
+### 快速部署
+
+```bash
+# 创建工作目录
+mkdir astrbot && cd astrbot
+
+# 运行AstrBot容器
+docker run -itd \
+  -p 6180-6200:6180-6200 \
+  -p 11451:11451 \
+  -v $(pwd)/data:/AstrBot/data \
+  --name astrbot \
+  --restart unless-stopped \
+  soulter/astrbot:latest
+
+# 查看启动日志
+docker logs astrbot
+```
+
+### 使用Docker Compose
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+version: '3.8'
+
+services:
+  astrbot:
+    image: soulter/astrbot:latest
+    container_name: astrbot
+    restart: unless-stopped
+    ports:
+      - "6180-6200:6180-6200"
+      - "11451:11451"
+    volumes:
+      - ./data:/AstrBot/data
+    environment:
+      - TZ=Asia/Shanghai
+```
+
+启动服务：
+
+```bash
+docker-compose up -d
+```
+
+### 获取登录信息
+
+```bash
+# 查看容器日志，找到管理面板地址和登录凭据
+docker logs astrbot
+
+# 输出示例：
+# [INFO] 管理面板地址: http://localhost:11451
+# [INFO] 用户名: admin
+# [INFO] 密码: xxxxxxxx
+```
+
+## 雨云一键部署
+
+### 部署步骤
+
+1. 访问 [雨云AstrBot部署页面](https://www.rainyun.com/NjY3OTQ1_)
+2. 注册/登录雨云账号
+3. 选择合适的配置方案
+4. 点击"一键部署"
+5. 等待部署完成，获取访问地址
+
+### 优势
+- 无需服务器
+- 自动配置环境
+- 提供公网访问
+- 按需付费
+
+## Windows一键部署
+
+### 系统要求
+- Windows 10/11
+- 4GB+ 内存
+- 管理员权限
+
+### 部署步骤
+
+1. 下载Windows安装器
+   ```
+   https://github.com/AstrBotDevs/AstrBot/releases
+   ```
+
+2. 以管理员身份运行安装程序
+
+3. 按照安装向导完成配置：
+   - 选择安装目录
+   - 配置Python环境
+   - 安装依赖包
+   - 初始化配置
+
+4. 启动AstrBot服务
+
+5. 访问管理面板进行配置
+
+## 手动部署
+
+### 系统要求
+- Python 3.9+
+- Git
+- 2GB+ 内存
+
+### 部署步骤
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/AstrBotDevs/AstrBot.git
+cd AstrBot
+
+# 2. 创建虚拟环境
+python -m venv venv
+
+# 3. 激活虚拟环境
+# Linux/Mac:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
+# 4. 安装依赖
+pip install -r requirements.txt
+
+# 5. 初始化配置
+python main.py --init
+
+# 6. 启动AstrBot
+python main.py
+```
+
+### 配置文件
+
+编辑 `data/config.yaml`：
+
+```yaml
+# 基础配置
+astrbot:
+  name: "AstrBot"
+  admin: []
+  debug: false
+
+# Web管理面板
+web:
+  host: "0.0.0.0"
+  port: 11451
+  
+# 日志配置
+log:
+  level: "INFO"
+  file: "data/logs/astrbot.log"
+```
+
+## 宝塔面板部署
+
+### 前置条件
+- 已安装宝塔面板
+- Python 3.9+
+- 足够的服务器资源
+
+### 部署步骤
+
+1. **创建站点**
+   - 在宝塔面板创建新站点
+   - 选择Python项目类型
+
+2. **上传代码**
+   ```bash
+   cd /www/wwwroot/your_domain
+   git clone https://github.com/AstrBotDevs/AstrBot.git .
+   ```
+
+3. **配置Python环境**
+   - 在宝塔面板Python管理器中创建虚拟环境
+   - 安装项目依赖
+
+4. **配置启动脚本**
+   ```python
+   # app.py
+   import sys
+   import os
+   sys.path.insert(0, os.path.dirname(__file__))
+   
+   from main import app
+   
+   if __name__ == "__main__":
+       app.run()
+   ```
+
+5. **设置进程守护**
+   - 使用宝塔的进程守护功能
+   - 配置自动重启
+
+## 消息平台配置
+
+### QQ平台配置
+
+#### 使用NapCat
+
+```bash
+# 部署NapCat
+docker run -d \
+  --name napcat \
+  -p 3001:3001 \
+  -p 6099:6099 \
+  -e WEBUI_TOKEN=your_token \
+  mlikiowa/napcat-docker:latest
+```
+
+在AstrBot中配置：
+
+```yaml
+platform:
+  aiocqhttp:
+    enabled: true
+    host: "127.0.0.1"
+    port: 3001
+    access_token: "your_token"
+```
+
+#### 使用Lagrange
+
+```bash
+# 下载Lagrange
+wget https://github.com/LagrangeDev/Lagrange.Core/releases/latest/download/Lagrange.OneBot.zip
+
+# 解压并配置
+unzip Lagrange.OneBot.zip
+cd Lagrange.OneBot
+```
+
+### 微信平台配置
+
+#### 使用WeChatPadPro
+
+```yaml
+platform:
+  wechat:
+    enabled: true
+    adapter: "wechatpadpro"
+    api_url: "http://localhost:8080"
+    token: "your_token"
+```
+
+### Telegram配置
+
+```yaml
+platform:
+  telegram:
+    enabled: true
+    bot_token: "your_bot_token"
+    webhook_url: "https://your_domain.com/webhook"
+```
+
+## 大语言模型配置
+
+### OpenAI配置
+
+```yaml
+llm:
+  openai:
+    api_key: "sk-xxxxxxxx"
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-3.5-turbo"
+    temperature: 0.7
+```
+
+### DeepSeek配置
+
+```yaml
+llm:
+  deepseek:
+    api_key: "sk-xxxxxxxx"
+    base_url: "https://api.deepseek.com/v1"
+    model: "deepseek-chat"
+```
+
+### Ollama配置
+
+```yaml
+llm:
+  ollama:
+    base_url: "http://localhost:11434"
+    model: "llama2"
+```
+
+## 常见问题
+
+### 端口冲突
+如果默认端口被占用，可以修改配置：
+
+```yaml
+web:
+  port: 12345  # 修改为其他端口
+```
+
+### 内存不足
+- 减少并发处理数量
+- 使用更小的模型
+- 增加服务器内存
+
+### 网络问题
+- 配置代理服务器
+- 使用国内镜像源
+- 检查防火墙设置
+
+### 权限问题
+```bash
+# 修复文件权限
+sudo chown -R $(whoami):$(whoami) ./data
+chmod -R 755 ./data
+```
+
+## 性能优化
+
+### 系统优化
+```bash
+# 增加文件描述符限制
+echo "* soft nofile 65536" >> /etc/security/limits.conf
+echo "* hard nofile 65536" >> /etc/security/limits.conf
+
+# 优化内核参数
+echo "net.core.somaxconn = 65536" >> /etc/sysctl.conf
+sysctl -p
+```
+
+### 应用优化
+```yaml
+# 配置文件优化
+performance:
+  max_workers: 4
+  message_queue_size: 1000
+  timeout: 30
+```
+
+## 监控与维护
+
+### 日志监控
+```bash
+# 实时查看日志
+tail -f data/logs/astrbot.log
+
+# 日志轮转配置
+logrotate /etc/logrotate.d/astrbot
+```
+
+### 健康检查
+```bash
+# 检查服务状态
+curl http://localhost:11451/health
+
+# 检查资源使用
+docker stats astrbot
+```
+
+### 备份策略
+```bash
+# 备份配置和数据
+tar -czf astrbot_backup_$(date +%Y%m%d).tar.gz data/
+
+# 定期备份脚本
+0 2 * * * /path/to/backup_script.sh
+```
+
+---
+
+*部署过程中遇到问题，请参考官方文档或加入社区群组寻求帮助。*

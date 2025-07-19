@@ -1,0 +1,8 @@
+{
+  "label": "AstrBot",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "AstrBot是一个开源的多平台聊天机器人及开发框架，支持QQ、微信、Telegram等多种消息平台，集成各种大语言模型。"
+  }
+}

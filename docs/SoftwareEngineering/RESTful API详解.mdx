@@ -1,0 +1,204 @@
+应用程序编程接口（API）定义了与其他软件系统进行通信必须遵循的规则。开发人员公开或创建API，以便他们的应用程序可以以编程方式与其他应用程序进行通信。
+
+你可以将Web API想象为客户端和Web上资源之间的大门：
+
+- **客户端**：要访问Web上信息的用户或软件系统
+- **资源**：不同应用程序向其客户端提供的信息（图像、视频、文本、数据等）
+
+## 什么是REST？
+
+**表征状态传输（REST）** 是一种软件架构风格，决定了API的工作条件。REST最初作为管理复杂网络（例如互联网）上的通信的指南而建立。
+
+### REST的核心原则
+
+#### 1. 统一接口
+- 服务器以标准格式传输信息
+- 请求应确定资源，使用统一的资源标识符（URI）
+- 客户端包含足够信息以修改或删除资源
+- 服务器发送自描述信息，包含客户端如何最佳使用这些信息的元数据
+
+#### 2. 无状态
+- 服务器独立于所有之前的请求完成每个客户端请求
+- 客户端可以以任意顺序请求资源
+- 每个请求都是独立的，不依赖其他请求
+
+#### 3. 层次化系统
+- 客户端可以连接到客户端和服务器之间的其他授权中间方
+- 支持多个层级（安全、应用程序和业务逻辑）
+
+#### 4. 缓存能力
+- 支持缓存以提高服务器响应时间
+- API响应可以自行定义为可缓存或不可缓存
+
+#### 5. 按需编码（可选）
+- 服务器可以通过传输软件编程代码暂时扩展客户端功能
+
+## RESTful API的设计原则
+
+### 资源URI设计
+
+#### 基本规则
+```
+✅ 好的设计
+https://api.contoso.com/orders
+https://api.contoso.com/customers/5
+https://api.contoso.com/customers/5/orders
+
+❌ 避免的设计
+https://api.contoso.com/create-order
+https://api.contoso.com/get-customer
+```
+
+#### 命名约定
+- **使用名词**：URI应该表示资源，而不是动作
+- **使用复数名词**：集合使用复数形式（`/customers`而不是`/customer`）
+- **保持层次简单**：避免超过`集合/项/集合`的复杂性
+- **避免反映数据库结构**：API应该是业务实体的抽象
+
+### HTTP方法
+
+| 方法 | 用途 | 示例 |
+|------|------|------|
+| GET | 检索资源 | `GET /customers/1` |
+| POST | 创建新资源 | `POST /customers` |
+| PUT | 更新整个资源 | `PUT /customers/1` |
+| PATCH | 部分更新资源 | `PATCH /customers/1` |
+| DELETE | 删除资源 | `DELETE /customers/1` |
+
+### HTTP状态码
+
+#### 成功响应
+- **200 OK**：请求成功
+- **201 Created**：资源创建成功
+- **204 No Content**：请求成功但无返回内容
+
+#### 客户端错误
+- **400 Bad Request**：请求格式错误
+- **401 Unauthorized**：未授权
+- **403 Forbidden**：禁止访问
+- **404 Not Found**：资源不存在
+
+#### 服务器错误
+- **500 Internal Server Error**：服务器内部错误
+- **502 Bad Gateway**：网关错误
+- **503 Service Unavailable**：服务不可用
+
+## RESTful API的优势
+
+### 1. 可扩展性
+- 无状态特性减轻服务器负载
+- 良好的缓存支持
+- 支持高效的客户端-服务器交互
+
+### 2. 灵活性
+- 客户端-服务器完全分离
+- 平台或技术变更不影响对方
+- 分层应用程序功能提升灵活性
+
+### 3. 独立性
+- 与使用的技术相互独立
+- 可以用多种编程语言实现
+- 不影响通信的情况下更改基础技术
+
+## 身份验证方法
+
+### 1. HTTP身份验证
+- **基本身份验证**：用户名和密码的base64编码
+- **Bearer身份验证**：使用令牌进行访问控制
+
+### 2. API密钥
+- 服务器分配的唯一值
+- 客户端使用密钥进行验证
+
+### 3. OAuth
+- 结合密码和令牌的高安全性方案
+- 支持特定范围和时间限制的访问
+
+## 最佳实践
+
+### 1. 数据分页和筛选
+```
+GET /orders?limit=25&offset=50
+GET /orders?status=shipped&minCost=100
+GET /orders?sort=price&fields=id,name
+```
+
+### 2. 版本控制
+```
+# URI版本控制
+GET /v2/customers/3
+
+# 查询字符串版本控制
+GET /customers/3?version=2
+
+# 标头版本控制
+GET /customers/3
+Custom-Header: api-version=2
+
+# 媒体类型版本控制
+GET /customers/3
+Accept: application/vnd.contoso.v2+json
+```
+
+### 3. HATEOAS（超媒体）
+```json
+{
+  "orderID": 3,
+  "productID": 2,
+  "quantity": 4,
+  "orderValue": 16.60,
+  "links": [
+    {
+      "rel": "customer",
+      "href": "https://api.contoso.com/customers/3",
+      "action": "GET"
+    },
+    {
+      "rel": "self",
+      "href": "https://api.contoso.com/orders/3",
+      "action": "PUT"
+    }
+  ]
+}
+```
+
+### 4. 异步操作
+对于长时间运行的操作：
+```
+POST /orders
+HTTP/1.1 202 Accepted
+Location: /api/status/12345
+
+GET /api/status/12345
+HTTP/1.1 200 OK
+{
+  "status": "In progress",
+  "link": {
+    "rel": "cancel",
+    "method": "delete",
+    "href": "/api/status/12345"
+  }
+}
+```
+
+## Richardson成熟度模型
+
+RESTful API的成熟度可以分为四个级别：
+
+- **级别0**：单一URI，所有操作都是POST请求
+- **级别1**：为不同资源创建单独的URI
+- **级别2**：使用HTTP方法定义操作（大多数API处于此级别）
+- **级别3**：使用超媒体（HATEOAS），真正的RESTful API
+
+## 总结
+
+RESTful API是现代Web开发中的重要概念，它提供了一种标准化的方式来设计和实现Web服务。通过遵循REST原则和最佳实践，可以创建出可扩展、灵活且易于维护的API。
+
+关键要点：
+- 以资源为中心的设计思想
+- 合理使用HTTP方法和状态码
+- 无状态的请求-响应模式
+- 统一的接口设计
+- 适当的身份验证和版本控制策略
+
+掌握这些概念对于现代软件开发至关重要，无论是前端开发、后端开发还是系统集成都会频繁使用到RESTful API。
