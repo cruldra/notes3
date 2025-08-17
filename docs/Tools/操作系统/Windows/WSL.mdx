@@ -21,6 +21,52 @@
 
 ## 启用root登录
 
+### 方法一：通过 Windows Store 安装的 Ubuntu
+
 1. 在`C:\Users\用户名\AppData\Local\Microsoft\WindowsApps`找到`ubuntuxx.exe`
 2. 先用普通身份运行`sudo passwd root`
 3. 打开`cmd`，运行`ubuntuxx.exe config --default-user root`
+
+### 方法二：非 Windows Store 安装或找不到 ubuntu.exe
+
+如果不是通过 Windows 应用商店安装的，或者找不到 `ubuntu.exe`，可以通过以下方式启用 root 登录：
+
+1. **设置 root 用户密码**
+   ```bash
+   sudo passwd root
+   ```
+
+2. **配置默认 root 用户登录**
+   
+   在 Ubuntu 实例中，创建或编辑 `/etc/wsl.conf` 文件：
+   ```bash
+   sudo nano /etc/wsl.conf
+   ```
+
+3. **添加配置内容**
+   
+   在文件中添加以下内容：
+   ```ini
+   [user]
+   default=root
+   ```
+
+4. **保存并关闭文件**
+   
+   按 `Ctrl+X`，然后按 `Y` 确认保存，最后按 `Enter` 键
+
+5. **重启 WSL 实例**
+   
+   关闭 Ubuntu 实例：
+   ```bash
+   exit
+   ```
+   
+   在 Windows PowerShell 或命令提示符中，关闭所有正在运行的 WSL 实例：
+   ```powershell
+   wsl --shutdown
+   ```
+
+6. **验证设置**
+   
+   再次启动 Ubuntu WSL 实例，这时应该以 root 用户登录
