@@ -5,8 +5,8 @@
 <meta name="generator" content="Docusaurus v3.8.1">
 <title data-rh="true">大模型核心概念通俗解释 | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/AI/大模型核心概念通俗解释"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="大模型核心概念通俗解释 | Cruldra"><meta data-rh="true" name="description" content="前言"><meta data-rh="true" property="og:description" content="前言"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/AI/大模型核心概念通俗解释"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/大模型核心概念通俗解释" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/大模型核心概念通俗解释" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"大模型核心概念通俗解释","item":"https://your-docusaurus-site.example.com/notes3/docs/AI/大模型核心概念通俗解释"}]}</script><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.5589a8a1.css">
-<script src="/notes3/assets/js/runtime~main.e51883cf.js" defer="defer"></script>
-<script src="/notes3/assets/js/main.5b4f5eca.js" defer="defer"></script>
+<script src="/notes3/assets/js/runtime~main.ea303ce4.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.6f9a55be.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><defs>
@@ -97,6 +97,48 @@
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="损失函数-loss-function">损失函数 (Loss Function)<a href="#损失函数-loss-function" class="hash-link" aria-label="Direct link to 损失函数 (Loss Function)" title="Direct link to 损失函数 (Loss Function)">​</a></h3>
 <p><strong>简单理解</strong>：衡量模型表现好坏的&quot;评分标准&quot;。</p>
 <p>就像考试的评分标准，告诉你答案离正确答案有多远。损失越小，说明模型表现越好。</p>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="过拟合-overfitting">过拟合 (Overfitting)<a href="#过拟合-overfitting" class="hash-link" aria-label="Direct link to 过拟合 (Overfitting)" title="Direct link to 过拟合 (Overfitting)">​</a></h3>
+<p><strong>简单理解</strong>：AI&quot;死记硬背&quot;了训练数据，但不会举一反三。</p>
+<p>想象一个学生准备考试，他把所有练习题的答案都背得滚瓜烂熟，但考试时遇到新题型就不会做了。过拟合就是这种情况：</p>
+<p><strong>过拟合的表现</strong>：</p>
+<ul>
+<li><strong>训练数据表现很好</strong>：在练习题上得满分</li>
+<li><strong>新数据表现很差</strong>：遇到新题就不会做</li>
+<li><strong>缺乏泛化能力</strong>：只会死记硬背，不会灵活应用</li>
+</ul>
+<p><strong>生活中的比喻</strong>：</p>
+<ul>
+<li><strong>背书式学习</strong>：只会背课文，不理解意思</li>
+<li><strong>应试教育</strong>：只会做练习册上的题，不会解决实际问题</li>
+<li><strong>照搬经验</strong>：只会按照固定套路做事，遇到新情况就慌了</li>
+</ul>
+<p><strong>过拟合的原因</strong>：</p>
+<ul>
+<li><strong>模型太复杂</strong>：就像用大炮打蚊子，能力过强</li>
+<li><strong>训练数据太少</strong>：练习题太少，没见过足够多的题型</li>
+<li><strong>训练时间太长</strong>：过度训练，把噪声也当成规律学了</li>
+</ul>
+<p><strong>如何识别过拟合</strong>：</p>
+<ul>
+<li>训练准确率很高，但验证准确率很低</li>
+<li>训练损失持续下降，但验证损失开始上升</li>
+<li>模型在训练集上表现完美，在测试集上表现糟糕</li>
+</ul>
+<p><strong>解决过拟合的方法</strong>：</p>
+<ul>
+<li><strong>早停 (Early Stopping)</strong>：发现过拟合苗头就停止训练</li>
+<li><strong>正则化</strong>：给模型加一些&quot;约束&quot;，防止过度复杂</li>
+<li><strong>数据增强</strong>：增加更多训练数据，见识更多题型</li>
+<li><strong>Dropout</strong>：训练时随机&quot;关闭&quot;一些神经元，防止依赖特定路径</li>
+<li><strong>交叉验证</strong>：用不同的数据集验证模型性能</li>
+</ul>
+<p><strong>与欠拟合的对比</strong>：</p>
+<ul>
+<li><strong>欠拟合</strong>：学习能力不足，连练习题都做不好</li>
+<li><strong>过拟合</strong>：学习过度，只会做练习题，不会做新题</li>
+<li><strong>刚好合适</strong>：既能做好练习题，也能应对新题型</li>
+</ul>
+<p><strong>实际意义</strong>：过拟合是机器学习中最常见的问题之一，理解并预防过拟合是训练好模型的关键。</p>
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="学习率-learning-rate">学习率 (Learning Rate)<a href="#学习率-learning-rate" class="hash-link" aria-label="Direct link to 学习率 (Learning Rate)" title="Direct link to 学习率 (Learning Rate)">​</a></h3>
 <p><strong>简单理解</strong>：控制AI学习&quot;步伐大小&quot;的参数。</p>
 <p>想象你在爬山找最高点，学习率就是你每次迈步的大小：</p>
@@ -122,6 +164,50 @@
 <li>训练过程中通常会逐渐减小（这就是调度器的作用）</li>
 </ul>
 <p><strong>实际意义</strong>：学习率决定了每次训练后权重调整的幅度，是影响训练效果的关键参数之一。</p>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="超参数-hyperparameters">超参数 (Hyperparameters)<a href="#超参数-hyperparameters" class="hash-link" aria-label="Direct link to 超参数 (Hyperparameters)" title="Direct link to 超参数 (Hyperparameters)">​</a></h3>
+<p><strong>简单理解</strong>：训练AI模型时需要人工设定的&quot;配置选项&quot;。</p>
+<p>想象你在烹饪一道菜，超参数就像是你需要决定的各种设置：</p>
+<p><strong>烹饪中的&quot;超参数&quot;</strong>：</p>
+<ul>
+<li><strong>火候大小</strong>：大火、中火、小火（对应学习率）</li>
+<li><strong>烹饪时间</strong>：炒几分钟（对应训练轮数）</li>
+<li><strong>调料分量</strong>：盐放多少、糖放多少（对应各种权重衰减系数）</li>
+<li><strong>锅的大小</strong>：用大锅还是小锅（对应批次大小）</li>
+</ul>
+<p><strong>AI训练中的超参数</strong>：</p>
+<ul>
+<li><strong>学习率</strong>：模型学习的快慢</li>
+<li><strong>批次大小 (Batch Size)</strong>：每次训练用多少数据</li>
+<li><strong>训练轮数 (Epochs)</strong>：整个数据集训练多少遍</li>
+<li><strong>网络层数</strong>：模型有多少层</li>
+<li><strong>隐藏单元数</strong>：每层有多少神经元</li>
+<li><strong>正则化系数</strong>：防止过拟合的强度</li>
+</ul>
+<p><strong>超参数 vs 参数的区别</strong>：</p>
+<ul>
+<li><strong>参数</strong>：模型自己学会的（如权重），训练过程中自动调整</li>
+<li><strong>超参数</strong>：人工设定的（如学习率），训练开始前就要确定</li>
+</ul>
+<p><strong>为什么重要</strong>：</p>
+<ul>
+<li><strong>决定训练效果</strong>：超参数设置不当，模型可能学不好</li>
+<li><strong>影响训练效率</strong>：好的超参数能让训练更快更稳定</li>
+<li><strong>需要经验和实验</strong>：通常需要多次尝试才能找到最佳组合</li>
+</ul>
+<p><strong>如何选择超参数</strong>：</p>
+<ul>
+<li><strong>网格搜索</strong>：尝试所有可能的组合</li>
+<li><strong>随机搜索</strong>：随机尝试一些组合</li>
+<li><strong>贝叶斯优化</strong>：用智能方法寻找最优组合</li>
+<li><strong>经验法则</strong>：参考别人的成功经验</li>
+</ul>
+<p><strong>常见的超参数调优策略</strong>：</p>
+<ul>
+<li><strong>先粗调后细调</strong>：先大范围搜索，再精细调整</li>
+<li><strong>一次调一个</strong>：避免同时改变太多参数</li>
+<li><strong>记录实验结果</strong>：方便对比和复现</li>
+</ul>
+<p><strong>实际意义</strong>：超参数调优是机器学习工程师的核心技能，好的超参数设置往往决定了项目的成败。</p>
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="张量-tensor">张量 (Tensor)<a href="#张量-tensor" class="hash-link" aria-label="Direct link to 张量 (Tensor)" title="Direct link to 张量 (Tensor)">​</a></h3>
 <p><strong>简单理解</strong>：多维数组，是AI计算的基本数据结构。</p>
 <p>想象一个魔方，它有长、宽、高三个维度。张量就像这样的多维数据容器：</p>
@@ -174,6 +260,74 @@
 <li><strong>预热调度</strong>：开始时学习率很小，逐渐增加到目标值</li>
 </ul>
 <p><strong>为什么重要</strong>：合适的调度策略能让模型训练更稳定，效果更好。</p>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="均值-mean">均值 (Mean)<a href="#均值-mean" class="hash-link" aria-label="Direct link to 均值 (Mean)" title="Direct link to 均值 (Mean)">​</a></h3>
+<p><strong>简单理解</strong>：一组数据的&quot;平均水平&quot;。</p>
+<p>想象你们班有5个同学，数学成绩分别是：80分、85分、90分、75分、95分。均值就是把所有成绩加起来除以人数：</p>
+<p><strong>计算过程</strong>：</p>
+<ul>
+<li>总分：80 + 85 + 90 + 75 + 95 = 425分</li>
+<li>人数：5人</li>
+<li>均值：425 ÷ 5 = 85分</li>
+</ul>
+<p><strong>生活中的均值</strong>：</p>
+<ul>
+<li><strong>平均身高</strong>：全班同学身高的平均值</li>
+<li><strong>平均工资</strong>：公司所有员工工资的平均值</li>
+<li><strong>平均温度</strong>：一个月每天温度的平均值</li>
+<li><strong>平均分数</strong>：考试成绩的平均值</li>
+</ul>
+<p><strong>在AI中的作用</strong>：</p>
+<ul>
+<li><strong>数据中心化</strong>：通过减去均值，让数据围绕0分布</li>
+<li><strong>特征标准化</strong>：配合标准差进行数据归一化</li>
+<li><strong>性能评估</strong>：计算模型在多次实验中的平均表现</li>
+<li><strong>批量处理</strong>：计算一批数据的平均特征</li>
+</ul>
+<p><strong>均值的特点</strong>：</p>
+<ul>
+<li><strong>代表性</strong>：反映数据的整体水平</li>
+<li><strong>敏感性</strong>：容易受极端值影响</li>
+<li><strong>稳定性</strong>：数据量越大，均值越稳定</li>
+</ul>
+<p><strong>实际意义</strong>：均值是最基础的统计概念，帮助我们理解数据的整体趋势。</p>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="方差-variance">方差 (Variance)<a href="#方差-variance" class="hash-link" aria-label="Direct link to 方差 (Variance)" title="Direct link to 方差 (Variance)">​</a></h3>
+<p><strong>简单理解</strong>：衡量数据&quot;散乱程度&quot;的指标。</p>
+<p>还是用班级成绩的例子，虽然两个班的平均分都是85分，但：</p>
+<p><strong>A班成绩</strong>：84分、85分、86分、84分、86分
+<strong>B班成绩</strong>：70分、80分、85分、90分、100分</p>
+<p>虽然平均分相同，但B班的成绩更&quot;散乱&quot;，方差更大。</p>
+<p><strong>方差的直观理解</strong>：</p>
+<ul>
+<li><strong>方差小</strong>：数据比较集中，大家水平差不多</li>
+<li><strong>方差大</strong>：数据比较分散，差距明显</li>
+</ul>
+<p><strong>生活中的方差</strong>：</p>
+<ul>
+<li><strong>考试成绩</strong>：方差小说明全班水平相当，方差大说明有学霸也有学渣</li>
+<li><strong>收入水平</strong>：方差小说明贫富差距小，方差大说明贫富差距大</li>
+<li><strong>身高体重</strong>：方差小说明大家体型相似，方差大说明体型差异明显</li>
+<li><strong>股票价格</strong>：方差小说明价格稳定，方差大说明波动剧烈</li>
+</ul>
+<p><strong>在AI中的作用</strong>：</p>
+<ul>
+<li><strong>数据标准化</strong>：配合均值进行Z-score标准化</li>
+<li><strong>特征选择</strong>：方差太小的特征可能没有区分度</li>
+<li><strong>模型稳定性</strong>：评估模型预测结果的稳定性</li>
+<li><strong>批量归一化</strong>：控制每层数据的分布</li>
+</ul>
+<p><strong>方差与标准差</strong>：</p>
+<ul>
+<li><strong>标准差</strong>：方差的平方根，单位与原数据相同</li>
+<li><strong>方差</strong>：标准差的平方，单位是原数据单位的平方</li>
+<li><strong>实际使用</strong>：标准差更直观，方差更便于计算</li>
+</ul>
+<p><strong>计算示例</strong>：
+假设数据是 [2, 4, 6]</p>
+<ul>
+<li>均值：(2+4+6)/3 = 4</li>
+<li>方差：[(2-4)² + (4-4)² + (6-4)²]/3 = [4+0+4]/3 = 8/3 ≈ 2.67</li>
+</ul>
+<p><strong>实际意义</strong>：方差帮助我们理解数据的分布特征，是数据预处理和模型训练中的重要概念。</p>
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="归一化-normalization">归一化 (Normalization)<a href="#归一化-normalization" class="hash-link" aria-label="Direct link to 归一化 (Normalization)" title="Direct link to 归一化 (Normalization)">​</a></h3>
 <p><strong>简单理解</strong>：让数据变得&quot;整齐划一&quot;，方便AI处理。</p>
 <p>想象你是一个老师，要比较学生的成绩，但有些科目满分是100分，有些是150分，还有些是5分制。为了公平比较，你需要把所有成绩都转换成同一个标准。</p>
@@ -187,8 +341,12 @@
 <p><strong>1. 数据归一化</strong>：</p>
 <ul>
 <li><strong>最小-最大归一化</strong>：把数据缩放到0-1之间</li>
-<li><strong>标准化</strong>：让数据均值为0，标准差为1</li>
-<li>就像把所有考试成绩都换算成百分制</li>
+<li><strong>标准化（Z-score）</strong>：利用均值和方差，让数据均值为0，标准差为1<!-- -->
+<ul>
+<li>公式：(数据 - 均值) / 标准差</li>
+<li>就像把所有考试成绩都换算成&quot;比平均分高/低多少个标准差&quot;</li>
+</ul>
+</li>
 </ul>
 <p><strong>2. 批量归一化 (Batch Normalization)</strong>：</p>
 <ul>
@@ -254,6 +412,87 @@
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="噪声-noise">噪声 (Noise)<a href="#噪声-noise" class="hash-link" aria-label="Direct link to 噪声 (Noise)" title="Direct link to 噪声 (Noise)">​</a></h3>
 <p><strong>简单理解</strong>：随机的干扰信息，但在AI中有特殊用途。</p>
 <p>在传统理解中，噪声是坏东西。但在AI生成中，噪声是创造力的源泉。就像艺术家需要一些随机灵感来创作，AI也需要噪声来生成多样化的内容。</p>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="采样-sampling">采样 (Sampling)<a href="#采样-sampling" class="hash-link" aria-label="Direct link to 采样 (Sampling)" title="Direct link to 采样 (Sampling)">​</a></h3>
+<p><strong>简单理解</strong>：从大量可能性中&quot;挑选&quot;出具体结果的过程。</p>
+<p>想象你面前有一个装满彩球的巨大箱子，采样就是伸手进去抓一把球的过程。在AI中，采样是从模型学到的&quot;可能性分布&quot;中选择具体输出的关键步骤。</p>
+<p><strong>生活中的采样</strong>：</p>
+<ul>
+<li><strong>抽奖活动</strong>：从所有参与者中随机选出中奖者</li>
+<li><strong>民意调查</strong>：从全体民众中选择一部分人进行调查</li>
+<li><strong>质量检测</strong>：从生产线上随机抽取产品检查质量</li>
+<li><strong>音乐播放</strong>：从播放列表中随机选择下一首歌</li>
+</ul>
+<p><strong>AI中的采样类型</strong>：</p>
+<p><strong>1. 数据采样</strong>：</p>
+<ul>
+<li><strong>训练数据采样</strong>：从大数据集中选择一部分用于训练</li>
+<li><strong>批次采样</strong>：每次训练时随机选择一批数据</li>
+<li><strong>负采样</strong>：在推荐系统中选择负样本</li>
+</ul>
+<p><strong>2. 生成采样</strong>：</p>
+<ul>
+<li><strong>文本生成</strong>：从词汇表中选择下一个词</li>
+<li><strong>图像生成</strong>：从潜在空间中采样生成新图片</li>
+<li><strong>音频生成</strong>：采样生成音频波形</li>
+</ul>
+<p><strong>常见的采样策略</strong>：</p>
+<p><strong>随机采样</strong>：</p>
+<ul>
+<li>完全随机选择，像掷骰子</li>
+<li>保证多样性，但可能不够稳定</li>
+</ul>
+<p><strong>贪心采样</strong>：</p>
+<ul>
+<li>总是选择概率最高的选项</li>
+<li>结果稳定，但可能缺乏创造性</li>
+</ul>
+<p><strong>Top-k采样</strong>：</p>
+<ul>
+<li>只从概率最高的k个选项中随机选择</li>
+<li>平衡了质量和多样性</li>
+</ul>
+<p><strong>核采样 (Nucleus Sampling)</strong>：</p>
+<ul>
+<li>选择累积概率达到某个阈值的词汇集合</li>
+<li>动态调整候选词数量</li>
+</ul>
+<p><strong>温度采样</strong>：</p>
+<ul>
+<li>通过&quot;温度&quot;参数控制随机性</li>
+<li>温度高：更随机，更有创造性</li>
+<li>温度低：更确定，更保守</li>
+</ul>
+<p><strong>采样在不同场景中的作用</strong>：</p>
+<p><strong>文本生成</strong>：</p>
+<ul>
+<li>决定AI写作的风格：保守还是创新</li>
+<li>影响对话的自然度和趣味性</li>
+</ul>
+<p><strong>图像生成</strong>：</p>
+<ul>
+<li>控制生成图片的多样性</li>
+<li>在DALL-E、Midjourney中决定创作风格</li>
+</ul>
+<p><strong>音乐生成</strong>：</p>
+<ul>
+<li>影响旋律的创新程度</li>
+<li>控制音乐的风格变化</li>
+</ul>
+<p><strong>采样的重要性</strong>：</p>
+<ul>
+<li><strong>控制创造性</strong>：采样策略直接影响AI的创造力</li>
+<li><strong>平衡质量与多样性</strong>：好的采样能在准确性和创新性间找到平衡</li>
+<li><strong>用户体验</strong>：采样质量直接影响AI产品的用户体验</li>
+</ul>
+<p><strong>实际应用技巧</strong>：</p>
+<ul>
+<li><strong>创意写作</strong>：使用较高温度，增加随机性</li>
+<li><strong>技术文档</strong>：使用较低温度，保证准确性</li>
+<li><strong>艺术创作</strong>：结合多种采样策略，获得最佳效果</li>
+</ul>
+<p><strong>生活中的比喻</strong>：
+采样就像厨师做菜时的调味，同样的食材（模型），不同的调味方式（采样策略）能做出完全不同口味的菜（输出结果）。</p>
+<p><strong>实际意义</strong>：采样是连接AI模型能力和实际应用效果的桥梁，掌握采样技巧能让你更好地控制AI的输出质量。</p>
 <h2 class="anchor anchorWithStickyNavbar_eLV6" id="模型架构篇">模型架构篇<a href="#模型架构篇" class="hash-link" aria-label="Direct link to 模型架构篇" title="Direct link to 模型架构篇">​</a></h2>
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="编码器-解码器-encoder-decoder">编码器-解码器 (Encoder-Decoder)<a href="#编码器-解码器-encoder-decoder" class="hash-link" aria-label="Direct link to 编码器-解码器 (Encoder-Decoder)" title="Direct link to 编码器-解码器 (Encoder-Decoder)">​</a></h3>
 <p><strong>简单理解</strong>：一个负责理解，一个负责表达。</p>
@@ -272,6 +511,57 @@
 <p><strong>简单理解</strong>：衡量翻译质量的标准。</p>
 <p>通过比较机器翻译和人工翻译的相似度来评分，分数越高说明翻译质量越好。</p>
 <h2 class="anchor anchorWithStickyNavbar_eLV6" id="实际应用篇">实际应用篇<a href="#实际应用篇" class="hash-link" aria-label="Direct link to 实际应用篇" title="Direct link to 实际应用篇">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_eLV6" id="推理-inference">推理 (Inference)<a href="#推理-inference" class="hash-link" aria-label="Direct link to 推理 (Inference)" title="Direct link to 推理 (Inference)">​</a></h3>
+<p><strong>简单理解</strong>：训练好的AI模型正式&quot;上岗工作&quot;，处理真实任务。</p>
+<p>想象你培养了一个学生，经过多年学习后，现在要让他去考试或工作了。推理就是这个&quot;正式考试&quot;的过程：</p>
+<p><strong>推理 vs 训练的区别</strong>：</p>
+<p><strong>训练阶段</strong>：</p>
+<ul>
+<li><strong>目的</strong>：让模型学习知识</li>
+<li><strong>过程</strong>：反复练习，不断调整</li>
+<li><strong>需要</strong>：大量数据、长时间、高计算资源</li>
+<li><strong>比喻</strong>：学生在学校上课、做作业</li>
+</ul>
+<p><strong>推理阶段</strong>：</p>
+<ul>
+<li><strong>目的</strong>：让模型解决实际问题</li>
+<li><strong>过程</strong>：直接给出答案，不再学习</li>
+<li><strong>需要</strong>：单个输入、快速响应、相对较少资源</li>
+<li><strong>比喻</strong>：学生参加考试、正式工作</li>
+</ul>
+<p><strong>推理的特点</strong>：</p>
+<ul>
+<li><strong>只有前向传播</strong>：信息只从输入流向输出，不需要反向传播</li>
+<li><strong>参数固定</strong>：模型权重不再改变</li>
+<li><strong>速度要求高</strong>：用户等待答案，需要快速响应</li>
+<li><strong>资源消耗相对较少</strong>：不需要存储梯度等训练信息</li>
+</ul>
+<p><strong>推理的应用场景</strong>：</p>
+<ul>
+<li><strong>聊天机器人</strong>：回答用户问题</li>
+<li><strong>图像识别</strong>：识别照片中的物体</li>
+<li><strong>语音助手</strong>：理解和回应语音指令</li>
+<li><strong>推荐系统</strong>：为用户推荐内容</li>
+<li><strong>自动翻译</strong>：翻译文本或语音</li>
+</ul>
+<p><strong>推理优化技术</strong>：</p>
+<ul>
+<li><strong>量化</strong>：减少模型精度以提高速度</li>
+<li><strong>剪枝</strong>：去掉不重要的连接</li>
+<li><strong>蒸馏</strong>：用小模型模仿大模型</li>
+<li><strong>缓存</strong>：保存常见问题的答案</li>
+<li><strong>批处理</strong>：同时处理多个请求</li>
+</ul>
+<p><strong>推理的挑战</strong>：</p>
+<ul>
+<li><strong>延迟要求</strong>：用户希望立即得到回答</li>
+<li><strong>并发处理</strong>：同时服务多个用户</li>
+<li><strong>资源限制</strong>：服务器计算能力有限</li>
+<li><strong>成本控制</strong>：推理也需要计算资源</li>
+</ul>
+<p><strong>生活中的比喻</strong>：
+就像医生看病，医学院学习是&quot;训练&quot;，给病人诊断是&quot;推理&quot;。医生不会在给病人看病时还在学习医学知识，而是直接运用已有知识做出诊断。</p>
+<p><strong>实际意义</strong>：推理是AI模型创造价值的阶段，所有用户体验到的AI功能都是在推理阶段实现的。</p>
 <h3 class="anchor anchorWithStickyNavbar_eLV6" id="微调-fine-tuning">微调 (Fine-tuning)<a href="#微调-fine-tuning" class="hash-link" aria-label="Direct link to 微调 (Fine-tuning)" title="Direct link to 微调 (Fine-tuning)">​</a></h3>
 <p><strong>简单理解</strong>：在通用模型基础上，针对特定任务进行专门训练。</p>
 <p>就像一个通才医生，经过专门培训后成为心脏病专家。模型也可以通过微调变成特定领域的专家。</p>
@@ -388,19 +678,21 @@
 <ol>
 <li><strong>数据基础</strong>：张量、权重、参数是AI的基本组成元素</li>
 <li><strong>文本理解</strong>：分词、嵌入、向量、潜在空间让计算机理解和表示信息</li>
+<li><strong>统计基础</strong>：均值、方差帮助理解数据分布和预处理</li>
 <li><strong>核心架构</strong>：注意力机制和Transformer是现代AI的基础</li>
-<li><strong>训练过程</strong>：前向传播、反向传播、梯度、损失函数是学习的核心</li>
-<li><strong>训练优化</strong>：学习率、归一化、检查点、调度器帮助控制训练过程</li>
+<li><strong>训练过程</strong>：前向传播、反向传播、梯度、损失函数、过拟合是学习的核心</li>
+<li><strong>训练优化</strong>：学习率、超参数、均值、方差、归一化、检查点、调度器帮助控制训练过程</li>
 <li><strong>训练方法</strong>：SFT、RLHF让AI学会正确回答</li>
 <li><strong>优化技术</strong>：LoRA、量化、蒸馏让AI更快更省资源</li>
-<li><strong>生成技术</strong>：VAE、扩散模型、噪声让AI创造新内容</li>
+<li><strong>生成技术</strong>：VAE、扩散模型、噪声、采样让AI创造新内容</li>
 <li><strong>高级架构</strong>：MoE、多模态、RAG让AI更强大更实用</li>
-<li><strong>实际应用</strong>：微调、提示工程、思维链让AI适应具体任务</li>
+<li><strong>实际应用</strong>：推理、微调、提示工程、思维链让AI适应具体任务</li>
 <li><strong>质量控制</strong>：理解幻觉问题，知道AI的局限性</li>
 </ol>
 <p><strong>学习路径建议</strong>：</p>
 <ol>
 <li><strong>基础层</strong>：先掌握张量、权重、分词、嵌入、潜在空间等基础概念</li>
+<li><strong>统计层</strong>：理解均值、方差等统计基础，为数据处理打基础</li>
 <li><strong>训练层</strong>：理解前向传播、反向传播、梯度、归一化等训练原理</li>
 <li><strong>架构层</strong>：学习注意力机制、Transformer、MoE等架构</li>
 <li><strong>应用层</strong>：掌握SFT、RLHF、RAG等实用技术</li>
@@ -412,8 +704,8 @@
 <li><strong>从表示到生成</strong>：嵌入让AI理解，潜在空间让AI创造</li>
 <li><strong>连续性是关键</strong>：潜在空间的连续性让AI能够平滑地在不同概念间过渡</li>
 </ul>
-<p>理解了这37个核心概念，你就能更好地理解大模型的工作原理，也能更有效地使用各种AI工具了。记住，这个领域发展很快，新概念不断涌现，保持学习的心态很重要！</p>
+<p>理解了这43个核心概念，你就能更好地理解大模型的工作原理，也能更有效地使用各种AI工具了。记住，这个领域发展很快，新概念不断涌现，保持学习的心态很重要！</p>
 <hr>
-<p><em>这篇文章用最简单的语言解释了大模型的核心概念，希望能帮助你建立对这个领域的整体认知。</em></p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/AI/大模型核心概念通俗解释.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_HMM5" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_IqsD"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/notes3/docs/AI/变分自编码器详解"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">变分自编码器（VAE）详解</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/notes3/docs/AI/嵌入和向量/Chroma与PGVector对比"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Chroma与PGVector：向量数据库的全面对比</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_zkeJ thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#前言" class="table-of-contents__link toc-highlight">前言</a></li><li><a href="#基础概念篇" class="table-of-contents__link toc-highlight">基础概念篇</a><ul><li><a href="#分词-tokenization" class="table-of-contents__link toc-highlight">分词 (Tokenization)</a></li><li><a href="#嵌入-embedding-和向量-vector" class="table-of-contents__link toc-highlight">嵌入 (Embedding) 和向量 (Vector)</a></li><li><a href="#潜在空间-latent-space" class="table-of-contents__link toc-highlight">潜在空间 (Latent Space)</a></li><li><a href="#注意力机制-attention" class="table-of-contents__link toc-highlight">注意力机制 (Attention)</a></li><li><a href="#transformer" class="table-of-contents__link toc-highlight">Transformer</a></li></ul></li><li><a href="#训练过程篇" class="table-of-contents__link toc-highlight">训练过程篇</a><ul><li><a href="#前向传播-forward-propagation" class="table-of-contents__link toc-highlight">前向传播 (Forward Propagation)</a></li><li><a href="#反向传播-backpropagation" class="table-of-contents__link toc-highlight">反向传播 (Backpropagation)</a></li><li><a href="#梯度-gradient" class="table-of-contents__link toc-highlight">梯度 (Gradient)</a></li><li><a href="#损失函数-loss-function" class="table-of-contents__link toc-highlight">损失函数 (Loss Function)</a></li><li><a href="#学习率-learning-rate" class="table-of-contents__link toc-highlight">学习率 (Learning Rate)</a></li><li><a href="#张量-tensor" class="table-of-contents__link toc-highlight">张量 (Tensor)</a></li><li><a href="#权重-weights-和参数-parameters" class="table-of-contents__link toc-highlight">权重 (Weights) 和参数 (Parameters)</a></li><li><a href="#检查点-checkpoint" class="table-of-contents__link toc-highlight">检查点 (Checkpoint)</a></li><li><a href="#调度器-scheduler" class="table-of-contents__link toc-highlight">调度器 (Scheduler)</a></li><li><a href="#归一化-normalization" class="table-of-contents__link toc-highlight">归一化 (Normalization)</a></li></ul></li><li><a href="#优化技术篇" class="table-of-contents__link toc-highlight">优化技术篇</a><ul><li><a href="#lora-low-rank-adaptation" class="table-of-contents__link toc-highlight">LoRA (Low-Rank Adaptation)</a></li><li><a href="#量化-quantization" class="table-of-contents__link toc-highlight">量化 (Quantization)</a></li><li><a href="#蒸馏-distillation" class="table-of-contents__link toc-highlight">蒸馏 (Distillation)</a></li></ul></li><li><a href="#生成技术篇" class="table-of-contents__link toc-highlight">生成技术篇</a><ul><li><a href="#vae-变分自编码器" class="table-of-contents__link toc-highlight">VAE (变分自编码器)</a></li><li><a href="#扩散模型-diffusion-model" class="table-of-contents__link toc-highlight">扩散模型 (Diffusion Model)</a></li><li><a href="#噪声-noise" class="table-of-contents__link toc-highlight">噪声 (Noise)</a></li></ul></li><li><a href="#模型架构篇" class="table-of-contents__link toc-highlight">模型架构篇</a><ul><li><a href="#编码器-解码器-encoder-decoder" class="table-of-contents__link toc-highlight">编码器-解码器 (Encoder-Decoder)</a></li><li><a href="#自回归-autoregressive" class="table-of-contents__link toc-highlight">自回归 (Autoregressive)</a></li><li><a href="#掩码语言模型-masked-language-model" class="table-of-contents__link toc-highlight">掩码语言模型 (Masked Language Model)</a></li></ul></li><li><a href="#评估指标篇" class="table-of-contents__link toc-highlight">评估指标篇</a><ul><li><a href="#困惑度-perplexity" class="table-of-contents__link toc-highlight">困惑度 (Perplexity)</a></li><li><a href="#bleu分数" class="table-of-contents__link toc-highlight">BLEU分数</a></li></ul></li><li><a href="#实际应用篇" class="table-of-contents__link toc-highlight">实际应用篇</a><ul><li><a href="#微调-fine-tuning" class="table-of-contents__link toc-highlight">微调 (Fine-tuning)</a></li><li><a href="#提示工程-prompt-engineering" class="table-of-contents__link toc-highlight">提示工程 (Prompt Engineering)</a></li><li><a href="#上下文学习-in-context-learning" class="table-of-contents__link toc-highlight">上下文学习 (In-Context Learning)</a></li><li><a href="#sft-supervised-fine-tuning-监督微调" class="table-of-contents__link toc-highlight">SFT (Supervised Fine-Tuning) 监督微调</a></li><li><a href="#rlhf-reinforcement-learning-from-human-feedback-人类反馈强化学习" class="table-of-contents__link toc-highlight">RLHF (Reinforcement Learning from Human Feedback) 人类反馈强化学习</a></li></ul></li><li><a href="#高级架构篇" class="table-of-contents__link toc-highlight">高级架构篇</a><ul><li><a href="#moe-mixture-of-experts-专家混合模型" class="table-of-contents__link toc-highlight">MoE (Mixture of Experts) 专家混合模型</a></li><li><a href="#多模态-multimodal" class="table-of-contents__link toc-highlight">多模态 (Multimodal)</a></li><li><a href="#检索增强生成-rag---retrieval-augmented-generation" class="table-of-contents__link toc-highlight">检索增强生成 (RAG - Retrieval Augmented Generation)</a></li><li><a href="#思维链-chain-of-thought-cot" class="table-of-contents__link toc-highlight">思维链 (Chain of Thought, CoT)</a></li><li><a href="#涌现能力-emergent-abilities" class="table-of-contents__link toc-highlight">涌现能力 (Emergent Abilities)</a></li><li><a href="#幻觉-hallucination" class="table-of-contents__link toc-highlight">幻觉 (Hallucination)</a></li></ul></li><li><a href="#总结" class="table-of-contents__link toc-highlight">总结</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/notes3/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
+<p><em>这篇文章用最简单的语言解释了大模型的核心概念，希望能帮助你建立对这个领域的整体认知。</em></p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/AI/大模型核心概念通俗解释.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_HMM5" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_IqsD"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/notes3/docs/AI/变分自编码器详解"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">变分自编码器（VAE）详解</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/notes3/docs/AI/嵌入和向量/Chroma与PGVector对比"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Chroma与PGVector：向量数据库的全面对比</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_zkeJ thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#前言" class="table-of-contents__link toc-highlight">前言</a></li><li><a href="#基础概念篇" class="table-of-contents__link toc-highlight">基础概念篇</a><ul><li><a href="#分词-tokenization" class="table-of-contents__link toc-highlight">分词 (Tokenization)</a></li><li><a href="#嵌入-embedding-和向量-vector" class="table-of-contents__link toc-highlight">嵌入 (Embedding) 和向量 (Vector)</a></li><li><a href="#潜在空间-latent-space" class="table-of-contents__link toc-highlight">潜在空间 (Latent Space)</a></li><li><a href="#注意力机制-attention" class="table-of-contents__link toc-highlight">注意力机制 (Attention)</a></li><li><a href="#transformer" class="table-of-contents__link toc-highlight">Transformer</a></li></ul></li><li><a href="#训练过程篇" class="table-of-contents__link toc-highlight">训练过程篇</a><ul><li><a href="#前向传播-forward-propagation" class="table-of-contents__link toc-highlight">前向传播 (Forward Propagation)</a></li><li><a href="#反向传播-backpropagation" class="table-of-contents__link toc-highlight">反向传播 (Backpropagation)</a></li><li><a href="#梯度-gradient" class="table-of-contents__link toc-highlight">梯度 (Gradient)</a></li><li><a href="#损失函数-loss-function" class="table-of-contents__link toc-highlight">损失函数 (Loss Function)</a></li><li><a href="#过拟合-overfitting" class="table-of-contents__link toc-highlight">过拟合 (Overfitting)</a></li><li><a href="#学习率-learning-rate" class="table-of-contents__link toc-highlight">学习率 (Learning Rate)</a></li><li><a href="#超参数-hyperparameters" class="table-of-contents__link toc-highlight">超参数 (Hyperparameters)</a></li><li><a href="#张量-tensor" class="table-of-contents__link toc-highlight">张量 (Tensor)</a></li><li><a href="#权重-weights-和参数-parameters" class="table-of-contents__link toc-highlight">权重 (Weights) 和参数 (Parameters)</a></li><li><a href="#检查点-checkpoint" class="table-of-contents__link toc-highlight">检查点 (Checkpoint)</a></li><li><a href="#调度器-scheduler" class="table-of-contents__link toc-highlight">调度器 (Scheduler)</a></li><li><a href="#均值-mean" class="table-of-contents__link toc-highlight">均值 (Mean)</a></li><li><a href="#方差-variance" class="table-of-contents__link toc-highlight">方差 (Variance)</a></li><li><a href="#归一化-normalization" class="table-of-contents__link toc-highlight">归一化 (Normalization)</a></li></ul></li><li><a href="#优化技术篇" class="table-of-contents__link toc-highlight">优化技术篇</a><ul><li><a href="#lora-low-rank-adaptation" class="table-of-contents__link toc-highlight">LoRA (Low-Rank Adaptation)</a></li><li><a href="#量化-quantization" class="table-of-contents__link toc-highlight">量化 (Quantization)</a></li><li><a href="#蒸馏-distillation" class="table-of-contents__link toc-highlight">蒸馏 (Distillation)</a></li></ul></li><li><a href="#生成技术篇" class="table-of-contents__link toc-highlight">生成技术篇</a><ul><li><a href="#vae-变分自编码器" class="table-of-contents__link toc-highlight">VAE (变分自编码器)</a></li><li><a href="#扩散模型-diffusion-model" class="table-of-contents__link toc-highlight">扩散模型 (Diffusion Model)</a></li><li><a href="#噪声-noise" class="table-of-contents__link toc-highlight">噪声 (Noise)</a></li><li><a href="#采样-sampling" class="table-of-contents__link toc-highlight">采样 (Sampling)</a></li></ul></li><li><a href="#模型架构篇" class="table-of-contents__link toc-highlight">模型架构篇</a><ul><li><a href="#编码器-解码器-encoder-decoder" class="table-of-contents__link toc-highlight">编码器-解码器 (Encoder-Decoder)</a></li><li><a href="#自回归-autoregressive" class="table-of-contents__link toc-highlight">自回归 (Autoregressive)</a></li><li><a href="#掩码语言模型-masked-language-model" class="table-of-contents__link toc-highlight">掩码语言模型 (Masked Language Model)</a></li></ul></li><li><a href="#评估指标篇" class="table-of-contents__link toc-highlight">评估指标篇</a><ul><li><a href="#困惑度-perplexity" class="table-of-contents__link toc-highlight">困惑度 (Perplexity)</a></li><li><a href="#bleu分数" class="table-of-contents__link toc-highlight">BLEU分数</a></li></ul></li><li><a href="#实际应用篇" class="table-of-contents__link toc-highlight">实际应用篇</a><ul><li><a href="#推理-inference" class="table-of-contents__link toc-highlight">推理 (Inference)</a></li><li><a href="#微调-fine-tuning" class="table-of-contents__link toc-highlight">微调 (Fine-tuning)</a></li><li><a href="#提示工程-prompt-engineering" class="table-of-contents__link toc-highlight">提示工程 (Prompt Engineering)</a></li><li><a href="#上下文学习-in-context-learning" class="table-of-contents__link toc-highlight">上下文学习 (In-Context Learning)</a></li><li><a href="#sft-supervised-fine-tuning-监督微调" class="table-of-contents__link toc-highlight">SFT (Supervised Fine-Tuning) 监督微调</a></li><li><a href="#rlhf-reinforcement-learning-from-human-feedback-人类反馈强化学习" class="table-of-contents__link toc-highlight">RLHF (Reinforcement Learning from Human Feedback) 人类反馈强化学习</a></li></ul></li><li><a href="#高级架构篇" class="table-of-contents__link toc-highlight">高级架构篇</a><ul><li><a href="#moe-mixture-of-experts-专家混合模型" class="table-of-contents__link toc-highlight">MoE (Mixture of Experts) 专家混合模型</a></li><li><a href="#多模态-multimodal" class="table-of-contents__link toc-highlight">多模态 (Multimodal)</a></li><li><a href="#检索增强生成-rag---retrieval-augmented-generation" class="table-of-contents__link toc-highlight">检索增强生成 (RAG - Retrieval Augmented Generation)</a></li><li><a href="#思维链-chain-of-thought-cot" class="table-of-contents__link toc-highlight">思维链 (Chain of Thought, CoT)</a></li><li><a href="#涌现能力-emergent-abilities" class="table-of-contents__link toc-highlight">涌现能力 (Emergent Abilities)</a></li><li><a href="#幻觉-hallucination" class="table-of-contents__link toc-highlight">幻觉 (Hallucination)</a></li></ul></li><li><a href="#总结" class="table-of-contents__link toc-highlight">总结</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/notes3/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" class="iconExternalLink_Mzni"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
 </body>
 </html>
