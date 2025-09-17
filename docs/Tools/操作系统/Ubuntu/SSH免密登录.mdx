@@ -53,6 +53,10 @@ Enter same passphrase again: [确认密码短语]
 ssh-copy-id -i ~/.ssh/id_rsa.pub username@remote_host
 ```
 
+```powershell
+cat ~/.ssh/id_rsa.pub | ssh root@45.249.244.101 "mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys && cat >> ~/.ssh/authorized_keys"
+```
+
 这个命令会：
 1. 自动将公钥内容追加到远程主机的`~/.ssh/authorized_keys`文件
 2. 设置适当的文件权限
