@@ -1,0 +1,669 @@
+```ts
+interface ConfigBase<Theme extends object = object> {
+    /**
+     * Rules to generate CSS utilities.
+     *
+     * Later entries have higher priority.
+     */
+    rules?: Rule<Theme>[];
+    /**
+     * Variant separator
+     *
+     * @default [':', '-']
+     */
+    separators?: Arrayable<string>;
+    /**
+     * Variants that preprocess the selectors,
+     * having the ability to rewrite the CSS object.
+     */
+    variants?: Variant<Theme>[];
+    /**
+     * Similar to Windi CSS's shortcuts,
+     * allows you have create new utilities by combining existing ones.
+     *
+     * Later entries have higher priority.
+     */
+    shortcuts?: UserShortcuts<Theme>;
+    /**
+     * Rules to exclude the selectors for your design system (to narrow down the possibilities).
+     * Combining `warnExcluded` options it can also help you identify wrong usages.
+     */
+    blocklist?: BlocklistRule[];
+    /**
+     * Utilities that always been included
+     */
+    safelist?: (string | ((context: SafeListContext<Theme>) => Arrayable<string>))[];
+    /**
+     * Extractors to handle the source file and outputs possible classes/selectors
+     * Can be language-aware.
+     */
+    extractors?: Extractor[];
+    /**
+     * Default extractor that are always applied.
+     * By default it split the source code by whitespace and quotes.
+     *
+     * It maybe be replaced by preset or user config,
+     * only one default extractor can be presented,
+     * later one will override the previous one.
+     *
+     * Pass `null` or `false` to disable the default extractor.
+     *
+     * @see https://github.com/unocss/unocss/blob/main/packages-engine/core/src/extractors/split.ts
+     * @default import('@unocss/core').defaultExtractor
+     */
+    extractorDefault?: Extractor | null | false;
+    /**
+     * Raw CSS injections.
+     */
+    preflights?: Preflight<Theme>[];
+    /**
+     * Theme object for shared configuration between rules
+     */
+    theme?: Theme;
+    /**
+     * Layer orders. Default to 0.
+     */
+    layers?: Record<string, number>;
+    /**
+     * Output the internal layers as CSS Cascade Layers.
+     */
+    outputToCssLayers?: boolean | OutputCssLayersOptions;
+    /**
+     * Custom function to sort layers.
+     */
+    sortLayers?: (layers: string[]) => string[];
+    /**
+     * Preprocess the incoming utilities, return falsy value to exclude
+     */
+    preprocess?: Arrayable<Preprocessor>;
+    /**
+     * Postprocess the generate utils object
+     */
+    postprocess?: Arrayable<Postprocessor>;
+    /**
+     * Custom functions mutate the theme object.
+     *
+     * It's also possible to return a new theme object to completely replace the original one.
+     */
+    extendTheme?: Arrayable<ThemeExtender<Theme>>;
+    /**
+     * Presets
+     */
+    presets?: (PresetOrFactoryAwaitable<Theme> | PresetOrFactoryAwaitable<Theme>[])[];
+    /**
+     * Additional options for auto complete
+     */
+    autocomplete?: {
+        /**
+         * Custom functions / templates to provide autocomplete suggestions
+         */
+        templates?: Arrayable<AutoCompleteFunction | AutoCompleteTemplate>;
+        /**
+         * Custom extractors to pickup possible classes and
+         * transform class-name style suggestions to the correct format
+         */
+        extractors?: Arrayable<AutoCompleteExtractor>;
+        /**
+         * Custom shorthands to provide autocomplete suggestions.
+         * if values is an array, it will be joined with `|` and wrapped with `()`
+         */
+        shorthands?: Record<string, string | string[]>;
+    };
+    /**
+     * Hook to modify the resolved config.
+     *
+     * First presets runs first and the user config
+     */
+    configResolved?: (config: ResolvedConfig) => void;
+    /**
+     * Expose internal details for debugging / inspecting
+     *
+     * Added `rules`, `shortcuts`, `variants` to the context and expose the context object in `StringifiedUtil`
+     *
+     * You don't usually need to set this.
+     *
+     * @default `true` when `envMode` is `dev`, otherwise `false`
+     */
+    details?: boolean;
+    /**
+     * Options for sources to be extracted as utilities usages.
+     *
+     */
+    content?: ContentOptions;
+    /**
+     * Custom transformers to the source code.
+     */
+    transformers?: SourceCodeTransformer[];
+}
+```
+
+
+## 🔑 `rules`
+
+**应用场景**：自定义生成 CSS 的规则，比如新增加 `m-1` → `margin: 0.25rem`。
+
+**示例**：
+
+```ts
+rules: [
+  // 自定义 text-shadow 工具类
+  [/^text-shadow-(.+)$/, ([, d]) => ({ 'text-shadow': d })],
+]
+```
+
+👉 使用：`class="text-shadow-2px_2px_5px_red"`
+
+---
+
+## 🔑 `separators`
+
+**应用场景**：修改 `variants` 与 `utilities` 的分隔符，默认是 `:` 和 `-`。
+
+**示例**：
+
+```ts
+separators: ['__'],
+```
+
+👉 使用：`hover__bg-red-500` （而不是 `hover:bg-red-500`）
+
+---
+
+## 🔑 `variants`
+
+**应用场景**：处理伪类、媒体查询等。
+
+**示例**：
+
+```ts
+variants: [
+  // 自定义 dark: 前缀
+  (matcher) => matcher.startsWith('dark:') 
+    ? { matcher: matcher.slice(5), selector: s => `.dark ${s}` }
+    : matcher,
+]
+```
+
+👉 使用：`dark:bg-black`
+
+---
+
+## 🔑 `shortcuts`
+
+**应用场景**：自定义组合类（类似 Tailwind 的 `@apply`）。
+
+**示例**：
+
+```ts
+shortcuts: {
+  btn: 'px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600',
+}
+```
+
+👉 使用：`class="btn"`
+
+---
+
+## 🔑 `blocklist`
+
+**应用场景**：禁止使用某些类，防止错误或不符合设计规范。
+
+**示例**：
+
+```ts
+blocklist: [/^text-(red|green|blue)-/],
+```
+
+👉 使用 `text-red-500` 会被屏蔽。
+
+---
+
+## 🔑 `safelist`
+
+**应用场景**：始终包含某些类（即使源码里没有用到）。
+
+**示例**：
+
+```ts
+safelist: ['bg-red-500', 'text-center'],
+```
+
+👉 打包结果里一定有这两个样式。
+
+---
+
+## 🔑 `extractors`
+
+**应用场景**：解析源码提取可能的类名，适合特殊语法。
+
+**示例**：
+
+```ts
+extractors: [
+  {
+    name: 'custom',
+    extract: (code) => code.match(/my-(\w+)/g) || [],
+  },
+]
+```
+
+👉 会提取 `my-btn` 这样的类。
+
+---
+
+## 🔑 `extractorDefault`
+
+**应用场景**：替换默认的提取器（默认是按空格拆分）。
+
+**示例**：
+
+```ts
+extractorDefault: null, // 禁用默认提取器
+```
+
+---
+
+## 🔑 `preflights`
+
+**应用场景**：写全局样式，类似 reset.css。
+
+**示例**：
+
+```ts
+preflights: [
+  {
+    getCSS: () => `
+      *, *::before, *::after { box-sizing: border-box; }
+    `
+  }
+]
+```
+
+---
+
+## 🔑 `theme`
+
+**应用场景**：定义全局变量，在 `rules` 或 `shortcuts` 中使用。
+
+**示例**：
+
+```ts
+theme: {
+  colors: {
+    brand: '#0070f3',
+  }
+}
+```
+
+👉 使用：`text-brand`
+
+---
+
+## 🔑 `layers`
+
+**应用场景**：定义 CSS 层级顺序。
+
+**示例**：
+
+```ts
+layers: {
+  base: 0,
+  components: 1,
+  utilities: 2,
+}
+```
+
+---
+
+## 🔑 `outputToCssLayers`
+
+**应用场景**：是否输出成 **CSS Cascade Layers**。
+
+**示例**：
+
+```ts
+outputToCssLayers: true,
+```
+
+---
+
+## 🔑 `sortLayers`
+
+**应用场景**：自定义排序。
+
+**示例**：
+
+```ts
+sortLayers: (layers) => layers.sort().reverse(),
+```
+
+---
+
+## 🔑 `preprocess`
+
+**应用场景**：在生成前修改类名。
+
+**示例**：
+
+```ts
+preprocess: [(matcher) => matcher.replace(/^p-(\d+)$/, 'px-$1 py-$1')],
+```
+
+👉 `p-4` 自动转成 `px-4 py-4`
+
+---
+
+## 🔑 `postprocess`
+
+**应用场景**：生成后修改结果。
+
+**示例**：
+
+```ts
+postprocess: [(util) => { util.entries.push(['border', '1px solid red']) }],
+```
+
+---
+
+## 🔑 `extendTheme`
+
+**应用场景**：动态扩展 `theme`。
+
+**示例**：
+
+```ts
+extendTheme: (theme) => ({
+  colors: {
+    ...theme.colors,
+    danger: '#ff0000',
+  }
+})
+```
+
+---
+
+## 🔑 `presets`
+
+**应用场景**：引入现成配置，比如 `@unocss/preset-wind`。
+
+**示例**：
+
+```ts
+presets: [
+  require('@unocss/preset-wind')(),
+]
+```
+
+---
+
+## 🔑 `autocomplete`
+
+**应用场景**：编辑器联想提示。
+
+**示例**：
+
+```ts
+autocomplete: {
+  templates: ['bg-$colors', 'text-$colors'],
+}
+```
+
+---
+
+## 🔑 `configResolved`
+
+**应用场景**：拿到最终配置，调试时有用。
+
+**示例**：
+
+```ts
+configResolved: (config) => {
+  console.log('Final config:', config)
+}
+```
+
+---
+
+## 🔑 `details`
+
+**应用场景**：是否暴露调试信息。
+
+**示例**：
+
+```ts
+details: true,
+```
+
+---
+
+## 🔑 `content`
+
+**应用场景**：指定扫描的文件范围。
+
+**示例**：
+
+```ts
+content: {
+  filesystem: ['src/**/*.vue', 'src/**/*.ts'],
+}
+```
+
+---
+
+## 🔑 `transformers`
+
+**应用场景**：对源码进行额外处理，比如支持 `@apply`。
+
+**示例**：
+
+```ts
+import transformerDirectives from '@unocss/transformer-directives'
+
+transformers: [
+  transformerDirectives(),
+]
+```
+
+---
+
+⚡ 总结一下：
+
+* `rules` / `shortcuts` / `variants`：定义怎么生成类
+* `theme`：存放设计系统
+* `safelist` / `blocklist` / `content`：控制哪些类存在
+* `preflights` / `layers` / `transformers`：影响生成 CSS 的结构
+* `extractors`：定义类名提取方式
+* `presets`：一键引入现成规则
+
+
+## 配置示例
+
+```ts
+// uno.config.ts
+import { defineConfig, presetWind, presetAttributify } from 'unocss'
+import transformerDirectives from '@unocss/transformer-directives'
+import transformerVariantGroup from '@unocss/transformer-variant-group'
+
+export default defineConfig({
+  /**
+   * Presets: 引入现成的规则集
+   * - presetWind: Tailwind 风格的原子类
+   * - presetAttributify: 支持在标签属性上直接写原子类 (如 <div text="red-500 lg">)
+   */
+  presets: [
+    presetWind(),
+    presetAttributify(),
+  ],
+
+  /**
+   * rules: 自定义原子类规则
+   * 这里新增了 text-shadow-* 工具类
+   */
+  rules: [
+    [/^text-shadow-(.+)$/, ([, value]) => ({ 'text-shadow': value })],
+  ],
+
+  /**
+   * shortcuts: 自定义快捷方式，组合类
+   * 类似 Tailwind 的 @apply，但更简洁
+   */
+  shortcuts: {
+    btn: 'px-4 py-1 rounded inline-block bg-brand text-white cursor-pointer hover:bg-brand-dark disabled:cursor-default disabled:bg-gray-600 disabled:opacity-50',
+    card: 'shadow-md p-4 rounded-lg bg-white',
+  },
+
+  /**
+   * theme: 自定义主题变量（颜色、字体、间距等）
+   * 可在 rules / shortcuts / CSS 里使用
+   */
+  theme: {
+    colors: {
+      brand: '#0070f3',
+      'brand-dark': '#0051a3',
+    },
+  },
+
+  /**
+   * safelist: 永远包含的类，即使源码中没有使用到
+   * 适合动态渲染的 class (如后端传来的状态色)
+   */
+  safelist: [
+    'text-center',
+    'bg-red-500',
+    'bg-green-500',
+    'hover:bg-yellow-400',
+  ],
+
+  /**
+   * blocklist: 屏蔽不允许使用的类
+   * 这里禁止 text-pink-* 避免出现设计规范外的颜色
+   */
+  blocklist: [/^text-pink-/],
+
+  /**
+   * preflights: 类似全局 reset.css
+   * 每次都会注入到生成的 CSS 顶部
+   */
+  preflights: [
+    {
+      getCSS: () => `
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; }
+      `,
+    },
+  ],
+
+  /**
+   * layers: 定义 CSS 层级顺序
+   * base < components < utilities
+   */
+  layers: {
+    base: 0,
+    components: 1,
+    utilities: 2,
+  },
+
+  /**
+   * outputToCssLayers: 是否输出 CSS Cascade Layers
+   * 开启后会变成 @layer base, @layer components, @layer utilities
+   */
+  outputToCssLayers: true,
+
+  /**
+   * sortLayers: 自定义层级排序逻辑
+   */
+  sortLayers: (layers) => layers.sort(),
+
+  /**
+   * preprocess: 在匹配规则前处理类名
+   * 这里把 p-4 自动转为 px-4 py-4
+   */
+  preprocess: [
+    (matcher) => matcher.startsWith('p-')
+      ? matcher.replace(/^p-(\d+)$/, 'px-$1 py-$1')
+      : matcher,
+  ],
+
+  /**
+   * postprocess: 生成后修改结果
+   * 这里给所有 bg-* 类自动加上 text-white
+   */
+  postprocess: [
+    (util) => {
+      if (util.matcher.startsWith('bg-')) {
+        util.entries.push(['color', 'white'])
+      }
+    },
+  ],
+
+  /**
+   * extendTheme: 动态扩展 theme
+   * 可返回新对象替换原主题
+   */
+  extendTheme: (theme) => ({
+    ...theme,
+    colors: {
+      ...theme.colors,
+      danger: '#ff0000',
+    },
+  }),
+
+  /**
+   * extractors: 自定义提取器，识别代码里的类名
+   * 默认按空格拆分，这里额外提取 my-* 类
+   */
+  extractors: [
+    {
+      name: 'custom',
+      extract: (code) => code.match(/my-\w+/g) || [],
+    },
+  ],
+
+  /**
+   * extractorDefault: 默认提取器
+   * null 表示禁用默认提取器
+   */
+  extractorDefault: undefined,
+
+  /**
+   * autocomplete: 编辑器联想提示配置
+   */
+  autocomplete: {
+    templates: ['bg-$colors', 'text-$colors'],
+    shorthands: {
+      c: 'flex justify-center items-center',
+    },
+  },
+
+  /**
+   * configResolved: 配置解析完成的回调
+   * 适合调试时查看最终配置
+   */
+  configResolved: (config) => {
+    console.log('最终配置：', config)
+  },
+
+  /**
+   * details: 是否输出调试信息
+   */
+  details: true,
+
+  /**
+   * content: 指定扫描的文件范围
+   */
+  content: {
+    filesystem: ['src/**/*.{vue,ts,js,tsx,html}'],
+  },
+
+  /**
+   * transformers: 源码转换器
+   * - transformerDirectives: 支持 @apply @screen
+   * - transformerVariantGroup: 支持 hover:(bg-red-500 text-white)
+   */
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
+})
+
+```
