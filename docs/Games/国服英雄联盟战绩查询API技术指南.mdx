@@ -1,0 +1,471 @@
+---
+title: 国服英雄联盟战绩查询API技术指南
+description: 详细介绍如何通过LCU API查询国服LOL战绩数据，包括技术实现、限制分析和创业建议
+tags: [英雄联盟, LOL, API, LCU, 国服, 战绩查询, 腾讯游戏]
+---
+
+# 🎮 国服英雄联盟战绩查询API技术指南
+
+## 📋 概述
+
+本文档详细介绍了如何查询国服英雄联盟战绩数据的技术方案。由于国服由腾讯代理运营，官方Riot Games API不支持中国区服务器，因此需要使用替代技术方案。
+
+## ❌ 官方API限制分析
+
+### Riot Games API现状
+- **不支持中国区服务器**: 官方API仅覆盖欧美、韩国、日本等地区
+- **腾讯代理特殊性**: 国服数据独立于Riot Games全球体系
+- **数据隔离**: 无法通过官方渠道获取国服玩家数据
+
+### 技术壁垒
+```
+全球服务器 ✅ → Riot Games API → 开发者
+国服 ❌ → 腾讯游戏平台 → 无公开API
+```
+
+## ✅ 可用技术方案
+
+### 1. LCU API (League Client API) - 推荐方案
+
+#### 1.1 技术原理
+LCU API是Riot Games提供的本地客户端API，当LOL客户端运行时会在本地启动一个HTTPS服务器，开发者可以通过这个API获取游戏数据。
+
+#### 1.2 获取客户端连接信息
+
+**步骤1: 获取进程信息**
+
+:::warning Windows 11 注意事项
+WMIC在Windows 11中已被弃用且默认不可用。推荐使用PowerShell方法。
+:::
+
+**方法一: PowerShell (推荐 - 适用于Windows 10/11)**
+```powershell
+# 使用管理员权限运行PowerShell
+Get-WmiObject Win32_Process -Filter "name='LeagueClientUx.exe'" | Select-Object CommandLine
+```
+
+**方法二: 传统WMIC (适用于Windows 10及更早版本)**
+```bash
+# 使用管理员权限运行CMD
+wmic PROCESS WHERE name='LeagueClientUx.exe' GET commandline
+```
+
+**方法三: 如果Windows 11缺少WMIC**
+1. 打开设置 → 系统 → 可选功能
+2. 点击"查看功能"
+3. 搜索并安装"WMIC"功能
+4. 或者将以下路径添加到系统PATH环境变量：
+   ```
+   %SystemRoot%\System32\wbem
+   ```
+
+**步骤2: 提取关键参数**
+从输出中提取以下信息：
+```
+--remoting-auth-token=lgxHX-LuAnDaXbyzA08w  # 认证Token
+--app-port=63405                            # API端口
+```
+
+**步骤3: 构造API地址**
+```
+基础URL: https://127.0.0.1:{port}
+示例: https://127.0.0.1:63405
+```
+
+#### 1.3 Python实现示例
+
+**基础连接代码**:
+```python
+import requests
+import base64
+import json
+from urllib3.exceptions import InsecureRequestWarning
+
+# 禁用SSL警告
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+class LOLClient:
+    def __init__(self, token, port):
+        self.token = token
+        self.port = port
+        self.base_url = f"https://127.0.0.1:{port}"
+        
+        # 构造认证头
+        auth_string = f"riot:{token}"
+        auth_bytes = auth_string.encode('utf-8')
+        auth_b64 = base64.b64encode(auth_bytes).decode('utf-8')
+        
+        self.headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Basic {auth_b64}"
+        }
+    
+    def get_current_summoner(self):
+        """获取当前召唤师信息"""
+        url = f"{self.base_url}/lol-summoner/v1/current-summoner"
+        response = requests.get(url, headers=self.headers, verify=False)
+        return response.json() if response.ok else None
+    
+    def get_match_history(self, start=0, count=20):
+        """获取对局历史"""
+        url = f"{self.base_url}/lol-match-history/v1/products/lol/current-summoner/matches"
+        params = {"begIndex": start, "endIndex": start + count}
+        response = requests.get(url, headers=self.headers, params=params, verify=False)
+        return response.json() if response.ok else None
+    
+    def get_ranked_stats(self):
+        """获取排位数据"""
+        url = f"{self.base_url}/lol-ranked/v1/current-ranked-stats"
+        response = requests.get(url, headers=self.headers, verify=False)
+        return response.json() if response.ok else None
+```
+
+**使用示例**:
+```python
+# 初始化客户端
+client = LOLClient(token="your_token", port="your_port")
+
+# 获取召唤师信息
+summoner = client.get_current_summoner()
+print(f"召唤师: {summoner['displayName']}")
+print(f"等级: {summoner['summonerLevel']}")
+
+# 获取最近对局
+matches = client.get_match_history(count=10)
+for match in matches['games']['games']:
+    print(f"游戏模式: {match['gameMode']}")
+    print(f"结果: {'胜利' if match['stats']['win'] else '失败'}")
+    print(f"KDA: {match['stats']['kills']}/{match['stats']['deaths']}/{match['stats']['assists']}")
+```
+
+#### 1.4 常用API端点
+
+**召唤师信息**:
+```
+GET /lol-summoner/v1/current-summoner
+返回: 当前登录召唤师的基本信息
+```
+
+**对局历史**:
+```
+GET /lol-match-history/v1/products/lol/current-summoner/matches
+参数: begIndex, endIndex
+返回: 历史对局详细数据
+```
+
+**排位数据**:
+```
+GET /lol-ranked/v1/current-ranked-stats
+返回: 当前赛季排位统计
+```
+
+**英雄熟练度**:
+```
+GET /lol-collections/v1/inventories/chest-eligibility
+返回: 英雄熟练度和宝箱资格
+```
+
+**符文页面**:
+```
+GET /lol-perks/v1/pages
+返回: 当前符文页面配置
+```
+
+### 2. 自动化获取客户端信息
+
+```python
+import subprocess
+import re
+import platform
+
+def get_lcu_credentials():
+    """自动获取LCU连接信息 - 兼容Windows 10/11"""
+    try:
+        # 检测Windows版本并选择合适的命令
+        windows_version = platform.version()
+
+        # Windows 11或PowerShell可用时优先使用PowerShell
+        powershell_cmd = [
+            'powershell', '-Command',
+            "Get-WmiObject Win32_Process -Filter \"name='LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine"
+        ]
+
+        # 传统WMIC命令作为备选
+        wmic_cmd = 'wmic PROCESS WHERE name="LeagueClientUx.exe" GET commandline'
+
+        # 首先尝试PowerShell方法
+        try:
+            result = subprocess.run(powershell_cmd, capture_output=True, text=True, timeout=10)
+            if result.returncode == 0 and result.stdout.strip():
+                output = result.stdout
+            else:
+                raise Exception("PowerShell方法失败")
+        except:
+            # 回退到WMIC方法
+            print("PowerShell方法失败，尝试WMIC...")
+            result = subprocess.run(wmic_cmd, shell=True, capture_output=True, text=True, timeout=10)
+            if result.returncode != 0:
+                return None, None
+            output = result.stdout
+
+        # 解析输出
+        if not output or 'LeagueClientUx.exe' not in output:
+            print("未找到LOL客户端进程")
+            return None, None
+
+        # 提取token和port
+        token_match = re.search(r'--remoting-auth-token=([^\s"]+)', output)
+        port_match = re.search(r'--app-port=(\d+)', output)
+
+        if token_match and port_match:
+            return token_match.group(1), port_match.group(1)
+
+        print("未能从进程信息中提取到token或port")
+        return None, None
+
+    except subprocess.TimeoutExpired:
+        print("命令执行超时")
+        return None, None
+    except Exception as e:
+        print(f"获取LCU信息失败: {e}")
+        return None, None
+
+def check_lol_client_running():
+    """检查LOL客户端是否运行"""
+    try:
+        # 使用tasklist命令检查进程
+        result = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq LeagueClientUx.exe'],
+                              capture_output=True, text=True)
+        return 'LeagueClientUx.exe' in result.stdout
+    except:
+        return False
+
+# 使用示例
+if check_lol_client_running():
+    print("检测到LOL客户端正在运行...")
+    token, port = get_lcu_credentials()
+    if token and port:
+        client = LOLClient(token, port)
+        print(f"LCU连接成功! 端口: {port}")
+    else:
+        print("无法获取LCU连接信息，请确保客户端完全启动")
+else:
+    print("LOL客户端未运行，请先启动游戏客户端")
+```
+
+**手动获取方法 (如果自动化失败)**:
+```python
+def manual_lcu_setup():
+    """手动输入LCU连接信息"""
+    print("自动获取失败，请手动获取LCU信息:")
+    print("1. 以管理员身份运行PowerShell")
+    print("2. 执行命令: Get-WmiObject Win32_Process -Filter \"name='LeagueClientUx.exe'\" | Select-Object CommandLine")
+    print("3. 从输出中找到 --remoting-auth-token 和 --app-port 参数")
+
+    token = input("请输入 remoting-auth-token: ").strip()
+    port = input("请输入 app-port: ").strip()
+
+    if token and port:
+        return token, port
+    return None, None
+```
+
+## 🔧 数据分析与处理
+
+### 3.1 战绩数据结构
+
+**对局基本信息**:
+```json
+{
+  "gameId": 1234567890,
+  "gameMode": "CLASSIC",
+  "gameType": "MATCHED_GAME",
+  "gameCreation": 1640995200000,
+  "gameDuration": 1800,
+  "participants": [...],
+  "teams": [...]
+}
+```
+
+**玩家统计数据**:
+```json
+{
+  "kills": 8,
+  "deaths": 3,
+  "assists": 12,
+  "totalDamageDealt": 150000,
+  "goldEarned": 12000,
+  "champLevel": 16,
+  "item0": 3031,
+  "item1": 3006,
+  "win": true
+}
+```
+
+### 3.2 数据分析示例
+
+```python
+def analyze_performance(matches):
+    """分析玩家表现"""
+    total_games = len(matches)
+    wins = sum(1 for match in matches if match['stats']['win'])
+    
+    # 计算平均KDA
+    total_kills = sum(match['stats']['kills'] for match in matches)
+    total_deaths = sum(match['stats']['deaths'] for match in matches)
+    total_assists = sum(match['stats']['assists'] for match in matches)
+    
+    avg_kda = (total_kills + total_assists) / max(total_deaths, 1)
+    
+    # 最常用英雄
+    champion_stats = {}
+    for match in matches:
+        champ_id = match['championId']
+        if champ_id not in champion_stats:
+            champion_stats[champ_id] = {'games': 0, 'wins': 0}
+        champion_stats[champ_id]['games'] += 1
+        if match['stats']['win']:
+            champion_stats[champ_id]['wins'] += 1
+    
+    return {
+        'total_games': total_games,
+        'win_rate': wins / total_games * 100,
+        'avg_kda': round(avg_kda, 2),
+        'champion_stats': champion_stats
+    }
+```
+
+## 🚫 方案限制与挑战
+
+### 4.1 技术限制
+- **客户端依赖**: 必须在LOL客户端运行时才能使用
+- **单用户限制**: 只能查询当前登录账号的数据
+- **本地访问**: API仅在本地127.0.0.1可访问
+- **会话限制**: 客户端重启后需要重新获取认证信息
+
+### 4.2 数据限制
+- **历史数据有限**: 通常只能获取最近100场对局
+- **实时性要求**: 需要客户端在线才能获取最新数据
+- **批量查询不可行**: 无法批量查询其他玩家数据
+
+### 4.3 商业化挑战
+- **用户规模限制**: 每个用户需要安装客户端应用
+- **数据孤岛**: 无法构建跨用户的数据分析
+- **技术门槛**: 用户需要一定的技术知识
+
+## 💡 替代方案分析
+
+### 5.1 第三方数据服务
+**优势**:
+- 可能提供批量查询
+- 数据覆盖面更广
+
+**劣势**:
+- 数据来源不明确
+- 法律风险较高
+- 稳定性无保证
+- 通常需要付费
+
+### 5.2 网页爬虫
+**优势**:
+- 可以获取公开展示的数据
+- 不依赖客户端
+
+**劣势**:
+- 技术复杂度高
+- 容易被反爬虫机制阻止
+- 数据更新延迟
+- 存在法律风险
+
+## 🎯 创业方向建议
+
+### 6.1 推荐方向: 个人数据分析工具
+
+**产品定位**: 桌面应用，专注于个人游戏数据的深度分析
+
+**核心功能**:
+- 详细的对局回放分析
+- 个人技能提升建议
+- 英雄熟练度追踪
+- 游戏习惯分析
+- 训练计划制定
+
+**技术架构**:
+```
+桌面应用 (Electron/PyQt)
+    ↓
+LCU API 数据获取
+    ↓
+本地数据库存储 (SQLite)
+    ↓
+数据分析引擎 (Python)
+    ↓
+可视化展示 (Charts.js/D3.js)
+```
+
+### 6.2 变现模式
+- **免费版**: 基础数据查看
+- **专业版**: $9.99/月，深度分析功能
+- **教练版**: $29.99/月，训练计划和建议
+
+### 6.3 技术实现路线图
+
+**第一阶段 (1-2个月)**:
+- 实现LCU API连接
+- 基础数据获取和存储
+- 简单的数据展示界面
+
+**第二阶段 (2-3个月)**:
+- 数据分析算法开发
+- 可视化图表实现
+- 用户界面优化
+
+**第三阶段 (3-6个月)**:
+- 高级分析功能
+- 个性化建议系统
+- 商业化功能
+
+## ⚠️ 注意事项
+
+### 7.1 Windows 11兼容性
+- **WMIC已弃用**: Windows 11默认不包含WMIC工具
+- **推荐PowerShell**: 使用`Get-WmiObject`命令替代
+- **权限要求**: 需要管理员权限执行进程查询命令
+- **备选方案**: 提供手动输入连接信息的选项
+
+### 7.2 合规性
+- 严格遵守Riot Games开发者协议
+- 不得用于作弊或外挂功能
+- 保护用户隐私和数据安全
+
+### 7.3 技术风险
+- LCU API可能随客户端更新而变化
+- 需要建立版本兼容性机制
+- 做好错误处理和异常恢复
+- Windows版本兼容性问题
+
+### 7.4 用户体验
+- 简化安装和配置流程
+- 提供详细的使用说明
+- 建立用户反馈机制
+- 支持多种获取连接信息的方法
+
+## 📚 参考资源
+
+### 官方文档
+- [Riot Games开发者门户](https://developer.riotgames.com/)
+- [LCU API文档](https://riot-api-libraries.readthedocs.io/en/latest/lcu.html)
+
+### 开源项目
+- [LCU Sharp](https://github.com/bryanhitc/lcu-sharp) - C# LCU API库
+- [LCU Connector](https://github.com/Pupix/lcu-connector) - Node.js LCU连接器
+- [Willump](https://github.com/pseudonym117/Willump) - Python LCU API库
+
+### 社区资源
+- [LeagueOfLegends Reddit](https://www.reddit.com/r/leagueoflegends/)
+- [Riot API开发者社区](https://discord.gg/riotgamesapi)
+
+---
+
+**总结**: 虽然国服LOL没有公开的官方API，但通过LCU API仍然可以构建有价值的个人数据分析工具。关键是要调整产品定位，专注于深度的个人数据分析而非大规模的多用户平台。
