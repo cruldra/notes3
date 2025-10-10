@@ -1,0 +1,321 @@
+# Ubuntu 字体管理及中文字体安装
+
+## 概述
+
+Ubuntu 系统中的字体管理由 **Fontconfig** 统一负责。Fontconfig 是由 Free Desktop 推出的字体管理工具,通用于各大 Linux 发行版。它可以自动扫描特定目录下的所有字体,并通过配置文件控制字体的显示效果。
+
+## 字体目录结构
+
+### 系统字体目录
+- `/usr/share/fonts/` - 系统级字体目录
+- `/usr/local/share/fonts/` - 本地系统字体目录
+
+### 用户字体目录
+- `~/.fonts/` - 用户字体目录(旧版)
+- `~/.local/share/fonts/` - 用户字体目录(新版)
+
+## 常用字体管理命令
+
+### 查看已安装字体
+
+```bash
+# 查看所有已安装字体
+fc-list
+
+# 查看已安装的中文字体
+fc-list :lang=zh
+
+# 查看已安装的中文字体并排序
+fc-list :lang=zh-cn | sort
+
+# 查看特定字体的详细信息
+fc-query /path/to/font.ttf
+```
+
+### 刷新字体缓存
+
+```bash
+# 刷新字体缓存
+fc-cache -fv
+
+# 参数说明:
+# -f, --force  强制重新扫描,即使缓存看起来是有效的
+# -v, --verbose 显示详细信息
+```
+
+### 字体匹配测试
+
+```bash
+# 测试字体匹配
+fc-match "字体名称"
+
+# 查看字体匹配的详细过程
+FC_DEBUG=8191 fc-match -s '宋体-15:lang=zh-cn'
+```
+
+## 安装中文字体
+
+### 方法一: 使用包管理器安装
+
+#### 安装 Noto CJK 字体(推荐)
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install fonts-noto-cjk fonts-noto-cjk-extra
+
+# 这将安装 Noto Sans CJK 和 Noto Serif CJK 字体系列
+```
+
+#### 安装文泉驿字体
+
+```bash
+# 文泉驿正黑
+sudo apt install ttf-wqy-zenhei
+
+# 文泉驿微米黑
+sudo apt install ttf-wqy-microhei
+```
+
+#### 安装其他常用中文字体
+
+```bash
+# 安装繁体中文字体
+sudo apt install fonts-arphic-ukai fonts-arphic-uming
+
+# 安装思源黑体
+sudo apt install fonts-noto-cjk
+```
+
+### 方法二: 手动安装字体文件
+
+#### 1. 准备字体文件
+
+支持的字体格式:
+- `.ttf` (TrueType Font)
+- `.otf` (OpenType Font)
+- `.ttc` (TrueType Collection)
+
+#### 2. 复制字体到系统目录
+
+```bash
+# 创建字体目录(如果不存在)
+sudo mkdir -p /usr/share/fonts/truetype/custom
+
+# 复制字体文件
+sudo cp *.ttf /usr/share/fonts/truetype/custom/
+sudo cp *.otf /usr/share/fonts/truetype/custom/
+
+# 设置正确的权限
+sudo chmod 644 /usr/share/fonts/truetype/custom/*
+```
+
+#### 3. 安装到用户目录
+
+```bash
+# 创建用户字体目录
+mkdir -p ~/.local/share/fonts
+
+# 复制字体文件
+cp *.ttf ~/.local/share/fonts/
+cp *.otf ~/.local/share/fonts/
+
+# 设置权限
+chmod 644 ~/.local/share/fonts/*
+```
+
+#### 4. 刷新字体缓存
+
+```bash
+# 刷新系统字体缓存
+sudo fc-cache -fv
+
+# 或仅刷新用户字体缓存
+fc-cache -fv
+```
+
+### 方法三: 从 Windows 复制字体
+
+#### 1. 从 Windows 系统复制字体
+
+Windows 字体位置: `C:\Windows\Fonts\`
+
+常用 Windows 中文字体:
+- `SimSun.ttc` - 中易宋体
+- `SimHei.ttf` - 中易黑体
+- `SimKai.ttf` - 中易楷体
+- `SimFang.ttf` - 中易仿宋
+- `msyh.ttc` - 微软雅黑
+- `msyhbd.ttc` - 微软雅黑粗体
+
+#### 2. 安装到 Ubuntu
+
+```bash
+# 创建 Windows 字体目录
+sudo mkdir -p /usr/share/fonts/truetype/windows
+
+# 复制字体文件(注意大小写)
+sudo cp *.ttf *.TTF *.ttc *.TTC /usr/share/fonts/truetype/windows/
+
+# 设置权限
+sudo chmod 644 /usr/share/fonts/truetype/windows/*
+
+# 刷新字体缓存
+sudo fc-cache -fv
+```
+
+## Fontconfig 配置
+
+### 配置文件位置
+
+- `/etc/fonts/fonts.conf` - 系统全局配置(不建议直接修改)
+- `/etc/fonts/local.conf` - 系统自定义配置
+- `~/.config/fontconfig/fonts.conf` - 用户配置(推荐)
+
+### 基本配置结构
+
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <!-- 配置内容 -->
+</fontconfig>
+```
+
+### 配置后备字体
+
+创建或编辑 `~/.config/fontconfig/fonts.conf`:
+
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <!-- 为英文字体配置中文后备字体 -->
+  <alias>
+    <family>sans-serif</family>
+    <prefer>
+      <family>Noto Sans CJK SC</family>
+    </prefer>
+  </alias>
+
+  <alias>
+    <family>serif</family>
+    <prefer>
+      <family>Noto Serif CJK SC</family>
+    </prefer>
+  </alias>
+
+  <alias>
+    <family>monospace</family>
+    <prefer>
+      <family>Noto Sans Mono CJK SC</family>
+    </prefer>
+  </alias>
+</fontconfig>
+```
+
+### 禁用字体 Hinting
+
+某些字体(如宋体)在启用 hinting 时会显示为点阵效果,可以通过配置禁用:
+
+```xml
+<match target="font">
+  <test name="family" compare="eq">
+    <string>SimSun</string>
+  </test>
+  <edit name="hinting" mode="assign">
+    <bool>false</bool>
+  </edit>
+</match>
+```
+
+### 应用配置
+
+```bash
+# 刷新字体缓存使配置生效
+fc-cache -f -v
+```
+
+## 字体渲染优化
+
+### 渲染参数说明
+
+- **antialias**: 抗锯齿,改善字体显示效果
+- **hinting**: 字体微调,提高低分辨率下的清晰度
+- **hintstyle**: 微调程度(hintnone/hintslight/hintmedium/hintfull)
+- **rgba**: LCD 子像素排列(rgb/bgr/vrgb/vbgr/none)
+- **lcdfilter**: LCD 滤镜(lcddefault/lcdlight/lcdlegacy/lcdnone)
+
+### 推荐的渲染配置
+
+```xml
+<match target="font">
+  <!-- 开启抗锯齿 -->
+  <edit name="antialias" mode="assign">
+    <bool>true</bool>
+  </edit>
+  
+  <!-- 开启 hinting -->
+  <edit name="hinting" mode="assign">
+    <bool>true</bool>
+  </edit>
+  
+  <!-- 使用轻度 hinting -->
+  <edit name="hintstyle" mode="assign">
+    <const>hintslight</const>
+  </edit>
+  
+  <!-- LCD 子像素渲染 -->
+  <edit name="rgba" mode="assign">
+    <const>rgb</const>
+  </edit>
+  
+  <!-- LCD 滤镜 -->
+  <edit name="lcdfilter" mode="assign">
+    <const>lcddefault</const>
+  </edit>
+</match>
+```
+
+## 常见问题
+
+### 中文显示为方块
+
+**原因**: 系统缺少中文字体
+
+**解决方案**:
+```bash
+sudo apt install fonts-noto-cjk
+fc-cache -fv
+```
+
+### 中文字形显示为日文/韩文风格
+
+**原因**: 字体后备配置不正确或系统语言设置问题
+
+**解决方案**:
+1. 检查系统语言设置
+2. 配置正确的后备字体(参考上文"配置后备字体"部分)
+
+### 字体安装后不生效
+
+**解决方案**:
+```bash
+# 强制刷新字体缓存
+fc-cache -f -v
+
+# 重启应用程序
+```
+
+### 宋体显示为点阵
+
+**原因**: 字体的 hinting 功能导致
+
+**解决方案**: 禁用该字体的 hinting(参考上文"禁用字体 Hinting"部分)
+
+## 参考资源
+
+- [Fontconfig 官方文档](https://www.freedesktop.org/wiki/Software/fontconfig/)
+- [ArchWiki - 字体配置](https://wiki.archlinux.org/title/Font_configuration)
+- [Ubuntu 字体配置指南](https://help.ubuntu.com/community/Fonts)
+
