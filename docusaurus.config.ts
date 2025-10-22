@@ -1,5 +1,5 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
@@ -29,7 +29,9 @@ const config: Config = {
         defaultLocale: 'en',
         locales: ['en'],
     },
-
+    markdown: {
+        mermaid: true,
+    },
     presets: [
         [
             'classic',
@@ -61,10 +63,11 @@ const config: Config = {
                     // customCss: 'node_modules/@mantine/core/styles.css',
                 },
             } satisfies Preset.Options,
-        ],    ],
+        ],],
 
     themes: [
-        '@saucelabs/theme-github-codeblock'
+        '@saucelabs/theme-github-codeblock',
+        '@docusaurus/theme-mermaid',
     ],
 
     themeConfig: {
@@ -118,7 +121,7 @@ const config: Config = {
                     sidebarId: 'ai',
                     position: 'left',
                     label: 'AI',
-                },{
+                }, {
                     type: 'docSidebar',
                     sidebarId: 'python',
                     position: 'left',
