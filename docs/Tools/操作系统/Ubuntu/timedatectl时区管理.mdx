@@ -1,0 +1,316 @@
+# timedatectl 时区管理
+
+## 简介
+
+`timedatectl` 是 systemd 系统和服务管理器的一部分,用于查询和更改系统时钟及其设置。它是现代 Linux 发行版(如 RHEL/CentOS 7+、Fedora 21+、Ubuntu 16.04+)中替代传统 `date` 命令的新工具。
+
+### 主要功能
+
+- 查询和设置系统日期和时间
+- 管理系统时区
+- 启用/禁用 NTP 时间同步
+- 管理硬件时钟(RTC)
+
+### 优势
+
+- 维护系统任务的及时运行(Linux 中大多数任务由时间控制)
+- 准确记录事件和系统信息的时间戳
+- 统一的时间管理接口
+
+## 基本用法
+
+### 查看当前时间和日期
+
+```bash
+# 显示系统当前时间、日期和时区信息
+timedatectl
+# 或
+timedatectl status
+```
+
+输出示例:
+```
+               Local time: Mon 2024-01-15 10:30:45 CST
+           Universal time: Mon 2024-01-15 02:30:45 UTC
+                 RTC time: Mon 2024-01-15 02:30:45
+                Time zone: Asia/Shanghai (CST, +0800)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+```
+
+**输出字段说明:**
+- `Local time`: 本地时间
+- `Universal time`: UTC 时间(世界标准时间)
+- `RTC time`: 硬件时钟时间(Real-Time Clock)
+- `Time zone`: 当前时区
+- `System clock synchronized`: 系统时钟是否已同步
+- `NTP service`: NTP 服务状态
+- `RTC in local TZ`: 硬件时钟是否使用本地时区
+
+## 时区管理
+
+### 查看当前时区
+
+```bash
+# 查看完整信息
+timedatectl
+
+# 仅查看时区信息
+timedatectl | grep "Time zone"
+```
+
+### 列出所有可用时区
+
+```bash
+# 列出所有时区
+timedatectl list-timezones
+```
+
+### 按地理位置筛选时区
+
+```bash
+# 查看亚洲时区
+timedatectl list-timezones | grep -i "Asia"
+
+# 查看欧洲时区
+timedatectl list-timezones | grep -i "Europe"
+
+# 查看美洲时区
+timedatectl list-timezones | grep -i "America"
+
+# 精确筛选(如亚洲以B开头的城市)
+timedatectl list-timezones | egrep -o "Asia/B.*"
+timedatectl list-timezones | egrep -o "Europe/L.*"
+timedatectl list-timezones | egrep -o "America/N.*"
+```
+
+### 设置时区
+
+```bash
+# 设置为中国上海时区
+sudo timedatectl set-timezone Asia/Shanghai
+
+# 设置为北京时区(同上海)
+sudo timedatectl set-timezone Asia/Shanghai
+
+# 设置为 UTC 时区(推荐服务器使用)
+sudo timedatectl set-timezone UTC
+```
+
+:::warning 注意事项
+- 时区名称必须准确,否则会报错
+- 时区格式为 `区域/城市`,如 `Asia/Shanghai`
+- 服务器建议使用 UTC 时区,避免跨时区混乱
+:::
+
+## 时间和日期设置
+
+### 设置时间
+
+```bash
+# 仅设置时间(格式: HH:MM:SS)
+sudo timedatectl set-time 15:58:30
+```
+
+### 设置日期
+
+```bash
+# 仅设置日期(格式: YYYY-MM-DD)
+sudo timedatectl set-time 2024-01-15
+```
+
+### 同时设置日期和时间
+
+```bash
+# 格式: YYYY-MM-DD HH:MM:SS
+sudo timedatectl set-time '2024-01-15 16:10:40'
+```
+
+:::caution 常见错误
+如果出现 `Failed to set time: NTP unit is active` 错误,需要先禁用 NTP 同步:
+
+```bash
+# 禁用 NTP 同步
+sudo timedatectl set-ntp false
+
+# 或者停止 chronyd 服务
+sudo systemctl disable --now chronyd
+```
+:::
+
+## 硬件时钟管理
+
+### 查看硬件时钟设置
+
+```bash
+# 检查硬件时钟是否设置为本地时区
+timedatectl | grep local
+```
+
+### 设置硬件时钟
+
+```bash
+# 将硬件时钟设置为本地时区
+sudo timedatectl set-local-rtc 1
+
+# 将硬件时钟设置为 UTC(推荐)
+sudo timedatectl set-local-rtc 0
+```
+
+:::tip 最佳实践
+推荐将硬件时钟设置为 UTC(`set-local-rtc 0`),这样可以避免夏令时切换和时区变更带来的问题。
+:::
+
+## NTP 时间同步
+
+### NTP 简介
+
+NTP(Network Time Protocol,网络时间协议)是一个互联网协议,用于同步计算机之间的系统时钟。
+
+### 启用 NTP 同步
+
+```bash
+# 启用自动时间同步
+sudo timedatectl set-ntp true
+```
+
+### 禁用 NTP 同步
+
+```bash
+# 禁用自动时间同步
+sudo timedatectl set-ntp false
+```
+
+### 检查 NTP 同步状态
+
+```bash
+# 查看 NTP 服务状态
+timedatectl | grep "NTP"
+
+# 查看 systemd-timesyncd 状态
+timedatectl timesync-status
+
+# 查看详细属性
+timedatectl show-timesync
+```
+
+:::info 前置条件
+系统必须安装 NTP 客户端服务才能实现自动时间同步。常见的 NTP 服务有:
+- `systemd-timesyncd`(systemd 自带,轻量级)
+- `chronyd`(CentOS/RHEL 推荐)
+- `ntpd`(传统 NTP 服务)
+:::
+
+## 常用命令速查
+
+| 命令 | 说明 |
+|------|------|
+| `timedatectl` | 显示当前时间和日期设置 |
+| `timedatectl status` | 同上 |
+| `timedatectl list-timezones` | 列出所有可用时区 |
+| `timedatectl set-timezone <时区>` | 设置时区 |
+| `timedatectl set-time <时间>` | 设置时间或日期 |
+| `timedatectl set-ntp <true\|false>` | 启用/禁用 NTP 同步 |
+| `timedatectl set-local-rtc <1\|0>` | 设置硬件时钟为本地时区/UTC |
+| `timedatectl timesync-status` | 显示 NTP 同步状态 |
+
+## 实用示例
+
+### 示例 1: 配置中国服务器时区
+
+```bash
+# 1. 查看当前时区
+timedatectl
+
+# 2. 设置为上海时区
+sudo timedatectl set-timezone Asia/Shanghai
+
+# 3. 启用 NTP 同步
+sudo timedatectl set-ntp true
+
+# 4. 验证设置
+timedatectl
+```
+
+### 示例 2: 手动设置时间(无网络环境)
+
+```bash
+# 1. 禁用 NTP 同步
+sudo timedatectl set-ntp false
+
+# 2. 设置日期和时间
+sudo timedatectl set-time '2024-01-15 10:30:00'
+
+# 3. 验证
+timedatectl
+```
+
+### 示例 3: 配置 UTC 时区(服务器推荐)
+
+```bash
+# 1. 设置 UTC 时区
+sudo timedatectl set-timezone UTC
+
+# 2. 硬件时钟也使用 UTC
+sudo timedatectl set-local-rtc 0
+
+# 3. 启用 NTP 同步
+sudo timedatectl set-ntp true
+```
+
+## 故障排查
+
+### 问题 1: 无法设置时间
+
+**错误信息:** `Failed to set time: NTP unit is active`
+
+**解决方案:**
+```bash
+# 临时禁用 NTP
+sudo timedatectl set-ntp false
+
+# 设置时间
+sudo timedatectl set-time '2024-01-15 10:30:00'
+
+# 重新启用 NTP(可选)
+sudo timedatectl set-ntp true
+```
+
+### 问题 2: 时区设置失败
+
+**错误信息:** `Failed to set time zone: Invalid time zone 'xxx'`
+
+**解决方案:**
+```bash
+# 1. 确认时区名称是否正确
+timedatectl list-timezones | grep -i shanghai
+
+# 2. 使用正确的时区名称
+sudo timedatectl set-timezone Asia/Shanghai
+```
+
+### 问题 3: NTP 不支持
+
+**错误信息:** `Failed to set ntp: NTP not supported`
+
+**解决方案:**
+```bash
+# 安装 chrony(CentOS/RHEL)
+sudo yum install chrony
+
+# 或安装 systemd-timesyncd(Ubuntu/Debian)
+sudo apt install systemd-timesyncd
+
+# 启动服务
+sudo systemctl enable --now chronyd
+# 或
+sudo systemctl enable --now systemd-timesyncd
+```
+
+## 参考资料
+
+- [timedatectl 官方文档](https://www.man7.org/linux/man-pages/man1/timedatectl.1.html)
+- [systemd-timesyncd 文档](https://www.freedesktop.org/software/systemd/man/systemd-timesyncd.service.html)
+- [时区数据库](https://www.iana.org/time-zones)
+
