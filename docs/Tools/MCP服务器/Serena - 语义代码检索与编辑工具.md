@@ -516,12 +516,12 @@ Serena是唯一提供语义代码检索和编辑工具的MCP服务器，而不�
 ## 资源链接
 
 - **GitHub**: https://github.com/oraios/serena
-- **更新日志**: [CHANGELOG.md](CHANGELOG.md)
-- **路线图**: [roadmap.md](roadmap.md)
-- **经验教训**: [lessons_learned.md](lessons_learned.md)
-- **Docker文档**: [DOCKER.md](https://raw.githubusercontent.com/oraios/serena/main/DOCKER.md)
-- **ChatGPT集成**: [serena_on_chatgpt.md](https://raw.githubusercontent.com/oraios/serena/main/docs/serena_on_chatgpt.md)
-- **自定义代理**: [custom_agent.md](https://raw.githubusercontent.com/oraios/serena/main/docs/custom_agent.md)
+- **更新日志**: [CHANGELOG.md](https://github.com/oraios/serena/blob/main/CHANGELOG.md)
+- **路线图**: [roadmap.md](https://github.com/oraios/serena/blob/main/roadmap.md)
+- **经验教训**: [lessons_learned.md](https://github.com/oraios/serena/blob/main/lessons_learned.md)
+- **Docker文档**: [DOCKER.md](https://github.com/oraios/serena/blob/main/DOCKER.md)
+- **ChatGPT集成**: [serena_on_chatgpt.md](https://github.com/oraios/serena/blob/main/docs/serena_on_chatgpt.md)
+- **自定义代理**: [custom_agent.md](https://github.com/oraios/serena/blob/main/docs/custom_agent.md)
 
 ---
 
