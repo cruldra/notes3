@@ -18,3 +18,24 @@ git config --global credential.helper store
 ```bash
 git checkout -- <file>
 ```
+
+## 配置用户名和邮箱
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+## 配置https代理
+
+```bash
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+```
+
+## 取消https代理
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
