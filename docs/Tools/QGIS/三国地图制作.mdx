@@ -1,0 +1,42 @@
+## 准备工作
+
+1. 打开qgis,找到![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.5mo9lphvq7.webp)
+2. 右键创建新连接![image](https://github.com/cruldra/picx-images-hosting/raw/master/{5CE7FBAD-61B1-47D5-B934-A1E1BC44C28E}.2yytbcp9ui.webp)
+3. 填入以下内容,`url`填`http://mt0.google.com/vt/lyrs=m&hl=zh-CN&x={x}&y={y}&z={z}`![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.41yim8nrut.webp)
+4. 再回到浏览器里面双击`谷歌地图中文版`,右边就会出现全中文版的世界地图![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.7w7a577gxc.webp)
+5. 然后新建一个`geopackage`层,![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.83ai0myip5.webp)
+6. 选一个位置保存，然后`Geometry Type`选多边形![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.77e0l6raq4.webp)
+
+
+## 地理配准(Georeferencing)
+
+你不可能硬记住三国那么多行政区划，所以最好的办法是找一张三国行政图，然后参考它在地图上描边，先描出国家轮廓
+
+1. 找到并点击`Layer->Georeferencer`菜单![1](https://github.com/cruldra/picx-images-hosting/raw/master/{7C44C196-7B08-4E5E-92AB-D035A7C542A6}.4qrs69vo5l.webp)
+2. 此时会弹一个框![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.3ns2ve3h58.webp)
+3. 点击![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.175uggxi1u.webp)把要参考的三国地图放进来![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.1sfi2rudwu.webp)
+4. 接下来要做的就是把图片上的点和真实地图上的点对应起来,点击![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.wj0nbrlml.webp)按钮来添加一个对应关系
+5. 当你选中一个图片上的点以后，它会弹个框让你选真实地图上的点，这个点不要自己硬填，通过![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.3ns2vefw8d.webp)这个按钮去真实地图上选
+6. 各个方向上选几个点和真实世界对应起来即可![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.7p429splwl.webp)
+7. 然后要稍微设置一下,点这个![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.4n868kpzq7.webp)弹出![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.7sno7imffr.webp)
+8. 按照图片中选完以后点![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.96a7bjyi4c.webp)这个绿色播放按钮来校准
+9. 稍微等下就可以看到图片按照真实的位置贴到世界地图上了![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.5trhh6jtxi.webp)
+10. 接下来可以慢慢把这个图片图层的透明度从低到高慢慢调，看下图片中的标志性的地点和地图上是不是重合![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.8adpw3vdr2.webp)
+
+
+## 自动描边
+
+上一步已经把三国历史古地图图片按照真实位置贴在了地图上
+
+1. 新建一个图层放到刚才那个古地图图层之上
+2. 选中这个新图层,点击![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.3yewokry28.webp)这个进入编辑模式
+3. 在主菜单中打开插件管理器，搜索并安装`Magic Wand`插件,此时工具栏会多一个魔棒工具![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.3k8gxs7slf.webp)
+4. `Accuracy`是精度,把它拖到最右边,`Color Threshold`是颜色阈值,尽量拉到最右边，这样只有颜色非常接近的才会被选中
+5. 然后把![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.esyyugji6.webp)选上，让它只在附近寻找相似颜色，不会跳出去
+6. 然后用魔棒选中不同州来进行描边![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.5mo9luaziq.webp)，然后整个国家和各个州的边界就出来了
+7. 由于魔棒根据颜色切割的时候遇到原图上的文字导致看起来支离破碎![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.lw6v1rzhr.webp),接下来要把这些碎片合并起来,在此之前要先把整个图层转成`multipart`
+8. 选中某个要调整的州图层，在右边找到`promote to multiparts`工具![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.3gov0uk06d.webp)
+9. 选中提升后的图层,选择![11](https://github.com/cruldra/picx-images-hosting/raw/master/{ABCB5599-159D-425C-9E4A-2184599E6FFD}.3yewpfd0qz.webp),然后按住shift,把郡里面的各个碎片合并起来,最后合并成一个`feture`![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.26lxuj8s0q.webp)
+10. 现在要把这些内部稀碎的郡整成各个独立的色块,![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.9ddf7vsz0n.webp),先选中，再用`buffer`工具整合起来![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.96a7cg8g7k.webp)
+11. 每个郡都会生成一个单独的图层，最后要合并成一个图层,在右边找到合并图层工具![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.6pnyxj3tws.webp),选择刚才做好的变成独立色块的几个郡
+12. 合并完以后它是个临时图层，导出一下保存起来，最终效果如下![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.8s3rlla0w4.webp)
