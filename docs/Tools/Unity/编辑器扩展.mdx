@@ -1,0 +1,252 @@
+Unity 编辑器扩展（Editor Extensions）是一个非常强大的领域，它可以让你通过编写代码来定制 Unity 的编辑器界面、优化工作流、制作关卡设计工具或自动化重复性任务。
+
+以下是一份由浅入深的 Unity 编辑器扩展知识图谱与实战指南。
+
+---
+
+### 1. 核心概念与环境
+
+在开始之前，必须了解一个最重要的规则：**特殊文件夹**。
+
+*   **`Editor` 文件夹**：所有编辑器扩展相关的脚本**必须**放在名为 `Editor` 的文件夹内（可以在项目的任何目录下，只要目录名叫 `Editor`）。
+*   **编译机制**：放在 `Editor` 文件夹内的代码只会在 Unity 编辑器环境下运行，**不会被打包到最终的游戏发布包（Build）中**。如果放在外面，打包时会报错（找不到 `UnityEditor` 命名空间）。
+
+---
+
+### 2. 入门：菜单项（MenuItems）
+
+最简单的扩展方式是在顶部菜单栏或右键菜单中添加自定义选项。
+
+**常用属性：** `[MenuItem]`
+
+```csharp
+using UnityEngine;
+using UnityEditor;
+
+public class MyTools
+{
+    // 1. 在顶部菜单栏添加按钮 "Tools/Clear PlayerPrefs"
+    [MenuItem("Tools/Clear PlayerPrefs")]
+    public static void ClearData()
+    {
+        PlayerPrefs.DeleteAll();
+        Debug.Log("PlayerPrefs Cleared!");
+    }
+
+    // 2. 添加快捷键 ( % = Ctrl/Cmd, # = Shift, & = Alt )
+    // 按下 Ctrl + Shift + D 触发
+    [MenuItem("Tools/Quick Action %#d")]
+    public static void QuickAction()
+    {
+        Debug.Log("Quick Action Triggered");
+    }
+
+    // 3. 在 Project 窗口的资源右键菜单中添加选项
+    [MenuItem("Assets/My Custom Action")]
+    public static void AssetContextAction()
+    {
+        // selection 也就是当前选中的对象
+        Debug.Log("Selected: " + Selection.activeObject.name);
+    }
+}
+```
+
+---
+
+### 3. 定制 Inspector 面板（Custom Editors）
+
+当你想要改变某个 `MonoBehaviour` 脚本在 Inspector 窗口中的显示方式时（例如添加按钮、隐藏变量、自定义绘制），需要使用 `[CustomEditor]`。
+
+**假设我们有一个游戏脚本：**
+```csharp
+// PlayerController.cs
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    public float health = 100;
+    public float damage = 10;
+    
+    public void Attack() { Debug.Log("Attack!"); }
+}
+```
+
+**对应的编辑器扩展脚本：**
+```csharp
+// Editor/PlayerControllerEditor.cs
+using UnityEngine;
+using UnityEditor;
+
+[CustomEditor(typeof(PlayerController))]
+public class PlayerControllerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        // 1. 绘制默认的 Inspector (如果你只想在默认基础上加东西)
+        DrawDefaultInspector();
+
+        // 获取目标对象
+        PlayerController script = (PlayerController)target;
+
+        GUILayout.Space(10); // 空距
+
+        // 2. 添加自定义按钮
+        if (GUILayout.Button("Test Attack"))
+        {
+            script.Attack();
+        }
+
+        // 3. 自定义提示框
+        if(script.health < 20)
+        {
+            EditorGUILayout.HelpBox("Health is critically low!", MessageType.Warning);
+        }
+    }
+}
+```
+
+---
+
+### 4. 自定义窗口（Editor Windows）
+
+如果你需要创建一个像 "Animation" 或 "Console" 那样独立的浮动/停靠窗口，需要继承 `EditorWindow`。
+
+```csharp
+// Editor/MyCustomWindow.cs
+using UnityEngine;
+using UnityEditor;
+
+public class MyCustomWindow : EditorWindow
+{
+    string playerName = "Hero";
+    bool groupEnabled;
+
+    // 打开窗口的入口
+    [MenuItem("Window/My Custom Window")]
+    public static void ShowWindow()
+    {
+        // 获取窗口实例，如果没有则创建
+        GetWindow<MyCustomWindow>("My Window");
+    }
+
+    // 类似于 Update，但在 GUI 渲染时调用
+    void OnGUI()
+    {
+        GUILayout.Label("Base Settings", EditorStyles.boldLabel);
+        
+        playerName = EditorGUILayout.TextField("Player Name", playerName);
+
+        groupEnabled = EditorGUILayout.BeginToggleGroup("Optional Settings", groupEnabled);
+            EditorGUILayout.Toggle("Enable Physics", true);
+            EditorGUILayout.FloatField("Gravity Multiplier", 9.8f);
+        EditorGUILayout.EndToggleGroup();
+
+        if (GUILayout.Button("Process"))
+        {
+            Debug.Log("Processing: " + playerName);
+        }
+    }
+}
+```
+
+---
+
+### 5. 场景视图扩展（Scene View & Gizmos）
+
+你可以直接在 Scene 窗口中绘制辅助线，或者添加交互手柄（Handles）。
+
+#### A. Gizmos (可视化辅助)
+在你的 `MonoBehaviour` 脚本中直接写：
+
+```csharp
+void OnDrawGizmos()
+{
+    Gizmos.color = Color.yellow;
+    Gizmos.DrawWireSphere(transform.position, 5.0f);
+}
+```
+
+#### B. Handles (交互式操作)
+在 `Editor` 脚本中编写：
+
+```csharp
+// Editor/MyScriptEditor.cs
+void OnSceneGUI()
+{
+    MyScript t = (MyScript)target;
+    
+    // 在物体周围画一个可以拖动的手柄来改变半径
+    Handles.color = Color.red;
+    EditorGUI.BeginChangeCheck();
+    float newRadius = Handles.RadiusHandle(Quaternion.identity, t.transform.position, t.radius);
+    
+    if (EditorGUI.EndChangeCheck())
+    {
+        // 记录撤销操作，非常重要！
+        Undo.RecordObject(t, "Change Radius");
+        t.radius = newRadius;
+    }
+}
+```
+
+---
+
+### 6. UI 系统：IMGUI vs UI Toolkit
+
+这是目前 Unity 编辑器扩展的一个分水岭。
+
+1.  **IMGUI (Immediate Mode GUI)**
+    *   **核心类**：`GUILayout`, `EditorGUILayout`, `GUI`.
+    *   **特点**：全代码驱动，每帧重绘。
+    *   **优点**：代码量少，简单工具开发极快。
+    *   **缺点**：复杂布局难以维护，性能较差，无法使用 CSS 样式。
+    *   **现状**：上面的例子都是 IMGUI，依然是主流，因为简单。
+
+2.  **UI Toolkit (原 UIElements)**
+    *   **核心类**：`VisualElement`, `StyleSheet`.
+    *   **特点**：类似 Web 开发（HTML/CSS/JS）。使用 UXML 布局，USS 定义样式，C# 处理逻辑。
+    *   **优点**：性能好，样式与逻辑分离，支持可视化调试，是 Unity未来的标准。
+    *   **现状**：官方推荐新工具使用此系统。
+
+---
+
+### 7. 常用 API 与工具类
+
+在做编辑器扩展时，以下几个类你会频繁用到：
+
+| 类名 | 用途 |
+| :--- | :--- |
+| `Selection` | 获取当前在编辑器中选中的对象列表。 |
+| `AssetDatabase` | 对项目的资源文件进行增删改查（Create, Load, Delete, Move）。 |
+| `EditorPrefs` | 类似于 `PlayerPrefs`，但用于保存编辑器设置（跨项目或只有编辑器需要的数据）。 |
+| `Undo` | **至关重要**。当你通过代码修改物体属性时，必须调用 `Undo` 相关方法，否则用户按 Ctrl+Z 无法撤销，体验极差。 |
+| `SerializedObject` / `SerializedProperty` | 通用的数据访问方式，支持撤销和多选编辑，比直接修改 `target` 变量更安全。 |
+| `EditorUtility` | 通用工具，如显示进度条 (`DisplayProgressBar`)、弹出文件选择框 (`OpenFilePanel`)、标记物体脏数据 (`SetDirty`)。 |
+
+### 8. 属性绘制器（Property Drawers）
+
+如果你定义了一个自定义的类或结构体，想规定它在任何脚本中出现时的样子。
+
+```csharp
+[System.Serializable]
+public struct ItemDrop
+{
+    public string itemName;
+    [Range(0,1)] public float chance;
+}
+
+// 对应的 Drawer 能让上面的 chance 总是显示为进度条，
+// 而不需要在每个用 ItemDrop 的 CustomEditor 里重写。
+[CustomPropertyDrawer(typeof(ItemDrop))]
+public class ItemDropDrawer : PropertyDrawer { ... }
+```
+
+### 学习路线建议
+
+1.  **Level 1**: 学会用 `[MenuItem]` 写一些批处理脚本（如一键重命名、清理存档）。
+2.  **Level 2**: 学会用 `OnInspectorGUI` 加上按钮，方便调试游戏逻辑。
+3.  **Level 3**: 学会 `EditorWindow` 制作简单的关卡配置器。
+4.  **Level 4**: 掌握 `SerializedObject` 和 `Undo` 系统，确保工具健壮。
+5.  **Level 5**: 学习 **UI Toolkit**，制作现代化、复杂的编辑器界面。
+
+希望这个框架能帮你建立起对 Unity 编辑器扩展的初步认识！有问题可以继续针对某一块深入提问。
