@@ -1,0 +1,129 @@
+在 Unity 中，**`Material` (材质)** 是决定 3D 物体看起来“是什么样子”的关键组件。
+
+如果没有材质，物体只是一个看不见的网格（Mesh）或者呈现为紫色的错误色块。
+
+通俗理解：如果 **Mesh（网格）** 是物体的“**骨架和形状**”，那么 **Material（材质）** 就是物体的“**皮肤和衣服**”。
+
+以下是关于 `Material` 的核心机制、属性以及代码控制的详细介绍。
+
+---
+
+### 1. 核心公式
+
+$$ \text{Material} = \text{Shader} + \text{Data (Textures/Parameters)} $$
+
+一个材质本质上是一个**容器**，它包含两个部分：
+1.  **Shader (着色器)**：这是**逻辑/算法**。它定义了光线如何与表面反应（比如是像金属一样反光，还是像布料一样吸光）。
+2.  **Properties (属性数据)**：这是**输入**。比如具体的红色（Color）、具体的木纹图片（Texture）、具体的反光度数值（Float）。
+
+### 2. 常见属性 (PBR 工作流)
+
+Unity 现代开发主要使用 PBR (Physically Based Rendering，基于物理的渲染)。无论是在编辑器 Inspector 中还是代码中，你通常会调整以下属性：
+
+*   **Albedo / Base Map**: 基础颜色或纹理贴图。
+*   **Metallic**: 金属度。$0$ 是非金属（塑料、木头），$1$ 是金属（铁、金）。
+*   **Smoothness**: 光滑度。$0$ 是粗糙（漫反射），$1$ 是镜面般光滑。
+*   **Normal Map**: 法线贴图。用于在平坦的表面上模拟凹凸的细节。
+*   **Emission**: 自发光。让物体在黑暗中发光（常配合 Post-processing 的 Bloom 效果）。
+
+### 3. 代码交互 (Scripting)
+
+在脚本中，你不能直接找 `Material` 组件，因为材质是挂在 **`Renderer` (渲染器)** 组件（如 `MeshRenderer` 或 `SkinnedMeshRenderer`）里面的。
+
+#### 基本操作
+
+```csharp
+using UnityEngine;
+
+public class ChangeColor : MonoBehaviour
+{
+    // 可以在 Inspector 中拖入一个材质
+    public Material specificMaterial; 
+
+    private MeshRenderer meshRenderer;
+
+    void Start()
+    {
+        meshRenderer = GetComponent<MeshRenderer>();
+
+        // 1. 修改颜色
+        // "_Color" 是标准着色器中颜色的属性名
+        // 在 URP 中通常是 "_BaseColor"
+        meshRenderer.material.color = Color.red; 
+
+        // 2. 修改特定属性 (Float/Vector/Texture)
+        meshRenderer.material.SetFloat("_Glossiness", 0.5f); // 设置光滑度
+        
+        // 3. 替换整个材质
+        if (specificMaterial != null)
+        {
+            meshRenderer.material = specificMaterial;
+        }
+    }
+}
+```
+
+### 4. 关键面试题：`material` vs `sharedMaterial`
+
+这是使用代码操作材质时**最危险**的陷阱，必须区分清楚。
+
+假设场景里有 100 个敌人，它们都使用同一个名为 "EnemyMat" 的红色材质文件。
+
+#### A. `Renderer.sharedMaterial` (共享材质)
+*   **指向**：直接指向项目资源文件中的那个原始材质。
+*   **行为**：如果你修改了 `sharedMaterial.color = Color.blue`，**场景里所有 100 个敌人都会立刻变成蓝色**。甚至你把游戏关掉，编辑器里的材质文件也被修改了。
+*   **用途**：用于全局修改，或者只是读取属性而不修改。
+*   **性能**：好。主要用于 Draw Call Batching（合批）。
+
+#### B. `Renderer.material` (实例材质)
+*   **指向**：当你第一次访问 `.material` 时，Unity 会自动**克隆**一份该材质的副本（Instance）。
+*   **行为**：如果你修改了 `material.color = Color.blue`，**只有这一个敌人会变成蓝色**。其他 99 个还是红色。
+*   **缺点 (内存泄漏)**：
+    *   每次访问 `.material` 都会生成一个新的材质实例。
+    *   如果该物体被销毁，这个生成的材质实例**不会自动销毁**，它会残留在内存中直到场景切换。
+    *   **必须手动清理**：如果你在代码中频繁使用 `.material`，记得在 `OnDestroy` 中调用 `Destroy(meshRenderer.material)`。
+*   **性能**：会打断合批（Batching），因为这个物体的材质和别人的不一样了。
+
+### 5. 渲染管线 (Render Pipelines)
+
+Material 的属性名取决于你使用的渲染管线。代码中字符串如果不匹配，修改将无效。
+
+*   **Built-in (老管线)**:
+    *   Shader: `Standard`
+    *   常用属性名: `_Color`, `_MainTex`, `_Glossiness` (Smoothness)
+*   **URP (通用渲染管线 - 推荐)**:
+    *   Shader: `Universal Render Pipeline/Lit`
+    *   常用属性名: `_BaseColor`, `_BaseMap`, `_Smoothness`
+
+### 6. Material Property Block (性能优化)
+
+如果你想让 100 个敌人有 100 种不同的颜色，但不想创建 100 个材质实例（这会导致 100 次 Draw Calls，非常卡），你应该使用 `MaterialPropertyBlock`。
+
+它允许你修改渲染器的属性，而**不改变材质本身**。
+
+```csharp
+void ChangeColorEfficiently()
+{
+    Renderer r = GetComponent<Renderer>();
+    
+    // 创建属性块
+    MaterialPropertyBlock propBlock = new MaterialPropertyBlock();
+    
+    // 获取当前属性
+    r.GetPropertyBlock(propBlock);
+    
+    // 修改颜色
+    propBlock.SetColor("_BaseColor", Color.green);
+    
+    // 应用回渲染器 (不生成新 Material 实例！)
+    r.SetPropertyBlock(propBlock);
+}
+```
+
+### 总结
+
+*   **Material** 是物体外观的容器。
+*   **Shader** 决定算法，Material 提供参数。
+*   **`.sharedMaterial`** 修改原始文件（影响全部）。
+*   **`.material`** 修改克隆副本（只影响当前，注意内存泄漏）。
+*   **PropertyBlock** 是改变大量物体颜色的最高性能方案。

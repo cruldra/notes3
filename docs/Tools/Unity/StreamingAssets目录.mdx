@@ -1,0 +1,116 @@
+`Assets/StreamingAssets` 是 Unity 项目中一个**特殊且非常重要**的文件夹。
+
+用一句话总结它的作用：**放在这个文件夹里的文件，Unity 在打包（Build）时不会对它们进行任何压缩、加密或格式转换，而是“原封不动”地拷贝到最终的游戏包体中。**
+
+以下是它的详细用途、机制以及使用时的注意事项：
+
+### 1. 核心特性：原样拷贝 (Raw Copy)
+
+当你把一张图片拖进 Unity 的普通文件夹（比如 `Assets/Textures`）时，Unity 会把它转换成特定平台的格式（比如 Android 的 ETC2 或 iOS 的 ASTC），并打进二进制的大包里。你无法在游戏运行后直接去读取那个 `.png` 文件。
+
+但是，如果你把文件放在 `StreamingAssets` 里：
+*   **不压缩/不转换**：放进去是什么样，打完包出来还是什么样。
+*   **独立存在**：文件通常以独立文件的形式存在于包体目录中（除了 Android，详见下文）。
+*   **只读**：在游戏运行时，这个目录通常是**只读**的。你只能读数据，不能往这里写数据。
+
+### 2. 常见用途
+
+由于这种“原样保留”的特性，它通常用于以下场景：
+
+1.  **视频文件播放**：Unity 的 `VideoPlayer` 组件通常需要一个直接的文件路径来播放 `.mp4`，放在这里最合适。
+2.  **AssetBundles**：这是热更新和 DLC 的基础。通常会将打好的 AssetBundle 放在这里作为初始资源随包发布。
+3.  **配置文件 (JSON/XML/Lua)**：如果你希望在打包后还能手动修改游戏的数值（用于 Mod 或服务器配置），可以放在这里。
+4.  **数据库文件**：比如 `.db` 或 `.sqlite` 文件，需要以原始二进制形式被数据库引擎读取。
+5.  **跨平台资源**：某些第三方插件需要读取特定的原始文件格式。
+
+### 3. 如何访问路径
+
+访问这个文件夹的路径属性是：
+`Application.streamingAssetsPath`
+
+但是，**不同平台的路径表现完全不同**，这是新手最大的坑。
+
+| 平台 | 路径示例 | 是否是物理文件 | 读取方式 |
+| :--- | :--- | :--- | :--- |
+| **Unity Editor** | `Project/Assets/StreamingAssets` | 是 | `File.ReadAllText` |
+| **PC (Win/Mac)** | `.../Data/StreamingAssets` | 是 | `File.ReadAllText` |
+| **iOS** | `.../Raw` | 是 | `File.ReadAllText` |
+| **Android** | `jar:file:///data/app/...!/assets` | **否 (在 APK 压缩包内)** | **必须用 `UnityWebRequest`** |
+| **WebGL** | `http://url.../StreamingAssets` | 否 (URL) | **必须用 `UnityWebRequest`** |
+
+### 4. 代码读取示例（通用方案）
+
+由于 Android 平台下文件被压缩在 APK (Jar) 包内，无法使用 C# 标准的 `System.IO.File` 类读取。为了跨平台兼容，**强烈建议统一使用 `UnityWebRequest`**。
+
+```csharp
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class FileReader : MonoBehaviour
+{
+    void Start()
+    {
+        StartCoroutine(LoadJsonFile("config.json"));
+    }
+
+    IEnumerator LoadJsonFile(string fileName)
+    {
+        // 1. 拼接路径
+        // Path.Combine 在不同平台可能会有斜杠方向的问题，手动拼接有时更稳
+        string path = System.IO.Path.Combine(Application.streamingAssetsPath, fileName);
+
+        // Android 这种 path 是 "jar:file://..."
+        // PC 这种 path 是 "C:/..."
+
+        // 2. 如果是 PC/iOS，为了给 WebRequest 用，前面可能需要加 file://
+        if (path.Contains("://") || path.Contains(":///")) 
+        { 
+            // 已经是 URL 格式了 (Android 或 WebGL)
+        }
+        else 
+        {
+            // 本地文件路经转 URL
+            path = "file://" + path; 
+        }
+
+        // 3. 发起请求
+        using (UnityWebRequest www = UnityWebRequest.Get(path))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("读取失败: " + www.error);
+            }
+            else
+            {
+                // 4. 获取内容
+                string jsonContent = www.downloadHandler.text;
+                Debug.Log("文件内容: " + jsonContent);
+                
+                // 如果是二进制文件（如图片/AssetBundle），使用 www.downloadHandler.data
+            }
+        }
+    }
+}
+```
+
+### 5. 与 `Resources` 文件夹的区别
+
+新手经常混淆 `Assets/Resources` 和 `Assets/StreamingAssets`。
+
+*   **Resources (不推荐使用)**:
+    *   Unity 会对内部文件进行**特殊的二进制压缩和索引**。
+    *   打包时，无论用不用，Resources 里的**所有东西**都会进包，导致包体变大。
+    *   App 启动时会加载 Resources 的索引，文件多会严重拖慢启动时间。
+    *   无法热更新。
+*   **StreamingAssets**:
+    *   **原样拷贝**，不做 Unity 格式转换。
+    *   不占用启动内存索引。
+    *   可以通过下载覆盖来更新文件（在 PC 上），或者作为 AssetBundle 的容器。
+
+### 总结
+
+`StreamingAssets` 是个**只读的、存放原始文件的**目录。如果你有什么文件不想让 Unity 处理，或者是想在 Android 上通过 WebRequest 读取，或者需要做热更新的初始包，就把它扔进这个文件夹。

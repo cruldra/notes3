@@ -1,0 +1,124 @@
+`UnityEngine.PlayerPrefs` 是 Unity 提供的一个**简单、轻量级的本地持久化存储类**。
+
+你可以把它理解为浏览器中的 **Cookies**。它的主要目的是存储玩家的**偏好设置（Preferences）**（例如：音量大小、屏幕亮度、语言设置）或简单的游戏状态（例如：最高分、解锁的关卡 ID）。
+
+以下是全方位的详解：
+
+### 1. 核心机制：Key-Value（键值对）
+
+所有的数据都通过一个**字符串 Key（键）** 来存取。
+*   **Key**: 数据的唯一标识符（String 类型）。
+*   **Value**: 实际存储的数据。
+
+**支持的数据类型（仅限三种）：**
+1.  **Int** (整数)
+2.  **Float** (浮点数)
+3.  **String** (字符串)
+
+> **注意**：它**不支持** `bool` (布尔值)！通常我们需要用 `int` (0代表false, 1代表true) 来代替。
+
+### 2. 常用 API
+
+`PlayerPrefs` 是一个静态类，无需实例化即可直接调用。
+
+#### 存储数据 (Set)
+```csharp
+// 存储整数
+PlayerPrefs.SetInt("PlayerScore", 100);
+
+// 存储浮点数 (如音量)
+PlayerPrefs.SetFloat("MasterVolume", 0.8f);
+
+// 存储字符串
+PlayerPrefs.SetString("PlayerName", "Hero123");
+
+// 重要：强制写入磁盘
+// Set 方法只是写入了内存，调用 Save 才会真正写入硬盘。
+// 如果游戏崩溃且未调用 Save，数据可能丢失。但在 OnApplicationQuit 时 Unity 会自动保存。
+PlayerPrefs.Save(); 
+```
+
+#### 读取数据 (Get)
+读取时，建议总是提供一个**默认值**（第二个参数），以防找不到 Key 时返回奇怪的数值（默认返回 0 或 空字符串）。
+
+```csharp
+// 如果 "PlayerScore" 存在，返回存储的值；否则返回 0
+int score = PlayerPrefs.GetInt("PlayerScore", 0);
+
+// 获取音量，默认 1.0
+float volume = PlayerPrefs.GetFloat("MasterVolume", 1.0f);
+
+// 获取名字，默认 "Unknown"
+string name = PlayerPrefs.GetString("PlayerName", "Unknown");
+```
+
+#### 辅助方法
+```csharp
+// 检查某个 Key 是否存在
+if (PlayerPrefs.HasKey("FirstGame")) { ... }
+
+// 删除某个 Key
+PlayerPrefs.DeleteKey("PlayerScore");
+
+// 删除所有数据 (慎用！会重置所有设置)
+PlayerPrefs.DeleteAll();
+```
+
+### 3. 实战技巧：如何存储 Bool？
+
+由于 `PlayerPrefs` 不支持 `bool`，我们需要写扩展方法或封装一下：
+
+```csharp
+public static class PlayerPrefsExtensions
+{
+    public static void SetBool(string key, bool value)
+    {
+        // 存：true -> 1, false -> 0
+        PlayerPrefs.SetInt(key, value ? 1 : 0);
+    }
+
+    public static bool GetBool(string key, bool defaultValue = false)
+    {
+        // 读：没找到key则用默认值转换，找到则判断是否为1
+        int defaultInt = defaultValue ? 1 : 0;
+        return PlayerPrefs.GetInt(key, defaultInt) == 1;
+    }
+}
+
+// 使用
+PlayerPrefsExtensions.SetBool("IsMusicOn", true);
+```
+
+### 4. 存储位置 (面试常问)
+
+`PlayerPrefs` 的数据到底存在电脑/手机的哪个文件里？这取决于操作系统：
+
+*   **Windows (Editor & Build)**: 注册表 (Registry)
+    *   路径：`HKCU\Software\[CompanyName]\[ProductName]`
+    *   *坑点：在 Windows 上即使你删除了游戏文件夹，存档依然还在，因为在注册表里。*
+*   **macOS**: `.plist` 文件
+    *   路径：`~/Library/Preferences/com.CompanyName.ProductName.plist`
+*   **Android**: SharedPreferences
+    *   路径：`/data/data/pkg-name/shared_prefs/pkg-name.xml`
+*   **iOS**: NSUserDefaults
+
+### 5. 优缺点分析 (重要)
+
+#### 优点：
+1.  **极简**：一行代码即可存取，不需要写文件流（FileStream）或序列化。
+2.  **跨平台**：Unity 帮你处理了所有平台的底层读写差异。
+
+#### 缺点（大坑）：
+1.  **不安全**：数据是**明文**存储的（或者容易被解码）。
+    *   *切记*：**绝对不要**用它存氪金代币数量、密码或敏感数据。玩家可以轻松修改注册表或 XML 文件来作弊。
+2.  **类型限制**：只能存基本类型。想存一个 `List<Item>` 或 `Inventory` 对象很麻烦（通常需要转成 JSON 字符串再存入）。
+3.  **容量限制**：虽然没有硬性规定，但在 Android/iOS 上，如果存的数据量太大（几兆），会影响启动速度，因为初始化时会一次性把所有 Key 加载进内存。
+4.  **命名冲突**：所有的 Key 都在一个大的池子里。如果你有两个系统都用了 "ID" 这个 Key，它们会互相覆盖。建议加前缀，如 `"Audio_Volume"`, `"Save_LevelID"`。
+
+### 6. 总结
+
+*   **什么时候用 PlayerPrefs？**
+    *   存音量大小、全屏设置、是否第一次打开游戏、最高分记录。
+*   **什么时候不用？**
+    *   存 RPG 游戏的复杂存档（背包、任务进度、所有怪物位置）。这时候应该使用 `JSON`、`BinaryFormatter` 或 SQLite 将数据写入 `Application.persistentDataPath` 下的文件中。
+    *   存敏感数据（防止作弊）。
