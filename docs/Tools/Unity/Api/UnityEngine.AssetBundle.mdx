@@ -1,0 +1,142 @@
+`UnityEngine.Animator` 是 Unity 动画系统的核心组件。它是连接你的游戏对象（GameObject）与动画控制器（Animator Controller）的桥梁。
+
+简单来说，如果你的角色想动起来（无论是播放骨骼动画、改变材质颜色，还是调整 UI 元素），几乎都需要用到 `Animator`。
+
+以下是关于 `Animator` 类的详细介绍，包括它的核心概念、常用属性和方法，以及实际应用场景。
+
+---
+
+### 1. 核心概念：它起什么作用？
+
+`Animator` 组件负责两件主要的事情：
+
+1.  **状态机管理（State Machine Management）：**
+    它读取并执行 **Animator Controller**（`.controller` 资源文件）。控制器里定义了“状态”（比如由于行走、跳跃、攻击）以及状态之间的“过渡条件”（比如按下空格键从行走切换到跳跃）。
+2.  **动画混合（Animation Blending）：**
+    它负责在不同动画之间进行平滑过渡（例如从“跑”渐渐变成“停”），并处理复杂的混合树（Blend Trees），比如根据奔跑速度混合“慢跑”和“冲刺”动作。
+
+### 2. 核心属性 (Properties)
+
+在脚本中控制动画时，你经常会用到这些属性：
+
+*   **`runtimeAnimatorController`**:
+    *   获取或设置当前使用的运行时动画控制器。你可以通过代码动态替换角色的整套动作逻辑（例如：玩家捡起不同的武器，切换成不同的动作集）。
+*   **`avatar`**:
+    *   获取或设置当前的 Avatar 系统。这对于类人角色（Humanoid）至关重要，它定义了骨骼映射。
+*   **`applyRootMotion`**:
+    *   `bool` 值。如果为 `true`，动画中的位移数据（Root Motion）会直接应用到 GameObject 的 Transform 上（角色真的会往前走）；如果为 `false`，动画原地播放，你需要用脚本来控制移动。
+*   **`speed`**:
+    *   控制动画的播放速度。`1.0` 是正常速度，`0.0` 是暂停，`2.0` 是两倍速，负数可以倒放（视具体设置而定）。
+*   **`layerCount`**:
+    *   获取控制器中动画层的数量（例如：Layer 0 是基础移动，Layer 1 是上半身射击动作）。
+
+### 3. 核心方法 (Methods)
+
+这是开发者最常打交道的部分，用于告诉动画机“该做什么”。
+
+#### A. 设置参数 (Setting Parameters)
+你需要通过参数来触发状态切换。
+```csharp
+animator.SetBool("IsWalking", true);   // 切换布尔值
+animator.SetFloat("Speed", 5.0f);      // 设置浮点值（常用于混合树）
+animator.SetInteger("WeaponID", 2);    // 设置整数
+animator.SetTrigger("Jump");           // 触发一次性事件（像扳机一样，触发后自动复位）
+```
+
+#### B. 获取参数 (Getting Parameters)
+```csharp
+bool isWalking = animator.GetBool("IsWalking");
+float currentSpeed = animator.GetFloat("Speed");
+```
+
+#### C. 控制状态 (State Control)
+*   **`Play(string stateName, int layer, float normalizedTime)`**:
+    *   强制直接播放某个状态，通过名称指定。
+    *   *示例：* `animator.Play("Attack", 0, 0f);` （在第 0 层从头开始播放 Attack 动画）。
+*   **`CrossFade(string stateName, float transitionDuration)`**:
+    *   比 `Play` 更柔和。它会在指定的时间内平滑淡入到目标状态。这是代码控制动画过渡的首选方法。
+    *   *示例：* `animator.CrossFade("Run", 0.2f);` （用 0.2 秒过渡到 Run）。
+
+#### D. 获取状态信息 (State Info)
+*   **`GetCurrentAnimatorStateInfo(int layerIndex)`**:
+    *   获取当前正在播放的状态信息（`AnimatorStateInfo` 结构体）。
+    *   *常用判定：*
+        ```csharp
+        var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        // 判断当前是不是处于 "Idle" 状态
+        if (stateInfo.IsName("Idle")) { ... }
+        // 获取当前动画播放进度 (0.0 到 1.0)
+        float progress = stateInfo.normalizedTime;
+        ```
+
+### 4. 高级应用：OnAnimatorMove & OnAnimatorIK
+
+这两个是 MonoBehaviour 里的特殊回调函数，当物体上有 Animator 组件时会被调用。
+
+*   **`void OnAnimatorMove()`**:
+    *   用于完全接管 Root Motion。如果你想读取动画里的位移数据，但想自己用 `CharacterController` 或 `Rigidbody` 来手动应用这个位移，就在这里写逻辑。
+    *   *代码片段：* `transform.position += animator.deltaPosition;`
+
+*   **`void OnAnimatorIK(int layerIndex)`**:
+    *   用于反向动力学（Inverse Kinematics）。比如让角色的脚适应凹凸不平的地面，或者让角色的头和枪一直盯着目标点看。
+    *   *常用 API：* `animator.SetLookAtPosition(...)`, `animator.SetIKPosition(...)`.
+
+### 5. 代码示例：一个简单的角色控制器
+
+```csharp
+using UnityEngine;
+
+public class SimpleCharacter : MonoBehaviour
+{
+    private Animator _animator;
+    private int _speedHash;
+    private int _jumpHash;
+
+    void Start()
+    {
+        _animator = GetComponent<Animator>();
+        
+        // 为了性能优化，通常把字符串参数提前转为 Hash ID
+        _speedHash = Animator.StringToHash("Speed");
+        _jumpHash = Animator.StringToHash("Jump");
+    }
+
+    void Update()
+    {
+        // 假设 Vertical 输入控制前后移动 (0 ~ 1)
+        float moveInput = Input.GetAxis("Vertical");
+        
+        // 设置 Animator 的 Speed 参数，带一点平滑阻尼 (DampTime)
+        _animator.SetFloat(_speedHash, moveInput, 0.1f, Time.deltaTime);
+
+        // 按下空格触发跳跃
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _animator.SetTrigger(_jumpHash);
+        }
+        
+        // 检查当前是不是正在播放跳跃动画
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsTag("Airborne")) 
+        {
+            // 如果在空中，禁止再次跳跃等逻辑...
+        }
+    }
+}
+```
+
+### 6. 常见注意事项
+
+1.  **String vs Hash**:
+    *   在 `Update` 中频繁使用 `animator.SetFloat("Name", value)` 会产生字符串哈希开销，导致 GC（垃圾回收）和性能浪费。
+    *   **最佳实践：** 在 `Start` 中使用 `Animator.StringToHash("Name")` 获取 int ID，后续使用 ID 调用。
+
+2.  **Apply Root Motion**:
+    *   新手常遇到的问题：角色动画在动，但位置没变（Apply Root Motion 没勾选）；或者角色位置乱飘，不受代码控制（勾选了但没处理好）。需要根据你的移动逻辑（代码驱动 vs 动画驱动）慎重选择。
+
+3.  **Update Mode**:
+    *   在 Inspector 面板中，`Update Mode` 可以选 `Normal`（受 TimeScale 影响）、`Unscaled Time`（UI 动画常用，不受游戏暂停影响）或 `Animate Physics`（与物理引擎同步，解决刚体抖动问题）。
+
+### 总结
+
+`Animator` 是 Unity 赋予游戏对象“生命”的控制器。它不仅仅是播放一个个动画片段，更是管理游戏角色**行为逻辑**和**状态转换**的大脑。熟练掌握 `SetTrigger`、`CrossFade` 以及 `StateInfo` 的判定，是制作流畅动作游戏的必备技能。

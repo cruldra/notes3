@@ -1,0 +1,102 @@
+`UnityEngine.Accessibility` 是 Unity 引擎中一个较新的命名空间，旨在帮助开发者更轻松地为视力障碍或其他需要辅助功能的玩家调整和优化游戏体验。
+
+随着游戏行业对无障碍设计（Accessibility）的重视程度不断提高，这个 API 提供了一组工具，让开发者能够查询和响应用户的视觉辅助设置。
+
+以下是对 `UnityEngine.Accessibility` 命名空间的核心功能、主要类及其用途的详细介绍。
+
+### 1. 核心类：`VisionUtility`
+
+`VisionUtility` 是这个命名空间中最主要的类。它是一个静态类，提供了一系列实用方法，用于检测颜色感知并根据色盲类型调整颜色调色板。
+
+#### 主要功能：
+
+*   **感知颜色亮度 (Perceived Brightness):**
+    计算一种颜色在人眼看来有多亮。这对于确定文本与背景的对比度至关重要。
+    公式通常基于人眼对不同颜色通道（红、绿、蓝）的敏感度。
+
+*   **色盲模拟与调色板生成 (Color Blindness Support):**
+    它可以帮助开发者获取针对不同类型色盲（如全色盲、红绿色盲等）优化的颜色调色板。
+
+#### 常用方法示例：
+
+*   `VisionUtility.GetColorBlindSafePalette(Color[] palette, float minimumLuminanceDifference, float minimumHueDifference)`:
+    *   从给定的颜色数组中筛选出一组对色盲用户安全的颜色。
+    *   **$minimumLuminanceDifference$**: 最小亮度差异。
+    *   **$minimumHueDifference$**: 最小色相差异。
+    *   这个方法会尝试找到一组颜色，使它们在视觉上足够不同，即使是在色盲视角下。
+
+### 2. 代码示例
+
+以下代码展示了如何使用 `VisionUtility` 来计算颜色的感知亮度，这在制作需要高对比度 UI 的游戏时非常有用：
+
+```csharp
+using UnityEngine;
+using UnityEngine.Accessibility;
+
+public class ContrastChecker : MonoBehaviour
+{
+    public Color backgroundColor = Color.black;
+    public Color textColor = Color.white;
+
+    void Start()
+    {
+        // 确保颜色是完全不透明的，以便计算准确
+        backgroundColor.a = 1.0f;
+        textColor.a = 1.0f;
+
+        float backgroundLuminance = GetPerceivedLuminance(backgroundColor);
+        float textLuminance = GetPerceivedLuminance(textColor);
+
+        float contrastRatio = CalculateContrastRatio(backgroundLuminance, textLuminance);
+
+        Debug.Log($"背景亮度: {backgroundLuminance}");
+        Debug.Log($"文本亮度: {textLuminance}");
+        Debug.Log($"对比度比率: {contrastRatio}:1");
+    }
+
+    // 这是一个简化的亮度计算，实际上 Unity 内部可能有更复杂的实现
+    // 标准 sRGB 亮度公式通常为: 0.2126 * R + 0.7152 * G + 0.0722 * B
+    float GetPerceivedLuminance(Color color)
+    {
+        // 注意：VisionUtility 没有直接公开 GetLuminance 方法，
+        // 但这是它内部用于生成安全调色板的逻辑基础。
+        // 在实际使用中，通常使用 VisionUtility.GetColorBlindSafePalette 来直接获取结果。
+        
+        // 此处仅为演示数学原理:
+        return 0.2126f * color.r + 0.7152f * color.g + 0.0722f * color.b;
+    }
+
+    float CalculateContrastRatio(float L1, float L2)
+    {
+        float lighter = Mathf.Max(L1, L2);
+        float darker = Mathf.Min(L1, L2);
+        return (lighter + 0.05f) / (darker + 0.05f);
+    }
+}
+```
+
+### 3. 应用场景
+
+`UnityEngine.Accessibility` 主要用于以下几个方面：
+
+1.  **UI/UX 设计验证**:
+    在开发阶段，设计师可以使用它来验证选定的配色方案是否通过了无障碍测试（例如 WCAG 标准）。
+2.  **动态颜色调整**:
+    游戏运行时，根据用户的设置动态生成或调整队伍颜色、标记颜色，确保色盲玩家能区分敌我。
+3.  **益智游戏**:
+    对于颜色匹配消除类游戏，使用 `GetColorBlindSafePalette` 确保游戏机制不依赖于单一的颜色感知。
+
+### 4. 局限性与未来
+
+目前 `UnityEngine.Accessibility` 的 API 相对较小，主要集中在视觉（颜色）方面。它主要作为一个工具库存在，而不是一个完整的无障碍管理器。
+
+对于更全面的无障碍支持（如屏幕阅读器支持、文本转语音、字幕缩放等），开发者通常还需要结合以下内容：
+*   **Unity UI (uGUI) / UI Toolkit**: 调整字体大小和布局。
+*   **Input System**: 提供按键重映射功能。
+*   **第三方插件**: 如 "UAP" (UI Accessibility Plugin) 等，用于处理屏幕阅读器交互。
+
+### 总结
+
+`UnityEngine.Accessibility` 是 Unity 迈向包容性设计的重要一步。虽然功能目前比较集中在颜色处理上，但它为开发者提供了一个标准化的方式来处理色盲友好性问题。
+
+通过合理使用 `VisionUtility`，你可以确保你的游戏画面不仅仅是好看，而且对于所有玩家——无论其视觉能力如何——都是**清晰可读**的。
