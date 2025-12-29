@@ -1,0 +1,477 @@
+这是 CrewAI 官方文档中关于“CLI（命令行界面）”部分的中文翻译。
+
+请注意：自 0.140.0 版本起，CrewAI AOP（Agent Orchestration Platform）开始迁移其登录提供商。因此，CLI 的认证流程已更新。使用 Google 登录的用户，或在 2025 年 7 月 3 日之后创建账户的用户，将无法使用旧版本的 `crewai` 库登录。
+
+---
+
+# CLI (命令行界面)
+
+学习如何使用 CrewAI CLI 与 CrewAI 进行交互。
+
+## 概览 (Overview)
+
+CrewAI CLI 提供了一组命令来与 CrewAI 交互，允许你创建、训练、运行以及管理 Crew（团队）和 Flow（流程/工作流）。
+
+## 安装 (Installation)
+
+要使用 CrewAI CLI，请确保你已安装 CrewAI：
+
+```bash
+pip install crewai
+```
+
+## 基本用法 (Basic Usage)
+
+CrewAI CLI 命令的基本结构如下：
+
+```bash
+crewai [COMMAND] [OPTIONS] [ARGUMENTS]
+```
+
+## 可用命令 (Available Commands)
+
+### 1. Create (创建)
+
+创建一个新的 Crew 或 Flow。
+
+```bash
+crewai create [OPTIONS] TYPE NAME
+```
+
+*   `TYPE`：选择 "crew" 或 "flow"。
+*   `NAME`：Crew 或 Flow 的名称。
+
+**示例：**
+
+```bash
+crewai create crew my_new_crew
+crewai create flow my_new_flow
+```
+
+### 2. Version (版本)
+
+显示已安装的 CrewAI 版本。
+
+```bash
+crewai version [OPTIONS]
+```
+
+*   `--tools`：（可选）显示已安装的 CrewAI 工具版本。
+
+**示例：**
+
+```bash
+crewai version
+crewai version --tools
+```
+
+### 3. Train (训练)
+
+对 Crew 进行指定迭代次数的训练。
+
+```bash
+crewai train [OPTIONS]
+```
+
+*   `-n, --n_iterations INTEGER`：训练 Crew 的迭代次数（默认：5）。
+*   `-f, --filename TEXT`：用于训练的自定义文件路径（默认："trained_agents_data.pkl"）。
+
+**示例：**
+
+```bash
+crewai train -n 10 -f my_training_data.pkl
+```
+
+### 4. Replay (重放)
+
+从特定任务开始重放 Crew 的执行。
+
+```bash
+crewai replay [OPTIONS]
+```
+
+*   `-t, --task_id TEXT`：从该任务 ID 开始重放 Crew，包括所有后续任务。
+
+**示例：**
+
+```bash
+crewai replay -t task_123456
+```
+
+### 5. Log-tasks-outputs (记录任务输出)
+
+获取你最新的 `crew.kickoff()` 任务输出。
+
+```bash
+crewai log-tasks-outputs
+```
+
+### 6. Reset-memories (重置记忆)
+
+重置 Crew 的记忆（长期、短期、实体、最新 kickoff 输出）。
+
+```bash
+crewai reset-memories [OPTIONS]
+```
+
+*   `-l, --long`：重置长期记忆 (LONG TERM memory)。
+*   `-s, --short`：重置短期记忆 (SHORT TERM memory)。
+*   `-e, --entities`：重置实体记忆 (ENTITIES memory)。
+*   `-k, --kickoff-outputs`：重置最新 KICKOFF 任务输出。
+*   `-kn, --knowledge`：重置知识 (KNOWLEDGE) 存储。
+*   `-akn, --agent-knowledge`：重置代理知识 (AGENT KNOWLEDGE) 存储。
+*   `-a, --all`：重置所有 (ALL) 记忆。
+
+**示例：**
+
+```bash
+crewai reset-memories --long --short
+crewai reset-memories --all
+```
+
+### 7. Test (测试)
+
+测试 Crew 并评估结果。
+
+```bash
+crewai test [OPTIONS]
+```
+
+*   `-n, --n_iterations INTEGER`：测试 Crew 的迭代次数（默认：3）。
+*   `-m, --model TEXT`：用于运行测试的 LLM 模型（默认："gpt-4o-mini"）。
+
+**示例：**
+
+```bash
+crewai test -n 5 -m gpt-3.5-turbo
+```
+
+### 8. Run (运行)
+
+运行 Crew 或 Flow。
+
+```bash
+crewai run
+```
+
+从 0.103.0 版本开始，`crewai run` 命令可用于运行标准的 Crew 和 Flow。对于 Flow，它会自动从 `pyproject.toml` 中检测类型并运行相应的命令。现在推荐使用此方式来运行 Crew 和 Flow。
+
+请确保在你的 CrewAI 项目所在的目录中运行这些命令。
+某些命令可能需要在你的项目结构中进行额外的配置或设置。
+
+### 9. Chat (对话)
+
+从 `0.98.0` 版本开始，当你运行 `crewai chat` 命令时，你将与你的 Crew 启动一个交互式会话。AI 助手将通过询问必要的输入来指导你执行 Crew。一旦提供了所有输入，Crew 将执行其任务。
+收到结果后，你可以继续与助手交互以获取进一步的指示或提问。
+
+```bash
+crewai chat
+```
+
+请确保在你的 CrewAI 项目根目录中执行这些命令。
+
+**重要提示**：在你的 `crew.py` 文件中设置 `chat_llm` 属性以启用此命令。
+
+```python
+@crew
+def crew(self) -> Crew:
+    return Crew(
+        agents=self.agents,
+        tasks=self.tasks,
+        process=Process.sequential,
+        verbose=True,
+        chat_llm="gpt-4o",  # 用于聊天编排的 LLM
+    )
+```
+
+### 10. Deploy (部署)
+
+将 Crew 或 Flow 部署到 [CrewAI AOP](https://app.crewai.com)。
+
+*   **身份验证**：你需要通过身份验证才能部署到 CrewAI AOP。
+    你可以使用以下命令登录或创建账户：
+
+    ```bash
+    crewai login
+    ```
+
+*   **创建部署**：通过身份验证后，你可以从本地项目的根目录为你的 Crew 或 Flow 创建部署。
+
+    ```bash
+    crewai deploy create
+    ```
+    *   读取你的本地项目配置。
+    *   提示你确在本地发现的环境变量（如 `OPENAI_API_KEY`, `SERPER_API_KEY`）。这些变量将安全地存储在 Enterprise 平台的部署中。在运行此命令之前，请确保你的敏感密钥已在本地正确配置（例如，在 `.env` 文件中）。
+
+*   **创建部署**（续）：
+    *   将部署链接到相应的远程 GitHub 仓库（通常会自动检测）。
+
+*   **推送部署 (Push)**：通过身份验证后，你可以将 Crew 或 Flow 推送到 CrewAI AOP 平台。
+
+    ```bash
+    crewai deploy push
+    ```
+    *   在 CrewAI AOP 平台上启动部署流程。
+    *   成功启动后，它将输出 "Deployment created successfully!"（部署创建成功！）消息，以及部署名称和唯一的部署 ID (UUID)。
+
+*   **部署状态 (Status)**：你可以使用以下命令检查部署状态：
+
+    ```bash
+    crewai deploy status
+    ```
+    这将获取你最近一次部署尝试的最新状态（例如：`Building Images for Crew`（正在构建镜像）, `Deploy Enqueued`（部署已入队）, `Online`（在线））。
+
+*   **部署日志 (Logs)**：你可以使用以下命令查看部署日志：
+
+    ```bash
+    crewai deploy logs
+    ```
+    这将把部署日志流式传输到你的终端。
+
+*   **列出部署 (List)**：你可以使用以下命令列出所有部署：
+
+    ```bash
+    crewai deploy list
+    ```
+
+*   **删除部署 (Delete)**：你可以使用以下命令删除部署：
+
+    ```bash
+    crewai deploy remove
+    ```
+    这将从 CrewAI AOP 平台删除部署。
+
+*   **帮助命令 (Help)**：你可以获取 CLI 的帮助信息：
+
+    ```bash
+    crewai deploy --help
+    ```
+
+### 11. Organization Management (组织管理)
+
+管理你的 CrewAI AOP 组织。
+
+```bash
+crewai org [COMMAND] [OPTIONS]
+```
+
+#### 命令：
+
+*   `list`：列出你所属的所有组织。
+
+    ```bash
+    crewai org list
+    ```
+
+*   `current`：显示你当前活动的组织。
+
+    ```bash
+    crewai org current
+    ```
+
+*   `switch`：切换到特定组织。
+
+    ```bash
+    crewai org switch <organization_id>
+    ```
+
+你必须通过 CrewAI AOP 的身份验证才能使用这些组织管理命令。
+
+### 11. Login (登录)
+
+使用安全的设备代码流（无需输入电子邮件）向 CrewAI AOP 进行身份验证。
+
+> *译者注：原文此处编号重复为 11，此处保留原样*
+
+```bash
+crewai login
+```
+
+**发生了什么：**
+
+*   终端会显示一个验证 URL 和短码。
+*   你的浏览器会打开验证 URL。
+*   输入/确认代码以完成身份验证。
+
+**注意：**
+
+*   OAuth2 提供商和域名通过 `crewai config` 配置（默认使用 `login.crewai.com`）。
+*   成功登录后，CLI 还会尝试自动对工具库 (Tool Repository) 进行身份验证。
+*   如果你重置了配置，请再次运行 `crewai login` 以重新进行身份验证。
+
+### 12. API Keys (API 密钥)
+
+当运行 `crewai create crew` 命令时，CLI 会向你显示可用的 LLM 提供商列表，然后选择该提供商的模型。
+一旦你选择了 LLM 提供商和模型，系统将提示你输入 API 密钥。
+
+#### 可用的 LLM 提供商
+
+以下是 CLI 建议的最受欢迎的 LLM 提供商列表：
+
+*   OpenAI
+*   Groq
+*   Anthropic
+*   Google Gemini
+*   SambaNova
+
+当你选择一个提供商时，CLI 将显示该提供商的可用模型，并提示你输入 API 密钥。
+
+#### 其他选项
+
+如果你选择 "other"（其他），你将能够从 LiteLLM 支持的提供商列表中进行选择。
+当你选择一个提供商时，CLI 将提示你输入密钥名称和 API 密钥。
+有关每个提供商的密钥名称，请参阅以下链接：
+*   [LiteLLM Providers](https://docs.litellm.ai/docs/providers)
+
+### 13. Configuration Management (配置管理)
+
+管理 CrewAI 的 CLI 配置设置。
+
+```bash
+crewai config [COMMAND] [OPTIONS]
+```
+
+#### 命令：
+
+*   `list`：显示所有 CLI 配置参数。
+
+    ```bash
+    crewai config list
+    ```
+
+*   `set`：设置一个 CLI 配置参数。
+
+    ```bash
+    crewai config set <key> <value>
+    ```
+
+*   `reset`：将所有 CLI 配置参数重置为默认值。
+
+    ```bash
+    crewai config reset
+    ```
+
+#### 可用的配置参数
+
+*   `enterprise_base_url`: CrewAI AOP 实例的基础 URL。
+*   `oauth2_provider`: 用于身份验证的 OAuth2 提供商（例如：workos, okta, auth0）。
+*   `oauth2_audience`: OAuth2 受众值，通常用于识别目标 API 或资源。
+*   `oauth2_client_id`: 提供商颁发的 OAuth2 客户端 ID，用于身份验证请求。
+*   `oauth2_domain`: OAuth2 提供商的域名（例如：your-org.auth0.com），用于颁发令牌。
+
+#### 示例
+
+显示当前配置：
+
+```bash
+crewai config list
+```
+
+设置企业基础 URL：
+
+```bash
+crewai config set enterprise_base_url https://my-enterprise.crewai.com
+```
+
+设置 OAuth2 提供商：
+
+```bash
+crewai config set oauth2_provider auth0
+```
+
+设置 OAuth2 域名：
+
+```bash
+crewai config set oauth2_domain my-company.auth0.com
+```
+
+重置所有配置为默认值：
+
+```bash
+crewai config reset
+```
+
+重置配置后，请重新运行 `crewai login` 以再次进行身份验证。
+
+### 14. Trace Management (追踪管理)
+
+管理 Crew 和 Flow 执行的追踪（Trace）收集偏好。
+
+```bash
+crewai traces [COMMAND]
+```
+
+#### 命令：
+
+*   `enable`：启用 Crew/Flow 执行的追踪收集。
+
+    ```bash
+    crewai traces enable
+    ```
+
+*   `disable`：禁用 Crew/Flow 执行的追踪收集。
+
+    ```bash
+    crewai traces disable
+    ```
+
+*   `status`：显示当前的追踪收集状态。
+
+    ```bash
+    crewai traces status
+    ```
+
+#### 追踪工作原理
+
+追踪收集通过按优先级顺序检查三个设置来控制：
+
+1.  **代码中的显式标志**（最高优先级 - 可以启用或禁用）：
+
+    ```python
+    crew = Crew(agents=[...], tasks=[...], tracing=True)   # 始终启用
+    crew = Crew(agents=[...], tasks=[...], tracing=False)  # 始终禁用
+    crew = Crew(agents=[...], tasks=[...])                 # 检查更低优先级的设置（默认）
+    ```
+
+    *   `tracing=True` 将**始终启用**追踪（覆盖所有其他设置）。
+    *   `tracing=False` 将**始终禁用**追踪（覆盖所有其他设置）。
+    *   `tracing=None` 或省略，将检查更低优先级的设置。
+
+2.  **环境变量**（第二优先级）：
+
+    ```bash
+    CREWAI_TRACING_ENABLED=true
+    ```
+
+    *   仅当代码中的 `tracing` 未显式设置为 `True` 或 `False` 时才检查。
+    *   设置为 `true` 或 `1` 以启用追踪。
+
+3.  **用户偏好**（最低优先级）：
+
+    ```bash
+    crewai traces enable
+    ```
+
+    *   仅当代码中未设置 `tracing` 且 `CREWAI_TRACING_ENABLED` 未设置为 `true` 时才检查。
+    *   单独运行 `crewai traces enable` 足以启用追踪。
+
+**要启用追踪**，请使用以下任意一种方法：
+*   在 Crew/Flow 代码中设置 `tracing=True`，或者
+*   在 `.env` 文件中添加 `CREWAI_TRACING_ENABLED=true`，或者
+*   运行 `crewai traces enable`
+
+**要禁用追踪**，请使用以下任意一种方法：
+*   在 Crew/Flow 代码中设置 `tracing=False`（覆盖所有其他设置），或者
+*   移除 `CREWAI_TRACING_ENABLED` 环境变量或将其设置为 `false`，或者
+*   运行 `crewai traces disable`
+
+**较高优先级的设置会覆盖较低优先级的设置。**
+
+有关追踪的更多信息，请参阅 [追踪文档 (Tracing documentation)](/en/observability/tracing)。
+
+---
+
+> **注意**：
+> 当向你的项目添加包时，CrewAI CLI 会自动处理对工具库 (Tool Repository) 的身份验证。只需在任何 `uv` 命令前加上 `crewai` 即可使用。例如 `crewai uv add requests`。欲了解更多信息，请参阅 [工具库 (Tool Repository)](https://docs.crewai.com/enterprise/features/tool-repository) 文档。
+>
+> 配置文件存储在 `~/.config/crewai/settings.json` 中。某些设置（如组织名称和 UUID）是只读的，并通过认证和组织命令进行管理。工具库相关的设置是隐藏的，用户不能直接设置。

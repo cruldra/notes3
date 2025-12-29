@@ -1,0 +1,107 @@
+# 什么是 CrewAI?
+
+**CrewAI 是一个精简、快速的 Python 框架,完全从零开始构建——完全独立于 LangChain 或其他智能体框架。**
+
+CrewAI 为开发者提供了高层次的简洁性和精确的低层次控制,非常适合创建适用于任何场景的自主 AI 智能体:
+
+- **[CrewAI Crews](https://docs.crewai.com/en/guides/crews/first-crew)**: 优化自主性和协作智能,使您能够创建 AI 团队,其中每个智能体都有特定的角色、工具和目标。
+- **[CrewAI Flows](https://docs.crewai.com/en/guides/flows/first-flow)**: 实现细粒度的事件驱动控制,单个 LLM 调用用于精确的任务编排,并原生支持 Crews。
+
+CrewAI 拥有超过 100,000 名通过我们社区课程认证的开发者,正在迅速成为企业级 AI 自动化的标准。
+
+## Crews 如何工作
+
+就像一家公司有不同部门(销售、工程、营销)在领导下共同工作以实现业务目标一样,CrewAI 帮助您创建一个由具有专业角色的 AI 智能体组成的组织,协作完成复杂任务。
+
+![CrewAI 框架概览](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crews.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=514fd0b06e4128e62f10728d44601975)
+
+| 组件 | 描述 | 关键特性 |
+| --- | --- | --- |
+| **Crew** | 顶层组织 | • 管理 AI 智能体团队<br/>• 监督工作流<br/>• 确保协作<br/>• 交付成果 |
+| **AI 智能体** | 专业团队成员 | • 拥有特定角色(研究员、作家)<br/>• 使用指定工具<br/>• 可以委派任务<br/>• 做出自主决策 |
+| **流程** | 工作流管理系统 | • 定义协作模式<br/>• 控制任务分配<br/>• 管理交互<br/>• 确保高效执行 |
+| **任务** | 个人分配 | • 有明确目标<br/>• 使用特定工具<br/>• 融入更大流程<br/>• 产生可操作结果 |
+
+### 所有组件如何协同工作
+
+1. **Crew** 组织整体操作
+2. **AI 智能体** 处理他们的专业任务
+3. **流程** 确保顺畅协作
+4. **任务** 完成以实现目标
+
+## 关键特性
+
+### 基于角色的智能体
+创建具有明确角色、专业知识和目标的专业智能体 - 从研究员到分析师再到作家
+
+### 灵活的工具
+为智能体配备自定义工具和 API,以与外部服务和数据源交互
+
+### 智能协作
+智能体协同工作,分享见解并协调任务以实现复杂目标
+
+### 任务管理
+定义顺序或并行工作流,智能体自动处理任务依赖关系
+
+## Flows 如何工作
+
+虽然 Crews 擅长自主协作,但 Flows 提供结构化自动化,对工作流执行提供细粒度控制。Flows 确保任务可靠、安全、高效地执行,精确处理条件逻辑、循环和动态状态管理。Flows 与 Crews 无缝集成,使您能够在高度自主性和精确控制之间取得平衡。
+
+![CrewAI 框架概览](https://mintcdn.com/crewai/qVjgZHKAyEOgSSUS/images/flows.png?fit=max&auto=format&n=qVjgZHKAyEOgSSUS&q=85&s=82ea168de2f004553dcea21410cd7d8a)
+
+| 组件 | 描述 | 关键特性 |
+| --- | --- | --- |
+| **Flow** | 结构化工作流编排 | • 管理执行路径<br/>• 处理状态转换<br/>• 控制任务排序<br/>• 确保可靠执行 |
+| **事件** | 工作流操作的触发器 | • 启动特定流程<br/>• 启用动态响应<br/>• 支持条件分支<br/>• 允许实时适应 |
+| **状态** | 工作流执行上下文 | • 维护执行数据<br/>• 启用持久性<br/>• 支持可恢复性<br/>• 确保执行完整性 |
+| **Crew 支持** | 增强工作流自动化 | • 在需要时注入自主性<br/>• 补充结构化工作流<br/>• 平衡自动化与智能<br/>• 启用自适应决策 |
+
+### 关键能力
+
+#### 事件驱动编排
+定义动态响应事件的精确执行路径
+
+#### 细粒度控制
+安全高效地管理工作流状态和条件执行
+
+#### 原生 Crew 集成
+轻松与 Crews 结合以增强自主性和智能
+
+#### 确定性执行
+通过显式控制流和错误处理确保可预测的结果
+
+## 何时使用 Crews 与 Flows
+
+了解何时使用 [Crews](https://docs.crewai.com/en/guides/crews/first-crew) 与 [Flows](https://docs.crewai.com/en/guides/flows/first-flow) 是最大化 CrewAI 在应用程序中潜力的关键。
+
+| 用例 | 推荐方法 | 原因 |
+| --- | --- | --- |
+| **开放式研究** | [Crews](https://docs.crewai.com/en/guides/crews/first-crew) | 当任务需要创造性思维、探索和适应时 |
+| **内容生成** | [Crews](https://docs.crewai.com/en/guides/crews/first-crew) | 用于协作创建文章、报告或营销材料 |
+| **决策工作流** | [Flows](https://docs.crewai.com/en/guides/flows/first-flow) | 当您需要可预测、可审计的决策路径和精确控制时 |
+| **API 编排** | [Flows](https://docs.crewai.com/en/guides/flows/first-flow) | 用于以特定顺序可靠集成多个外部服务 |
+| **混合应用** | 组合方法 | 使用 [Flows](https://docs.crewai.com/en/guides/flows/first-flow) 编排整体流程,用 [Crews](https://docs.crewai.com/en/guides/crews/first-crew) 处理复杂子任务 |
+
+### 决策框架
+
+- **选择 [Crews](https://docs.crewai.com/en/guides/crews/first-crew) 当:** 您需要自主问题解决、创造性协作或探索性任务
+- **选择 [Flows](https://docs.crewai.com/en/guides/flows/first-flow) 当:** 您需要确定性结果、可审计性或对执行的精确控制
+- **两者结合当:** 您的应用程序既需要结构化流程又需要自主智能
+
+## 为什么选择 CrewAI?
+
+- 🧠 **自主操作**: 智能体根据其角色和可用工具做出智能决策
+- 📝 **自然交互**: 智能体像人类团队成员一样沟通和协作
+- 🛠️ **可扩展设计**: 易于添加新工具、角色和功能
+- 🚀 **生产就绪**: 为实际应用中的可靠性和可扩展性而构建
+- 🔒 **注重安全**: 考虑企业安全要求而设计
+- 💰 **成本高效**: 优化以最小化令牌使用和 API 调用
+
+## 准备开始构建了吗?
+
+- [**构建您的第一个 Crew**](https://docs.crewai.com/en/guides/crews/first-crew) - 逐步教程,创建一个协作 AI 团队,共同解决复杂问题
+- [**构建您的第一个 Flow**](https://docs.crewai.com/en/guides/flows/first-flow) - 学习如何创建结构化、事件驱动的工作流,精确控制执行
+- [**安装 CrewAI**](https://docs.crewai.com/en/installation) - 在您的开发环境中开始使用 CrewAI
+- [**快速入门**](https://docs.crewai.com/en/quickstart) - 按照我们的快速入门指南创建您的第一个 CrewAI 智能体并获得实践经验
+- [**加入社区**](https://community.crewai.com/) - 与其他开发者联系,获得帮助,分享您的 CrewAI 经验
+

@@ -1,0 +1,538 @@
+这是 CrewAI 官方文档中关于“Tasks（任务）”部分的中文翻译。
+
+---
+
+# 核心概念 - 任务 (Tasks)
+
+关于在 CrewAI 框架内管理和创建任务的详细指南。
+
+## 概览 (Overview)
+
+在 CrewAI 框架中，`Task`（任务）是分配给 `Agent`（代理）完成的具体工作。任务提供了执行所需的所有必要细节，例如描述、负责的代理、所需的工具等，从而支持各种复杂的行动。CrewAI 中的任务可以是协作性的，需要多个代理共同工作。这通过任务属性进行管理，并由 Crew 的流程（Process）进行编排，从而增强团队合作和效率。
+
+CrewAI AOP 在 Crew Studio 中包含一个可视化任务构建器（Visual Task Builder），它简化了复杂任务的创建和链接。你可以可视化地设计任务流并在不编写代码的情况下实时测试它们。
+
+可视化任务构建器支持：
+
+*   拖放式任务创建
+*   可视化任务依赖关系和流程
+*   实时测试和验证
+*   轻松分享和协作
+
+### 任务执行流程
+
+任务可以通过两种方式执行：
+
+*   **顺序执行 (Sequential)**：任务按照定义的顺序执行。
+*   **层级执行 (Hierarchical)**：任务根据代理的角色和专业知识分配给他们。
+
+执行流程在创建 Crew 时定义：
+
+```python
+crew = Crew(
+    agents=[agent1, agent2],
+    tasks=[task1, task2],
+    process=Process.sequential  # 或 Process.hierarchical
+)
+```
+
+## 任务属性 (Task Attributes)
+
+| 属性 | 参数 | 类型 | 描述 |
+| :--- | :--- | :--- | :--- |
+| **描述** | `description` | `str` | 对任务内容的清晰、简洁的陈述。 |
+| **预期输出** | `expected_output` | `str` | 对任务完成时样子的详细描述。 |
+| **名称** _(可选)_ | `name` | `Optional[str]` | 任务的名称标识符。 |
+| **代理** _(可选)_ | `agent` | `Optional[BaseAgent]` | 负责执行任务的代理。 |
+| **工具** _(可选)_ | `tools` | `List[BaseTool]` | 代理在此任务中被限制使用的工具/资源。 |
+| **上下文** _(可选)_ | `context` | `Optional[List["Task"]]` | 其他任务，其输出将用作此任务的上下文。 |
+| **异步执行** _(可选)_ | `async_execution` | `Optional[bool]` | 任务是否应异步执行。默认为 False。 |
+| **人工输入** _(可选)_ | `human_input` | `Optional[bool]` | 是否应由人工审查代理的最终答案。默认为 False。 |
+| **Markdown** _(可选)_ | `markdown` | `Optional[bool]` | 是否指示代理以 Markdown 格式返回最终答案。默认为 False。 |
+| **配置** _(可选)_ | `config` | `Optional[Dict[str, Any]]` | 任务特定的配置参数。 |
+| **输出文件** _(可选)_ | `output_file` | `Optional[str]` | 用于存储任务输出的文件路径。 |
+| **创建目录** _(可选)_ | `create_directory` | `Optional[bool]` | 如果 output\_file 的目录不存在，是否创建它。默认为 True。 |
+| **输出 JSON** _(可选)_ | `output_json` | `Optional[Type[BaseModel]]` |用于构建 JSON 输出结构的 Pydantic 模型。 |
+| **输出 Pydantic** _(可选)_ | `output_pydantic` | `Optional[Type[BaseModel]]` | 用于任务输出的 Pydantic 模型。 |
+| **回调** _(可选)_ | `callback` | `Optional[Any]` | 任务完成后执行的函数/对象。 |
+| **护栏** _(可选)_ | `guardrail` | `Optional[Callable]` | 在进入下一个任务之前验证任务输出的函数。 |
+| **护栏列表** _(可选)_ | `guardrails` | `Optional[List[Callable | List[str]]]` | 在进入下一个任务之前验证任务输出的护栏列表。 |
+| **护栏最大重试次数** _(可选)_ | `guardrail_max_retries` | `Optional[int]` | 当护栏验证失败时的最大重试次数。默认为 3。 |
+
+> 任务属性 `max_retries` 已弃用，并将在 v1.0.0 中移除。请改用 `guardrail_max_retries` 来控制护栏失败时的重试尝试。
+
+## 创建任务 (Creating Tasks)
+
+在 CrewAI 中创建任务有两种方式：使用 **YAML 配置（推荐）** 或 **直接在代码中定义**。
+
+### YAML 配置（推荐）
+
+使用 YAML 配置提供了一种更清晰、更易于维护的任务定义方式。我们强烈建议使用这种方法。在创建 CrewAI 项目后，导航到 `src/latest_ai_development/config/tasks.yaml` 文件并修改模板以匹配你的需求。
+
+YAML 文件中的变量（如 `{topic}`）将在运行 Crew 时被输入值替换：
+
+```python
+crew.kickoff(inputs={'topic': 'AI Agents'})
+```
+
+以下是使用 YAML 配置任务的示例：
+
+**tasks.yaml**
+
+```yaml
+research_task:
+  description: >
+    Conduct a thorough research about {topic}
+    Make sure you find any interesting and relevant information given
+    the current year is 2025.
+  expected_output: >
+    A list with 10 bullet points of the most relevant information about {topic}
+  agent: researcher
+
+reporting_task:
+  description: >
+    Review the context you got and expand each topic into a full section for a report.
+    Make sure the report is detailed and contains any and all relevant information.
+  expected_output: >
+    A fully fledge reports with the mains topics, each with a full section of information.
+    Formatted as markdown without '```'
+  agent: reporting_analyst
+  markdown: true
+  output_file: report.md
+```
+
+要在代码中使用此 YAML 配置，请创建一个继承自 `CrewBase` 的 Crew 类：
+
+**crew.py**
+
+```python
+# src/latest_ai_development/crew.py
+
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+from crewai_tools import SerperDevTool
+
+@CrewBase
+class LatestAiDevelopmentCrew():
+  """LatestAiDevelopment crew"""
+
+  @agent
+  def researcher(self) -> Agent:
+    return Agent(
+      config=self.agents_config['researcher'], # type: ignore[index]
+      verbose=True,
+      tools=[SerperDevTool()]
+    )
+
+  @agent
+  def reporting_analyst(self) -> Agent:
+    return Agent(
+      config=self.agents_config['reporting_analyst'], # type: ignore[index]
+      verbose=True
+    )
+
+  @task
+  def research_task(self) -> Task:
+    return Task(
+      config=self.tasks_config['research_task'] # type: ignore[index]
+    )
+
+  @task
+  def reporting_task(self) -> Task:
+    return Task(
+      config=self.tasks_config['reporting_task'] # type: ignore[index]
+    )
+
+  @crew
+  def crew(self) -> Crew:
+    return Crew(
+      agents=[
+        self.researcher(),
+        self.reporting_analyst()
+      ],
+      tasks=[
+        self.research_task(),
+        self.reporting_task()
+      ],
+      process=Process.sequential
+    )
+```
+
+YAML 文件（`agents.yaml` 和 `tasks.yaml`）中使用的名称应与 Python 代码中的方法名称匹配。
+
+### 直接代码定义（替代方案）
+
+或者，你可以直接在代码中定义任务，而不使用 YAML 配置：
+
+**task.py**
+
+```python
+from crewai import Task
+
+research_task = Task(
+    description="""
+        Conduct a thorough research about AI Agents.
+        Make sure you find any interesting and relevant information given
+        the current year is 2025.
+    """,
+    expected_output="""
+        A list with 10 bullet points of the most relevant information about AI Agents
+    """,
+    agent=researcher
+)
+
+reporting_task = Task(
+    description="""
+        Review the context you got and expand each topic into a full section for a report.
+        Make sure the report is detailed and contains any and all relevant information.
+    """,
+    expected_output="""
+        A fully fledge reports with the mains topics, each with a full section of information.
+    """,
+    agent=reporting_analyst,
+    markdown=True,  # Enable markdown formatting for the final output
+    output_file="report.md"
+)
+```
+
+你可以直接指定一个 `agent` 进行分配，或者让 CrewAI 的 `hierarchical`（层级）流程根据角色、可用性等来决定。
+
+## 任务输出 (Task Output)
+
+理解任务输出对于构建有效的 AI 工作流至关重要。CrewAI 通过 `TaskOutput` 类提供了一种结构化的方式来处理任务结果，该类支持多种输出格式，并且可以轻松地在任务之间传递。默认情况下，`TaskOutput` 将仅包含 `raw`（原始）输出。只有当原始 `Task` 对象配置了 `output_pydantic` 或 `output_json` 时，`TaskOutput` 才会包含 `pydantic` 或 `json_dict` 输出。
+
+### 任务输出属性
+
+| 属性 | 参数 | 类型 | 描述 |
+| :--- | :--- | :--- | :--- |
+| **描述** | `description` | `str` | 任务的描述。 |
+| **摘要** | `summary` | `Optional[str]` | 任务的摘要，从描述的前10个单词自动生成。 |
+| **原始数据** | `raw` | `str` | 任务的原始输出。这是输出的默认格式。 |
+| **Pydantic** | `pydantic` | `Optional[BaseModel]` | 代表任务结构化输出的 Pydantic 模型对象。 |
+| **JSON 字典** | `json_dict` | `Optional[Dict[str, Any]]` | 代表任务 JSON 输出的字典。 |
+| **代理** | `agent` | `str` | 执行任务的代理。 |
+| **输出格式** | `output_format` | `OutputFormat` | 任务输出的格式，选项包括 RAW, JSON, 和 Pydantic。默认为 RAW。 |
+| **消息** | `messages` | `list[LLMMessage]` | 上一次任务执行的消息。 |
+
+### 任务方法和属性
+
+| 方法/属性 | 描述 |
+| :--- | :--- |
+| **json** | 如果输出格式为 JSON，则返回任务输出的 JSON 字符串表示形式。 |
+| **to\_dict** | 将 JSON 和 Pydantic 输出转换为字典。 |
+| **str** | 返回任务输出的字符串表示形式，优先顺序为 Pydantic，然后是 JSON，最后是 raw。 |
+
+### 访问任务输出
+
+任务执行后，可以通过 `Task` 对象的 `output` 属性访问其输出。
+
+#### 示例
+
+```python
+# 示例任务
+task = Task(
+    description='Find and summarize the latest AI news',
+    expected_output='A bullet list summary of the top 5 most important AI news',
+    agent=research_agent,
+    tools=[search_tool]
+)
+
+# 执行 crew
+crew = Crew(
+    agents=[research_agent],
+    tasks=[task],
+    verbose=True
+)
+
+result = crew.kickoff()
+
+# 访问任务输出
+task_output = task.output
+
+print(f"Task Description: {task_output.description}")
+print(f"Task Summary: {task_output.summary}")
+print(f"Raw Output: {task_output.raw}")
+if task_output.json_dict:
+    print(f"JSON Output: {json.dumps(task_output.json_dict, indent=2)}")
+if task_output.pydantic:
+    print(f"Pydantic Output: {task_output.pydantic}")
+```
+
+## Markdown 输出格式化 (Markdown Output Formatting)
+
+`markdown` 参数用于启用任务输出的自动 Markdown 格式化。设置为 `True` 时，任务将指示代理使用正确的 Markdown 语法格式化最终答案。
+
+### 使用 Markdown 格式化
+
+```python
+# 启用 markdown 格式化的示例任务
+formatted_task = Task(
+    description="Create a comprehensive report on AI trends",
+    expected_output="A well-structured report with headers, sections, and bullet points",
+    agent=reporter_agent,
+    markdown=True  # 启用自动 markdown 格式化
+)
+```
+
+当 `markdown=True` 时，代理将收到额外的指令以使用以下格式：
+*   `#` 用于标题
+*   `**text**` 用于粗体
+*   `*text*` 用于斜体
+*   `-` 或 `*` 用于要点列表
+*   `` `code` `` 用于行内代码
+*   ```language 用于代码块
+
+## 任务依赖和上下文 (Task Dependencies and Context)
+
+任务可以使用 `context` 属性依赖于其他任务的输出。例如：
+
+```python
+research_task = Task(
+    description="Research the latest developments in AI",
+    expected_output="A list of recent AI developments",
+    agent=researcher
+)
+
+analysis_task = Task(
+    description="Analyze the research findings and identify key trends",
+    expected_output="Analysis report of AI trends",
+    agent=analyst,
+    context=[research_task]  # 此任务将等待 research_task 完成
+)
+```
+
+## 任务护栏 (Task Guardrails)
+
+任务护栏（Guardrails）提供了一种在将任务输出传递给下一个任务之前对其进行验证和转换的方法。CrewAI 支持两种类型的护栏：
+
+1.  **基于函数的护栏**：具有自定义验证逻辑的 Python 函数。
+2.  **基于 LLM 的护栏**：使用代理的 LLM 根据自然语言标准验证输出的字符串描述。
+
+### 基于函数的护栏
+
+```python
+from typing import Tuple, Union, Dict, Any
+from crewai import TaskOutput
+
+def validate_blog_content(result: TaskOutput) -> Tuple[bool, Any]:
+    """验证博客内容是否符合要求。"""
+    try:
+        # 检查字数
+        word_count = len(result.raw.split())
+        if word_count > 200:
+            return (False, "Blog content exceeds 200 words")
+
+        # 其他验证逻辑
+        return (True, result.raw.strip())
+    except Exception as e:
+        return (False, "Unexpected error during validation")
+
+blog_task = Task(
+    description="Write a blog post about AI",
+    expected_output="A blog post under 200 words",
+    agent=blog_agent,
+    guardrail=validate_blog_content  # 添加护栏函数
+)
+```
+
+### 基于 LLM 的护栏（字符串描述）
+
+如果不编写自定义验证函数，你可以提供这串描述，CrewAI 会自动创建 `LLMGuardrail`。
+
+**要求**：
+*   任务必须分配了 `agent`。
+*   提供解释验证标准的清晰描述性字符串。
+
+```python
+from crewai import Task
+
+# 单个基于 LLM 的护栏
+blog_task = Task(
+    description="Write a blog post about AI",
+    expected_output="A blog post under 200 words",
+    agent=blog_agent,
+    guardrail="The blog post must be under 200 words and contain no technical jargon"
+)
+```
+
+LLM 护栏将：
+1.  根据你的描述分析任务输出。
+2.  如果符合标准，返回 `(True, output)`。
+3.  如果验证失败，返回 `(False, feedback)` 以及具体的反馈。
+
+### 多个护栏
+
+你可以使用 `guardrails` 参数应用多个护栏。它们将按顺序执行。
+
+**注意**：如果提供了 `guardrails`，它优先于 `guardrail`。
+
+```python
+# 混合基于函数和基于 LLM 的护栏
+blog_task = Task(
+    # ...
+    guardrails=[
+        validate_word_count,  # 基于函数：精确字数检查
+        "The content must be engaging and suitable for a general audience",  # 基于 LLM：主观质量检查
+    ],
+    guardrail_max_retries=3
+)
+```
+
+### 护栏函数要求
+
+1.  **函数签名**：
+    *   必须只接受一个参数（TaskOutput）。
+    *   应返回 `(bool, Any)` 的元组。
+2.  **返回值**：
+    *   成功时：返回 `(True, validated_result)`。
+    *   失败时：返回 `(False, "错误消息解释失败原因")`。
+
+当护栏返回 `(False, error)` 时，错误会被发送回代理，代理将尝试修复问题，直到成功或达到 `guardrail_max_retries`。
+
+## 从任务获取结构化一致的输出
+
+请注意，Crew 中最后一个任务的输出将成为 Crew 本身的最终输出。
+
+### 使用 `output_pydantic`
+
+此属性允许你定义任务输出应遵循的 Pydantic 模型。
+
+```python
+class Blog(BaseModel):
+    title: str
+    content: str
+
+task1 = Task(
+    # ...
+    output_pydantic=Blog,
+)
+
+# 访问结果
+result = crew.kickoff()
+# 选项 1: result["title"]
+# 选项 2: result.pydantic.title
+# 选项 3: result.to_dict()["title"]
+```
+
+### 使用 `output_json`
+
+此属性允许你定义预期的 JSON 输出格式。
+
+```python
+task1 = Task(
+    # ...
+    output_json=Blog, # 传入 Pydantic 模型作为参照
+)
+
+# 访问结果
+result = crew.kickoff()
+# 选项 1: result["title"]
+# 选项 2: print(result) # 打印 JSON 字符串
+```
+
+## 将工具与任务集成
+
+利用 [CrewAI Toolkit](https://github.com/joaomdmoura/crewai-tools) 和 [LangChain Tools](https://python.langchain.com/docs/integrations/tools) 来增强任务性能。
+
+### 创建带有工具的任务
+
+```python
+search_tool = SerperDevTool()
+
+task = Task(
+  description='Find and summarize the latest AI news',
+  expected_output='A bullet list summary of the top 5 most important AI news',
+  agent=research_agent,
+  tools=[search_tool] # 此工具仅供此任务使用，可能会覆盖代理的默认工具
+)
+```
+
+## 引用其他任务 (Referring to Other Tasks)
+
+使用 `context` 属性，你可以明确定义哪些任务的输出（包括多个）应该用作另一个任务的上下文。
+
+```python
+write_blog_task = Task(
+    description="Write a full blog post...",
+    expected_output="Full blog post...",
+    agent=writer_agent,
+    context=[research_ai_task, research_ops_task]
+)
+```
+
+## 异步执行 (Asynchronous Execution)
+
+你可以将任务定义为异步执行。这意味着 Crew 不会等待它完成就继续执行下一个任务。你可以稍后使用 `context` 属性在未来的任务中定义它应该等待异步任务的输出。
+
+```python
+list_ideas = Task(
+    # ...
+    async_execution=True # 将异步执行
+)
+
+write_article = Task(
+    # ...
+    context=[list_ideas] # 将等待 list_ideas 任务完成
+)
+```
+
+## 回调机制 (Callback Mechanism)
+
+回调函数在任务完成后执行，允许基于任务结果触发操作或通知。
+
+```python
+def callback_function(output: TaskOutput):
+    print(f"Task completed! Output: {output.raw}")
+
+research_task = Task(
+    # ...
+    callback=callback_function
+)
+```
+
+## 访问特定任务输出
+
+Crew 运行完成后，你可以访问特定任务的输出：
+
+```python
+print(task1.output.raw)
+```
+
+## 工具覆盖机制 (Tool Override Mechanism)
+
+在任务中指定工具允许动态调整代理的能力，展示了 CrewAI 的灵活性。
+
+## 错误处理和验证机制
+
+这包括确保每个任务只设置一种输出类型，并防止手动分配 `id` 属性。
+
+## 保存文件时创建目录
+
+`create_directory` 参数控制 CrewAI 是否应在将任务输出保存到文件时自动创建目录。
+
+### 默认行为
+
+默认情况下 `create_directory=True`。
+
+```python
+task = Task(
+    # ...
+    output_file='reports/2025/market_analysis.md',  # 如果不存在，自动创建 'reports/2025/'
+)
+```
+
+### 禁用目录创建
+
+如果你想确保目录必须已存在：
+
+```python
+task = Task(
+    # ...
+    output_file='secure/vault/data.json',
+    create_directory=False  # 如果 'secure/vault/' 不存在，将引发 RuntimeError
+)
+```
+
+## 总结
+
+任务是 CrewAI 中代理行动的驱动力。通过正确定义任务及其结果，你可以为 AI 代理有效地工作奠定基础。

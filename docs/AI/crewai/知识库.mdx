@@ -1,0 +1,1060 @@
+这是 CrewAI 官方文档中关于“Knowledge（知识）”部分的中文翻译。
+
+---
+
+# 核心概念 - 知识 (Knowledge)
+
+CrewAI 中的知识是什么以及如何使用它。
+
+## 概览 (Overview)
+
+CrewAI 中的知识是一个强大的系统，允许 AI 代理（Agents）在他执行任务期间访问和利用外部信息源。可以把它想象成给你的代理提供了一个参考图书馆，供其在工作时查阅。
+
+使用知识系统的主要好处：
+
+*   使用特定领域的信息增强代理的能力。
+*   用真实世界的数据支持决策。
+*   在整个对话过程中保持上下文。
+*   使回复基于事实信息。
+
+## 快速入门示例 (Quickstart Examples)
+
+对于基于文件的知识源，请确保将文件放在项目根目录下的 `knowledge` 目录中。此外，在创建源时，请使用相对于 `knowledge` 目录的路径。
+
+### 向量存储 (RAG) 客户端配置
+
+CrewAI 为向量存储提供了一个与提供商无关的 RAG（检索增强生成）客户端抽象。默认提供商是 ChromaDB，同时也支持 Qdrant。你可以使用配置工具切换提供商。目前支持：
+
+*   ChromaDB (默认)
+*   Qdrant
+
+```python
+from crewai.rag.config.utils import set_rag_config, get_rag_client, clear_rag_config
+
+# ChromaDB (默认)
+from crewai.rag.chromadb.config import ChromaDBConfig
+set_rag_config(ChromaDBConfig())
+chromadb_client = get_rag_client()
+
+# Qdrant
+from crewai.rag.qdrant.config import QdrantConfig
+set_rag_config(QdrantConfig())
+qdrant_client = get_rag_client()
+
+# 操作示例 (对于任何提供商 API 都是相同的)
+client = qdrant_client  # 或者 chromadb_client
+client.create_collection(collection_name="docs")
+client.add_documents(
+    collection_name="docs",
+    documents=[{"id": "1", "content": "CrewAI enables collaborative AI agents."}],
+)
+results = client.search(collection_name="docs", query="collaborative agents", limit=3)
+
+clear_rag_config()  # 可选的重置操作
+```
+
+这个 RAG 客户端与 Knowledge 内置的存储是分开的。当你需要直接控制向量存储或自定义检索管道时，请使用它。
+
+### 基础字符串知识示例
+
+```python
+from crewai import Agent, Task, Crew, Process, LLM
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 创建一个知识源
+content = "Users name is John. He is 30 years old and lives in San Francisco."
+string_source = StringKnowledgeSource(content=content)
+
+# 创建一个 temperature 为 0 的 LLM 以确保确定性输出
+llm = LLM(model="gpt-4o-mini", temperature=0)
+
+# 创建一个带有知识库的代理
+agent = Agent(
+    role="About User",
+    goal="You know everything about the user.",
+    backstory="You are a master at understanding people and their preferences.",
+    verbose=True,
+    allow_delegation=False,
+    llm=llm,
+)
+
+task = Task(
+    description="Answer the following questions about the user: {question}",
+    expected_output="An answer to the question.",
+    agent=agent,
+)
+
+crew = Crew(
+    agents=[agent],
+    tasks=[task],
+    verbose=True,
+    process=Process.sequential,
+    knowledge_sources=[string_source], # 在此处添加源以启用知识
+)
+
+result = crew.kickoff(inputs={"question": "What city does John live in and how old is he?"})
+```
+
+### Web 内容知识示例
+
+你需要安装 `docling` 才能运行以下示例：`uv add docling`
+
+```python
+from crewai import LLM, Agent, Crew, Process, Task
+from crewai.knowledge.source.crew_docling_source import CrewDoclingSource
+
+# 从网页内容创建知识源
+content_source = CrewDoclingSource(
+    file_paths=[
+        "https://lilianweng.github.io/posts/2024-11-28-reward-hacking",
+        "https://lilianweng.github.io/posts/2024-07-07-hallucination",
+    ],
+)
+
+# 创建一个 temperature 为 0 的 LLM 以确保确定性输出
+llm = LLM(model="gpt-4o-mini", temperature=0)
+
+# 创建一个带有知识库的代理
+agent = Agent(
+    role="About papers",
+    goal="You know everything about the papers.",
+    backstory="You are a master at understanding papers and their content.",
+    verbose=True,
+    allow_delegation=False,
+    llm=llm,
+)
+
+task = Task(
+    description="Answer the following questions about the papers: {question}",
+    expected_output="An answer to the question.",
+    agent=agent,
+)
+
+crew = Crew(
+    agents=[agent],
+    tasks=[task],
+    verbose=True,
+    process=Process.sequential,
+    knowledge_sources=[content_source],
+)
+
+result = crew.kickoff(
+    inputs={"question": "What is the reward hacking paper about? Be sure to provide sources."}
+)
+```
+
+## 支持的知识源 (Supported Knowledge Sources)
+
+CrewAI 开箱即用地支持多种类型的知识源：
+
+**文本源 (Text Sources)**
+
+*   原始字符串 (Raw strings)
+*   文本文件 (.txt)
+*   PDF 文档
+
+**结构化数据 (Structured Data)**
+
+*   CSV 文件
+*   Excel 电子表格
+*   JSON 文档
+
+### 文本文件知识源
+
+```python
+from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
+
+text_source = TextFileKnowledgeSource(
+    file_paths=["document.txt", "another.txt"]
+)
+```
+
+### PDF 知识源
+
+```python
+from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
+
+pdf_source = PDFKnowledgeSource(
+    file_paths=["document.pdf", "another.pdf"]
+)
+```
+
+### CSV 知识源
+
+```python
+from crewai.knowledge.source.csv_knowledge_source import CSVKnowledgeSource
+
+csv_source = CSVKnowledgeSource(
+    file_paths=["data.csv"]
+)
+```
+
+### Excel 知识源
+
+```python
+from crewai.knowledge.source.excel_knowledge_source import ExcelKnowledgeSource
+
+excel_source = ExcelKnowledgeSource(
+    file_paths=["spreadsheet.xlsx"]
+)
+```
+
+### JSON 知识源
+
+```python
+from crewai.knowledge.source.json_knowledge_source import JSONKnowledgeSource
+
+json_source = JSONKnowledgeSource(
+    file_paths=["data.json"]
+)
+```
+
+请确保你已创建 `./knowledge` 文件夹。所有源文件（例如：.txt, .pdf, .xlsx, .json）都应放在此文件夹中以便集中管理。
+
+## 代理 vs Crew 知识：完整指南 (Agent vs Crew Knowledge: Complete Guide)
+
+**理解知识层级**：CrewAI 支持代理（Agent）级别和团队（Crew）级别的知识。本节阐述了它们各自的工作方式、初始化的时间，并解决了有关依赖关系的常见误解。
+
+### 知识初始化实际是如何工作的
+
+当你使用知识时，实际发生了以下情况：
+
+#### 代理级知识 (独立)
+
+```python
+from crewai import Agent, Task, Crew
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 具有自己知识的代理 - 不需要 Crew 知识
+specialist_knowledge = StringKnowledgeSource(
+    content="Specialized technical information for this agent only"
+)
+
+specialist_agent = Agent(
+    role="Technical Specialist",
+    goal="Provide technical expertise",
+    backstory="Expert in specialized technical domains",
+    knowledge_sources=[specialist_knowledge]  # 代理特定的知识
+)
+
+task = Task(
+    description="Answer technical questions",
+    agent=specialist_agent,
+    expected_output="Technical answer"
+)
+
+# 不需要 crew 级别的知识
+crew = Crew(
+    agents=[specialist_agent],
+    tasks=[task]
+)
+
+result = crew.kickoff()  # 代理知识独立工作
+```
+
+#### 在 `crew.kickoff()` 期间发生了什么
+
+当你调用 `crew.kickoff()` 时，确切的顺序如下：
+
+```python
+# During kickoff
+for agent in self.agents:
+    agent.crew = self  # 代理获得 crew 的引用
+    agent.set_knowledge(crew_embedder=self.embedder)  # 代理知识被初始化
+    agent.create_agent_executor()
+```
+
+#### 存储的独立性
+
+每个知识层级使用独立的存储集合：
+
+```python
+# 代理知识存储
+agent_collection_name = agent.role  # 例如："Technical Specialist"
+
+# Crew 知识存储  
+crew_collection_name = "crew"
+
+# 两者都存储在同一个 ChromaDB 实例中，但在不同的集合里
+# 路径: ~/.local/share/CrewAI/{project}/knowledge/
+#   ├── crew/                    # Crew 知识集合
+#   ├── Technical Specialist/    # 代理知识集合
+#   └── Another Agent Role/      # 另一个代理的集合
+```
+
+### 完整的工作示例
+
+#### 示例 1：仅代理知识
+
+```python
+from crewai import Agent, Task, Crew
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 代理特定的知识
+agent_knowledge = StringKnowledgeSource(
+    content="Agent-specific information that only this agent needs"
+)
+
+agent = Agent(
+    role="Specialist",
+    goal="Use specialized knowledge",
+    backstory="Expert with specific knowledge",
+    knowledge_sources=[agent_knowledge],
+    embedder={  # 代理可以拥有自己的 embedder（嵌入器）
+        "provider": "openai",
+        "config": {"model": "text-embedding-3-small"}
+    }
+)
+
+task = Task(
+    description="Answer using your specialized knowledge",
+    agent=agent,
+    expected_output="Answer based on agent knowledge"
+)
+
+# 不需要 crew 知识
+crew = Crew(agents=[agent], tasks=[task])
+result = crew.kickoff()  # 完美运行
+```
+
+#### 示例 2：代理和 Crew 知识并存
+
+```python
+# Crew 范围的知识 (所有代理共享)
+crew_knowledge = StringKnowledgeSource(
+    content="Company policies and general information for all agents"
+)
+
+# 代理特定的知识
+specialist_knowledge = StringKnowledgeSource(
+    content="Technical specifications only the specialist needs"
+)
+
+specialist = Agent(
+    role="Technical Specialist",
+    goal="Provide technical expertise",
+    backstory="Technical expert",
+    knowledge_sources=[specialist_knowledge]  # 代理特定
+)
+
+generalist = Agent(
+    role="General Assistant", 
+    goal="Provide general assistance",
+    backstory="General helper"
+    # 没有代理特定的知识
+)
+
+crew = Crew(
+    agents=[specialist, generalist],
+    tasks=[...],
+    knowledge_sources=[crew_knowledge]  # Crew 范围的知识
+)
+
+# 结果:
+# - specialist 获得: crew_knowledge + specialist_knowledge
+# - generalist 获得: 仅 crew_knowledge
+```
+
+#### 示例 3：多个代理拥有不同的知识
+
+```python
+# 针对不同代理的不同知识
+sales_knowledge = StringKnowledgeSource(content="Sales procedures and pricing")
+tech_knowledge = StringKnowledgeSource(content="Technical documentation")
+support_knowledge = StringKnowledgeSource(content="Support procedures")
+
+sales_agent = Agent(
+    role="Sales Representative",
+    knowledge_sources=[sales_knowledge],
+    embedder={"provider": "openai", "config": {"model": "text-embedding-3-small"}}
+)
+
+tech_agent = Agent(
+    role="Technical Expert", 
+    knowledge_sources=[tech_knowledge],
+    embedder={"provider": "ollama", "config": {"model": "mxbai-embed-large"}}
+)
+
+support_agent = Agent(
+    role="Support Specialist",
+    knowledge_sources=[support_knowledge]
+    # 将使用 crew embedder 作为后备
+)
+
+crew = Crew(
+    agents=[sales_agent, tech_agent, support_agent],
+    tasks=[...],
+    embedder={  # 为没有自己 embedder 的代理提供后备 embedder
+        "provider": "google-generativeai",
+        "config": {"model_name": "gemini-embedding-001"}
+    }
+)
+
+# 每个代理只获得他们特定的知识
+# 每个人可以使用不同的嵌入提供商
+```
+
+与使用工具从向量数据库中检索不同，预加载知识的代理不需要检索角色（persona）或任务。只需为您需要运行的代理或 Crew 添加相关的知识源即可。知识源可以在代理级别或 Crew 级别添加。Crew 级别的知识源将被 Crew 中的**所有代理**使用。代理级别的知识源将仅由预加载了该知识的**特定代理**使用。
+
+## 知识配置 (Knowledge Configuration)
+
+你可以配置 Crew 或 Agent 的知识设置。
+
+```python
+from crewai.knowledge.knowledge_config import KnowledgeConfig
+
+knowledge_config = KnowledgeConfig(results_limit=10, score_threshold=0.5)
+
+agent = Agent(
+    ...
+    knowledge_config=knowledge_config
+)
+```
+
+`results_limit`：返回的相关文档数量。默认为 3。
+`score_threshold`：文档被视为相关所需的最低分数。默认为 0.35。
+
+## 支持的知识参数 (Supported Knowledge Parameters)
+
+| 参数 | 类型 | 必填 | 描述 |
+| :--- | :--- | :--- | :--- |
+| `sources` | `List[BaseKnowledgeSource]` | 是 | 提供要存储和查询的内容的知识源列表。可以包括 PDF、CSV、Excel、JSON、文本文件或字符串内容。 |
+| `collection_name` | `str` | 否 | 存储知识的集合名称。用于识别不同的知识集。如果未提供，默认为 "knowledge"。 |
+| `storage` | `Optional[KnowledgeStorage]` | 否 | 用于管理知识存储和检索方式的自定义存储配置。如果未提供，将创建默认存储。 |
+
+## 知识存储透明度 (Knowledge Storage Transparency)
+
+**了解知识存储**：CrewAI 自动将知识源存储在特定平台的目录中，使用 ChromaDB 进行向量存储。了解这些位置和默认设置有助于生产部署、调试和存储管理。
+
+### CrewAI 在哪里存储知识文件
+
+默认情况下，CrewAI 使用与 Memory 相同的存储系统，将知识存储在特定平台的目录中：
+
+#### 不同平台的默认存储位置
+
+**macOS:**
+
+```
+~/Library/Application Support/CrewAI/{project_name}/
+└── knowledge/                    # Knowledge ChromaDB 文件
+    ├── chroma.sqlite3           # ChromaDB 元数据
+    ├── {collection_id}/         # 向量嵌入
+    └── knowledge_{collection}/  # 命名的集合
+```
+
+**Linux:**
+
+```
+~/.local/share/CrewAI/{project_name}/
+└── knowledge/
+    ├── chroma.sqlite3
+    ├── {collection_id}/
+    └── knowledge_{collection}/
+```
+
+**Windows:**
+
+```
+C:\Users\{username}\AppData\Local\CrewAI\{project_name}\
+└── knowledge\
+    ├── chroma.sqlite3
+    ├── {collection_id}\
+    └── knowledge_{collection}\
+```
+
+### 查找你的知识存储位置
+
+要确切查看 CrewAI 存储知识文件的位置：
+
+```python
+from crewai.utilities.paths import db_storage_path
+import os
+
+# 获取知识存储路径
+knowledge_path = os.path.join(db_storage_path(), "knowledge")
+print(f"Knowledge storage location: {knowledge_path}")
+
+# 列出知识集合和文件
+if os.path.exists(knowledge_path):
+    print("\nKnowledge storage contents:")
+    for item in os.listdir(knowledge_path):
+        item_path = os.path.join(knowledge_path, item)
+        if os.path.isdir(item_path):
+            print(f"📁 Collection: {item}/")
+            # 显示集合内容
+            try:
+                for subitem in os.listdir(item_path):
+                    print(f"   └── {subitem}")
+            except PermissionError:
+                print(f"   └── (permission denied)")
+        else:
+            print(f"📄 {item}")
+else:
+    print("No knowledge storage found yet.")
+```
+
+### 控制知识存储位置
+
+#### 选项 1：环境变量 (推荐)
+
+```python
+import os
+from crewai import Crew
+
+# 设置所有 CrewAI 数据的自定义存储位置
+os.environ["CREWAI_STORAGE_DIR"] = "./my_project_storage"
+
+# 所有知识现在将存储在 ./my_project_storage/knowledge/
+crew = Crew(
+    agents=[...],
+    tasks=[...],
+    knowledge_sources=[...]
+)
+```
+
+#### 选项 2：自定义知识存储 (Custom Knowledge Storage)
+
+```python
+from crewai.knowledge.storage.knowledge_storage import KnowledgeStorage
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 使用特定的 embedder 创建自定义存储
+custom_storage = KnowledgeStorage(
+    embedder={
+        "provider": "ollama",
+        "config": {"model": "mxbai-embed-large"}
+    },
+    collection_name="my_custom_knowledge"
+)
+
+# 与知识源一起使用
+knowledge_source = StringKnowledgeSource(
+    content="Your knowledge content here"
+)
+knowledge_source.storage = custom_storage
+```
+
+#### 选项 3：特定于项目的知识存储
+
+```python
+import os
+from pathlib import Path
+
+# 将知识存储在项目目录中
+project_root = Path(__file__).parent
+knowledge_dir = project_root / "knowledge_storage"
+
+os.environ["CREWAI_STORAGE_DIR"] = str(knowledge_dir)
+
+# 现在所有知识将存储在你的项目目录中
+```
+
+### 默认嵌入提供商行为 (Default Embedding Provider Behavior)
+
+**默认嵌入提供商**：CrewAI 默认使用 OpenAI Embeddings (`text-embedding-3-small`) 进行知识存储，即使用户使用的是不同的 LLM 提供商。你可以轻松自定义以匹配你的设置。
+
+#### 了解默认行为
+
+```python
+from crewai import Agent, Crew, LLM
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 当使用 Claude 作为你的 LLM 时...
+agent = Agent(
+    role="Researcher",
+    goal="Research topics",
+    backstory="Expert researcher",
+    llm=LLM(provider="anthropic", model="claude-3-sonnet")  # 使用 Claude
+)
+
+# CrewAI 默认仍将使用 OpenAI embeddings 存储知识
+# 这确保了一致性，但可能不符合你的 LLM 提供商偏好
+knowledge_source = StringKnowledgeSource(content="Research data...")
+
+crew = Crew(
+    agents=[agent],
+    tasks=[...],
+    knowledge_sources=[knowledge_source]
+    # 默认: 即使使用 Claude LLM，也会使用 OpenAI embeddings
+)
+```
+
+#### 自定义知识嵌入提供商
+
+```python
+# 选项 1: 使用 Voyage AI (Anthropic 推荐给 Claude 用户)
+crew = Crew(
+    agents=[agent],
+    tasks=[...],
+    knowledge_sources=[knowledge_source],
+    embedder={
+        "provider": "voyageai",  # 推荐给 Claude 用户
+        "config": {
+            "api_key": "your-voyage-api-key",
+            "model": "voyage-3"  # 或 "voyage-3-large" 以获得最佳质量
+        }
+    }
+)
+
+# 选项 2: 使用本地 embeddings (无外部 API 调用)
+crew = Crew(
+    agents=[agent],
+    tasks=[...],
+    knowledge_sources=[knowledge_source],
+    embedder={
+        "provider": "ollama",
+        "config": {
+            "model": "mxbai-embed-large",
+            "url": "http://localhost:11434/api/embeddings"
+        }
+    }
+)
+
+# 选项 3: 代理级 embedding 自定义
+agent = Agent(
+    role="Researcher",
+    goal="Research topics",
+    backstory="Expert researcher",
+    knowledge_sources=[knowledge_source],
+    embedder={
+        "provider": "google-generativeai",
+        "config": {
+            "model_name": "gemini-embedding-001",
+            "api_key": "your-google-key"
+        }
+    }
+)
+```
+
+#### 配置 Azure OpenAI Embeddings
+
+当使用 Azure OpenAI embeddings 时：
+
+1.  确保首先在 Azure 平台中部署了 embedding 模型。
+2.  然后你需要使用以下配置：
+
+```python
+agent = Agent(
+    role="Researcher",
+    goal="Research topics",
+    backstory="Expert researcher",
+    knowledge_sources=[knowledge_source],
+    embedder={
+        "provider": "azure",
+        "config": {
+            "api_key": "your-azure-api-key",
+            "model": "text-embedding-ada-002", # 更改为你正在使用且已在 Azure 中部署的模型
+            "api_base": "https://your-azure-endpoint.openai.azure.com/",
+            "api_version": "2024-02-01"
+        }
+    }
+)
+```
+
+## 高级功能 (Advanced Features)
+
+### 查询重写 (Query Rewriting)
+
+CrewAI 实现了一种智能查询重写机制来优化知识检索。当代理需要搜索知识源时，原始任务提示（prompt）会自动转换为更有效的搜索查询。
+
+#### 查询重写是如何工作的
+
+1.  当代理执行带有可用知识源的任务时，会触发 `_get_knowledge_search_query` 方法。
+2.  使用代理的 LLM 将原始任务提示转换为优化的搜索查询。
+3.  然后使用此优化的查询从知识源中检索相关信息。
+
+#### 查询重写的好处
+
+**提高检索准确性**
+通过关注关键概念并移除无关内容，查询重写有助于检索更相关的信息。
+
+**上下文感知**
+重写的查询旨在针对向量数据库检索更加具体且具有上下文感知能力。
+
+#### 示例
+
+```python
+# 原始任务提示
+task_prompt = "Answer the following questions about the user's favorite movies: What movie did John watch last week? Format your answer in JSON."
+
+# 在幕后，这可能会被重写为：
+rewritten_query = "What movies did John watch last week?"
+```
+
+重写的查询更关注核心信息需求，并移除了关于输出格式的无关指令。
+
+该机制完全自动运行，无需用户配置。代理的 LLM 用于执行查询重写，因此使用能力更强的 LLM 可以提高重写查询的质量。
+
+### 知识事件 (Knowledge Events)
+
+CrewAI 在知识检索过程中发出事件，你可以使用事件系统监听这些事件。这些事件允许你监控、调试和分析你的代理如何检索和使用知识。
+
+#### 可用的知识事件
+
+*   **KnowledgeRetrievalStartedEvent**: 当代理开始从源检索知识时发出。
+*   **KnowledgeRetrievalCompletedEvent**: 当知识检索完成时发出，包含所使用的查询和检索到的内容。
+*   **KnowledgeQueryStartedEvent**: 当对知识源的查询开始时发出。
+*   **KnowledgeQueryCompletedEvent**: 当查询成功完成时发出。
+*   **KnowledgeQueryFailedEvent**: 当对知识源的查询失败时发出。
+*   **KnowledgeSearchQueryFailedEvent**: 当搜索查询失败时发出。
+
+#### 示例：监控知识检索
+
+```python
+from crewai.events import (
+    KnowledgeRetrievalStartedEvent,
+    KnowledgeRetrievalCompletedEvent,
+    BaseEventListener,
+)
+
+class KnowledgeMonitorListener(BaseEventListener):
+    def setup_listeners(self, crewai_event_bus):
+        @crewai_event_bus.on(KnowledgeRetrievalStartedEvent)
+        def on_knowledge_retrieval_started(source, event):
+            print(f"Agent '{event.agent.role}' started retrieving knowledge")
+            
+        @crewai_event_bus.on(KnowledgeRetrievalCompletedEvent)
+        def on_knowledge_retrieval_completed(source, event):
+            print(f"Agent '{event.agent.role}' completed knowledge retrieval")
+            print(f"Query: {event.query}")
+            print(f"Retrieved {len(event.retrieved_knowledge)} knowledge chunks")
+
+# 创建监听器实例
+knowledge_monitor = KnowledgeMonitorListener()
+```
+
+有关使用事件的更多信息，请参阅 [Event Listeners (事件监听器)](/en/concepts/event-listener) 文档。
+
+### 自定义知识源 (Custom Knowledge Sources)
+
+CrewAI 允许你通过扩展 `BaseKnowledgeSource` 类为任何类型的数据创建自定义知识源。让我们创建一个获取并处理太空新闻文章的实际示例。
+
+#### 太空新闻知识源示例
+
+```python
+from crewai import Agent, Task, Crew, Process, LLM
+from crewai.knowledge.source.base_knowledge_source import BaseKnowledgeSource
+import requests
+from datetime import datetime
+from typing import Dict, Any
+from pydantic import BaseModel, Field
+
+class SpaceNewsKnowledgeSource(BaseKnowledgeSource):
+    """从 Space News API 获取数据的知识源。"""
+
+    api_endpoint: str = Field(description="API endpoint URL")
+    limit: int = Field(default=10, description="Number of articles to fetch")
+
+    def load_content(self) -> Dict[Any, str]:
+        """获取并格式化太空新闻文章。"""
+        try:
+            response = requests.get(
+                f"{self.api_endpoint}?limit={self.limit}"
+            )
+            response.raise_for_status()
+
+            data = response.json()
+            articles = data.get('results', [])
+
+            formatted_data = self.validate_content(articles)
+            return {self.api_endpoint: formatted_data}
+        except Exception as e:
+            raise ValueError(f"Failed to fetch space news: {str(e)}")
+
+    def validate_content(self, articles: list) -> str:
+        """将文章格式化为可读文本。"""
+        formatted = "Space News Articles:\n\n"
+        for article in articles:
+            formatted += f"""
+                Title: {article['title']}
+                Published: {article['published_at']}
+                Summary: {article['summary']}
+                News Site: {article['news_site']}
+                URL: {article['url']}
+                -------------------"""
+        return formatted
+
+    def add(self) -> None:
+        """处理并存储文章。"""
+        content = self.load_content()
+        for _, text in content.items():
+            chunks = self._chunk_text(text)
+            self.chunks.extend(chunks)
+
+        self._save_documents()
+
+# 创建知识源
+recent_news = SpaceNewsKnowledgeSource(
+    api_endpoint="https://api.spaceflightnewsapi.net/v4/articles",
+    limit=10,
+)
+
+# 创建专门的代理
+space_analyst = Agent(
+    role="Space News Analyst",
+    goal="Answer questions about space news accurately and comprehensively",
+    backstory="""You are a space industry analyst with expertise in space exploration,
+    satellite technology, and space industry trends. You excel at answering questions
+    about space news and providing detailed, accurate information.""",
+    knowledge_sources=[recent_news],
+    llm=LLM(model="gpt-4", temperature=0.0)
+)
+
+# 创建处理用户问题的任务
+analysis_task = Task(
+    description="Answer this question about space news: {user_question}",
+    expected_output="A detailed answer based on the recent space news articles",
+    agent=space_analyst
+)
+
+# 创建并运行 crew
+crew = Crew(
+    agents=[space_analyst],
+    tasks=[analysis_task],
+    verbose=True,
+    process=Process.sequential
+)
+
+# 使用示例
+result = crew.kickoff(
+    inputs={"user_question": "What are the latest developments in space exploration?"}
+)
+```
+
+## 调试和故障排除 (Debugging and Troubleshooting)
+
+### 调试知识问题
+
+#### 检查代理知识初始化
+
+```python
+from crewai import Agent, Crew, Task
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+knowledge_source = StringKnowledgeSource(content="Test knowledge")
+
+agent = Agent(
+    role="Test Agent",
+    goal="Test knowledge",
+    backstory="Testing",
+    knowledge_sources=[knowledge_source]
+)
+
+crew = Crew(agents=[agent], tasks=[Task(...)])
+
+# Kickoff 前 - 知识未初始化
+print(f"Before kickoff - Agent knowledge: {getattr(agent, 'knowledge', None)}")
+
+crew.kickoff()
+
+# Kickoff 后 - 知识已初始化
+print(f"After kickoff - Agent knowledge: {agent.knowledge}")
+print(f"Agent knowledge collection: {agent.knowledge.storage.collection_name}")
+print(f"Number of sources: {len(agent.knowledge.sources)}")
+```
+
+#### 验证知识存储位置
+
+```python
+import os
+from crewai.utilities.paths import db_storage_path
+
+# 检查存储结构
+storage_path = db_storage_path()
+knowledge_path = os.path.join(storage_path, "knowledge")
+
+if os.path.exists(knowledge_path):
+    print("Knowledge collections found:")
+    for collection in os.listdir(knowledge_path):
+        collection_path = os.path.join(knowledge_path, collection)
+        if os.path.isdir(collection_path):
+            print(f"  - {collection}/")
+            # 显示集合内容
+            for item in os.listdir(collection_path):
+                print(f"    └── {item}")
+```
+
+#### 测试知识检索
+
+```python
+# 测试代理知识检索
+if hasattr(agent, 'knowledge') and agent.knowledge:
+    test_query = ["test query"]
+    results = agent.knowledge.query(test_query)
+    print(f"Agent knowledge results: {len(results)} documents found")
+    
+    # 测试 crew 知识检索 (如果存在)
+    if hasattr(crew, 'knowledge') and crew.knowledge:
+        crew_results = crew.query_knowledge(test_query)
+        print(f"Crew knowledge results: {len(crew_results)} documents found")
+```
+
+#### 检查知识集合
+
+```python
+import chromadb
+from crewai.utilities.paths import db_storage_path
+import os
+
+# 连接到 CrewAI 的知识 ChromaDB
+knowledge_path = os.path.join(db_storage_path(), "knowledge")
+
+if os.path.exists(knowledge_path):
+    client = chromadb.PersistentClient(path=knowledge_path)
+    collections = client.list_collections()
+    
+    print("Knowledge Collections:")
+    for collection in collections:
+        print(f"  - {collection.name}: {collection.count()} documents")
+        
+        # 采样少量文档以验证内容
+        if collection.count() > 0:
+            sample = collection.peek(limit=2)
+            print(f"    Sample content: {sample['documents'][0][:100]}...")
+else:
+    print("No knowledge storage found")
+```
+
+#### 检查知识处理
+
+```python
+from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
+
+# 创建测试知识源
+test_source = StringKnowledgeSource(
+    content="Test knowledge content for debugging",
+    chunk_size=100,  # 小块用于测试
+    chunk_overlap=20
+)
+
+# 检查分块行为
+print(f"Original content length: {len(test_source.content)}")
+print(f"Chunk size: {test_source.chunk_size}")
+print(f"Chunk overlap: {test_source.chunk_overlap}")
+
+# 处理并检查分块
+test_source.add()
+print(f"Number of chunks created: {len(test_source.chunks)}")
+for i, chunk in enumerate(test_source.chunks[:3]):  # 显示前3个块
+    print(f"Chunk {i+1}: {chunk[:50]}...")
+```
+
+### 常见知识存储问题
+
+**“File not found” (找不到文件) 错误：**
+
+```python
+# 确保文件在正确的位置
+from crewai.utilities.constants import KNOWLEDGE_DIRECTORY
+import os
+
+knowledge_dir = KNOWLEDGE_DIRECTORY  # 通常是 "knowledge"
+file_path = os.path.join(knowledge_dir, "your_file.pdf")
+
+if not os.path.exists(file_path):
+    print(f"File not found: {file_path}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Expected knowledge directory: {os.path.abspath(knowledge_dir)}")
+```
+
+**“Embedding dimension mismatch” (嵌入维度不匹配) 错误：**
+
+```python
+# 这种情况通常发生在切换 embedding 提供商时
+# 重置知识存储以清除旧的 embedding
+crew.reset_memories(command_type='knowledge')
+
+# 或者使用一致的 embedding 提供商
+crew = Crew(
+    agents=[...],
+    tasks=[...],
+    knowledge_sources=[...],
+    embedder={"provider": "openai", "config": {"model": "text-embedding-3-small"}}
+)
+```
+
+**“ChromaDB permission denied” (ChromaDB 权限被拒绝) 错误：**
+
+```bash
+# 修复存储权限
+chmod -R 755 ~/.local/share/CrewAI/
+```
+
+**知识在运行之间不持久化：**
+
+```python
+# 验证存储位置的一致性
+import os
+from crewai.utilities.paths import db_storage_path
+
+print("CREWAI_STORAGE_DIR:", os.getenv("CREWAI_STORAGE_DIR"))
+print("Computed storage path:", db_storage_path())
+print("Knowledge path:", os.path.join(db_storage_path(), "knowledge"))
+```
+
+### 知识重置命令
+
+```python
+# 仅重置代理特定的知识
+crew.reset_memories(command_type='agent_knowledge')
+
+# 重置 Crew 和代理的知识  
+crew.reset_memories(command_type='knowledge')
+
+# CLI 命令
+# crewai reset-memories --agent-knowledge  # 仅代理知识
+# crewai reset-memories --knowledge        # 所有知识
+```
+
+### 清除知识 (Clearing Knowledge)
+
+如果你需要清除 CrewAI 中存储的知识，可以使用带有 `--knowledge` 选项的 `crewai reset-memories` 命令。
+
+命令：
+
+```bash
+crewai reset-memories --knowledge
+```
+
+当你更新了知识源并希望确保代理使用最新信息时，此功能非常有用。
+
+## 最佳实践 (Best Practices)
+
+**内容组织**
+
+*   根据你的内容类型选择适当的块大小（chunk sizes）。
+*   考虑内容重叠（overlap）以保持上下文。
+*   将相关信息组织到单独的知识源中。
+
+**性能提示**
+
+*   根据内容复杂度调整块大小。
+*   配置适当的 embedding 模型。
+*   考虑使用本地 embedding 提供商以加快处理速度。
+
+**一次性知识**
+
+*   使用 CrewAI 提供的典型文件结构，每次触发 kickoff 时都会嵌入知识源。
+*   如果知识源很大，这会导致效率低下和延迟增加，因为每次都会嵌入相同的数据。
+*   要解决这个问题，请直接初始化 `knowledge` 参数，而不是 `knowledge_sources` 参数。
+*   链接到该问题以获得完整思路 [Github Issue](https://github.com/crewAIInc/crewAI/issues/2755)
+
+**管理知识**
+
+*   使用代理级知识来获取特定角色的信息。
+*   使用 Crew 级知识来获取所有代理需要的共享信息。
+*   如果你需要不同的嵌入策略，请在代理级别设置 embedders。
+*   使用描述性的代理角色来保持集合名称的一致性。
+*   通过在 kickoff 后检查 `agent.knowledge` 来测试知识初始化。
+*   监控存储位置以了解知识存储在哪里。
+*   使用正确的命令类型适当地重置知识。
+
+**生产环境最佳实践**
+
+*   在生产环境中将 `CREWAI_STORAGE_DIR` 设置为已知位置。
+*   选择明确的 embedding 提供商以匹配你的 LLM 设置并避免 API 密钥冲突。
+*   随着文档的添加，监控知识存储的大小增长。
+*   使用集合名称按域或用途组织知识源。
+*   将知识目录包含在备份和部署策略中。
+*   为知识文件和存储目录设置适当的文件权限。
+*   使用环境变量来存储 API 密钥和敏感配置。

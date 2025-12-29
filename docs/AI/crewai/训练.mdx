@@ -1,0 +1,157 @@
+这是 CrewAI 官方文档中关于“Training（训练）”部分的中文翻译。
+
+---
+
+# 核心概念 - 训练 (Training)
+
+学习如何通过早期给予 AI 代理反馈来训练它们，并获得一致的结果。
+
+## 概览 (Overview)
+
+CrewAI 中的训练功能允许你使用命令行界面 (CLI) 来训练你的 AI 代理。
+通过运行命令 `crewai train -n <n_iterations>`，你可以指定训练过程的迭代次数。
+在训练期间，CrewAI 利用技术手段结合人工反馈来优化代理的性能。
+这有助于提高代理的理解力、决策能力和解决问题的能力。
+
+### 使用 CLI 训练你的 Crew
+
+要使用训练功能，请按照以下步骤操作：
+
+1.  打开你的终端或命令提示符。
+2.  导航到你的 CrewAI 项目所在的目录。
+3.  运行以下命令：
+
+```bash
+crewai train -n <n_iterations> -f <filename.pkl>
+```
+
+将 `<n_iterations>` 替换为所需的训练迭代次数，将 `<filename>` 替换为以 `.pkl` 结尾的合适文件名。
+
+如果你省略 `-f`，输出默认保存为当前工作目录下的 `trained_agents_data.pkl`。你可以传递绝对路径来控制文件的写入位置。
+
+### 以编程方式训练你的 Crew
+
+要以编程方式训练你的 Crew，请使用以下步骤：
+
+1.  定义训练的迭代次数。
+2.  指定训练过程的输入参数。
+3.  在 try-except 块中执行训练命令以处理潜在的错误。
+
+```python
+n_iterations = 2
+inputs = {"topic": "CrewAI Training"}
+filename = "your_model.pkl"
+
+try:
+    YourCrewName_Crew().crew().train(
+      n_iterations=n_iterations,
+      inputs=inputs,
+      filename=filename
+    )
+
+except Exception as e:
+    raise Exception(f"An error occurred while training the crew: {e}")
+```
+
+## 代理如何使用训练数据 (How trained data is used by agents)
+
+CrewAI 以两种方式使用训练产物：在训练期间整合你的人工反馈，以及在训练后使用名为“综合建议 (consolidated suggestions)”的内容来指导代理。
+
+### 训练数据流 (Training data flow)
+
+### 在训练运行期间 (During training runs)
+
+*   在每次迭代中，系统会记录每个代理的：
+    *   `initial_output`：代理的初始回答。
+    *   `human_feedback`：提示时你输入的行内反馈。
+    *   `improved_output`：反馈后代理的后续回答。
+*   这些数据存储在一个名为 `training_data.pkl` 的工作文件中，以代理的内部 ID 和迭代次数为键。
+*   当训练处于活动状态时，代理会自动将你之前的人工反馈附加到其提示词（Prompt）中，以便在本次训练会话的后续尝试中强制执行这些指令。
+    *   **注意**：训练是交互式的：任务会设置 `human_input = true`，因此在非交互式环境中运行将会阻塞在用户输入上。
+
+### 训练完成后 (After training completes)
+
+*   当 `train(...)` 完成时，CrewAI 会评估每个代理收集的训练数据，并生成一个包含以下内容的综合结果：
+    *   `suggestions`（建议）：从你的反馈以及初始输出/改进输出之间的差异中提取的清晰、可操作的指令。
+    *   `quality`（质量）：一个 0-10 分的分数，用于捕捉改进程度。
+    *   `final_summary`（最终总结）：针对未来任务的一步步行动项目集。
+*   这些综合结果将保存到你传递给 `train(...)` 的文件名中（CLI 默认使用 `trained_agents_data.pkl`）。条目以代理的 `role`（角色）为键，因此可以跨会话应用。
+*   在正常（非训练）执行期间，每个代理会自动加载其综合 `suggestions` 并将其作为强制性指令附加到任务提示词中。这让你无需修改代理定义即可获得一致的改进。
+
+### 文件摘要 (File summary)
+
+*   `training_data.pkl`（临时，每次会话）：
+    *   结构：`agent_id -> { iteration_number: { initial_output, human_feedback, improved_output } }`
+    *   目的：在训练期间捕获原始数据和人工反馈。
+    *   位置：保存在当前工作目录 (CWD) 中。
+*   `trained_agents_data.pkl`（或你的自定义文件名）：
+    *   结构：`agent_role -> { suggestions: string[], quality: number, final_summary: string }`
+    *   目的：持久化保存用于未来运行的综合指导。
+    *   位置：默认写入 CWD；使用 `-f` 可设置自定义（包括绝对）路径。
+
+## 小型语言模型注意事项 (Small Language Model Considerations)
+
+当使用较小的语言模型（≤70 亿参数）进行训练数据评估时，请注意它们在生成结构化输出和遵循复杂指令方面可能会面临挑战。
+
+### 小模型在训练评估中的局限性
+
+**JSON 输出准确性**
+较小的模型在生成结构化训练评估所需的有效 JSON 响应方面经常遇到困难，导致解析错误和数据不完整。
+
+**评估质量**
+与较大的模型相比，7B 参数以下的模型提供的评估可能缺乏细微差别，推理深度有限。
+
+**指令遵循**
+较小的模型可能无法完全遵循或考虑复杂的训练评估标准。
+
+**一致性**
+较小的模型在多次训练迭代中的评估可能缺乏一致性。
+
+### 训练建议 (Recommendations for Training)
+
+*   **最佳实践**
+*   **小模型使用**
+
+为了获得最佳的训练质量和可靠的评估，我们强烈建议使用至少 7B 或更大参数的模型：
+
+```python
+from crewai import Agent, Crew, Task, LLM
+
+# 推荐用于训练评估的最低配置
+llm = LLM(model="mistral/open-mistral-7b")
+
+# 用于可靠训练评估的更好选项
+llm = LLM(model="anthropic/claude-3-sonnet-20240229-v1:0")
+llm = LLM(model="gpt-4o")
+
+# 在你的代理中使用此 LLM
+agent = Agent(
+    role="Training Evaluator",
+    goal="Provide accurate training feedback",
+    llm=llm
+)
+```
+
+更强大的模型能提供更高质量的反馈和更好的推理，从而带来更有效的训练迭代。
+
+如果你必须使用较小的模型进行训练评估，请注意以下限制：
+
+```python
+# 使用较小的模型 (预计会有一些限制)
+llm = LLM(model="huggingface/microsoft/Phi-3-mini-4k-instruct")
+```
+
+虽然 CrewAI 包含针对小模型的优化，但请预期评估结果可能不太可靠且缺乏细微差别，这可能需要在训练期间进行更多的人工干预。
+
+### 关键注意事项 (Key Points to Note)
+
+*   **正整数要求**：确保迭代次数 (`n_iterations`) 是一个正整数。如果不满足此条件，代码将引发 `ValueError`。
+*   **文件名要求**：确保文件名以 `.pkl` 结尾。如果不满足此条件，代码将引发 `ValueError`。
+*   **错误处理**：代码会处理子进程错误和意外异常，并向用户提供错误消息。
+*   训练后的指导是在提示词构建时 (prompt time) 应用的；它**不会**修改你的 Python/YAML 代理配置。
+*   代理会自动从位于当前工作目录下的名为 `trained_agents_data.pkl` 的文件中加载训练建议。如果你训练生成的是不同的文件名，请在运行前将其重命名为 `trained_agents_data.pkl`，或者在代码中调整加载器。
+*   你可以在调用 `crewai train` 时使用 `-f/--filename` 更改输出文件名。如果你想保存到 CWD 之外，支持绝对路径。
+
+重要的是要注意，训练过程可能需要一些时间，具体取决于你的代理的复杂性，并且每次迭代都需要你的反馈。
+一旦训练完成，你的代理将具备增强的能力和知识，准备好处理复杂的任务并提供更一致和更有价值的见解。
+请记住定期更新和重新训练你的代理，以确保它们掌握该领域的最新信息和进展。

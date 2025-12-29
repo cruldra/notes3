@@ -1,0 +1,21 @@
+{
+    "zencoder.mcpServers": {
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        },
+        "firecrawl": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "firecrawl-mcp"
+            ],
+            "env": {
+                "FIRECRAWL_API_KEY": "fc-d69219f8547b4d63bc24c50b530f64e7"
+            }
+        }
+    }
+}
