@@ -1,0 +1,845 @@
+这是 CrewAI 官方文档中关于“Flows（工作流）”部分的中文翻译。
+
+---
+
+# 核心概念 - 工作流 (Flows)
+
+学习如何使用 CrewAI Flows 创建和管理 AI 工作流。
+
+## 概览 (Overview)
+
+CrewAI Flows 是一个强大的功能，主要用于简化 AI 工作流的创建和管理。Flows 允许开发者高效地组合与协调编码任务和 Crews（团队），为构建复杂的 AI 自动化提供了一个稳健的框架。
+
+Flows 允许你创建结构化的、事件驱动的工作流。它们提供了一种无缝的方式来连接多个任务、管理状态并在你的 AI 应用程序中控制执行流。通过 Flows，你可以轻松设计和实现多步骤过程，充分利用 CrewAI 的全部能力。
+
+1.  **简化的工作流创建**：轻松将多个 Crew 和任务链接在一起，创建复杂的 AI 工作流。
+2.  **状态管理**：Flows 使得在工作流中的不同任务之间管理和共享状态变得超级简单。
+3.  **事件驱动架构**：建立在事件驱动模型之上，允许动态和响应式的工作流。
+4.  **灵活的控制流**：在工作流中实现条件逻辑、循环和分支。
+
+## 快速开始 (Getting Started)
+
+让我们创建一个简单的 Flow，在一个任务中使用 OpenAI 生成一个随机城市，然后在另一个任务中生成关于该城市的趣闻。
+
+```python
+from crewai.flow.flow import Flow, listen, start
+from dotenv import load_dotenv
+from litellm import completion
+
+class ExampleFlow(Flow):
+    model = "gpt-4o-mini"
+
+    @start()
+    def generate_city(self):
+        print("Starting flow")
+        # 每个流程状态都会自动获得一个唯一的 ID
+        print(f"Flow State ID: {self.state['id']}")
+
+        response = completion(
+            model=self.model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": "Return the name of a random city in the world.",
+                },
+            ],
+        )
+
+        random_city = response["choices"][0]["message"]["content"]
+        # 将城市存储在我们的状态中
+        self.state["city"] = random_city
+        print(f"Random City: {random_city}")
+
+        return random_city
+
+    @listen(generate_city)
+    def generate_fun_fact(self, random_city):
+        response = completion(
+            model=self.model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Tell me a fun fact about {random_city}",
+                },
+            ],
+        )
+
+        fun_fact = response["choices"][0]["message"]["content"]
+        # 将趣闻存储在我们的状态中
+        self.state["fun_fact"] = fun_fact
+        return fun_fact
+
+flow = ExampleFlow()
+flow.plot()
+result = flow.kickoff()
+
+print(f"Generated fun fact: {result}")
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-1.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=18b381277b7b017abf7cb19bc5e03923)
+
+在上面的示例中，我们创建了一个简单的 Flow，它使用 OpenAI 生成随机城市，然后生成关于该城市的趣闻。Flow 由两个任务组成：`generate_city` 和 `generate_fun_fact`。`generate_city` 任务是 Flow 的起点，而 `generate_fun_fact` 任务监听 `generate_city` 任务的输出。
+
+每个 Flow 实例在其状态中自动接收一个唯一标识符 (UUID)，这有助于跟踪和管理流程执行。状态还可以存储在流程执行期间持久存在的其他数据（如生成的城市和趣闻）。
+
+当你运行 Flow 时，它将：
+
+1.  为流程状态生成一个唯一的 ID。
+2.  生成一个随机城市并将其存储在状态中。
+3.  生成关于该城市的趣闻并将其存储在状态中。
+4.  将结果打印到控制台。
+
+状态的唯一 ID 和存储的数据对于跟踪流程执行和在任务之间维护上下文非常有用。
+
+**注意：** 确保你已设置 `.env` 文件以存储你的 `OPENAI_API_KEY`。此密钥对于验证 OpenAI API 请求是必需的。
+
+### @start()
+
+`@start()` 装饰器标记 Flow 的入口点。你可以：
+
+*   声明多个无条件启动点：`@start()`
+*   基于先前的方法或路由标签设置启动门槛：`@start("method_or_label")`
+*   提供一个可调用的条件来控制何时启动
+
+当 Flow 开始或恢复时，所有满足条件的 `@start()` 方法都将执行（通常是并行执行）。
+
+### @listen()
+
+`@listen()` 装饰器用于将方法标记为 Flow 中另一个任务输出的监听器。用 `@listen()` 装饰的方法将在指定任务发出输出时执行。该方法可以将它正在监听的任务的输出作为参数进行访问。
+
+#### 用法
+
+`@listen()` 装饰器有几种使用方式：
+
+1.  **按名称监听方法**：你可以将要监听的方法名称作为字符串传递。当该方法完成时，监听器方法将被触发。
+
+    ```python
+    @listen("generate_city")
+    def generate_fun_fact(self, random_city):
+        # 实现代码
+    ```
+
+2.  **直接监听方法**：你可以传递方法本身。当该方法完成时，监听器方法将被触发。
+
+    ```python
+    @listen(generate_city)
+    def generate_fun_fact(self, random_city):
+        # 实现代码
+    ```
+
+### 流程输出 (Flow Output)
+
+访问和处理 Flow 的输出对于将 AI 工作流集成到更大的应用程序或系统中至关重要。CrewAI Flows 提供了简单的机制来检索最终输出、访问中间结果以及管理 Flow 的整体状态。
+
+#### 检索最终输出
+
+当你运行 Flow 时，最终输出由最后一个完成的方法确定。`kickoff()` 方法返回此最终方法的输出。
+
+以下是如何访问最终输出：
+
+```python
+from crewai.flow.flow import Flow, listen, start
+
+class OutputExampleFlow(Flow):
+    @start()
+    def first_method(self):
+        return "Output from first_method"
+
+    @listen(first_method)
+    def second_method(self, first_output):
+        return f"Second method received: {first_output}"
+
+flow = OutputExampleFlow()
+flow.plot("my_flow_plot")
+final_output = flow.kickoff()
+
+print("---- Final Output ----")
+print(final_output)
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-2.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=3d987994d2c99a06a3cf149c71831fd5)
+
+在此示例中，`second_method` 是最后一个完成的方法，因此其输出将是 Flow 的最终输出。
+`kickoff()` 方法将返回最终输出，然后将其打印到控制台。`plot()` 方法将生成 HTML 文件，帮助你理解流程。
+
+#### 访问和更新状态
+
+除了检索最终输出外，你还可以访问和更新 Flow 中的状态。状态可用于在 Flow 中的不同方法之间存储和共享数据。Flow 运行后，你可以访问状态以检索执行期间添加或更新的任何信息。
+
+以下是更新和访问状态的示例：
+
+```python
+from crewai.flow.flow import Flow, listen, start
+from pydantic import BaseModel
+
+class ExampleState(BaseModel):
+    counter: int = 0
+    message: str = ""
+
+class StateExampleFlow(Flow[ExampleState]):
+
+    @start()
+    def first_method(self):
+        self.state.message = "Hello from first_method"
+        self.state.counter += 1
+
+    @listen(first_method)
+    def second_method(self):
+        self.state.message += " - updated by second_method"
+        self.state.counter += 1
+        return self.state.message
+
+flow = StateExampleFlow()
+flow.plot("my_flow_plot")
+final_output = flow.kickoff()
+print(f"Final Output: {final_output}")
+print("Final State:")
+print(flow.state)
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-2.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=3d987994d2c99a06a3cf149c71831fd5)
+
+在此示例中，状态由 `first_method` 和 `second_method` 更新。
+Flow 运行后，你可以访问最终状态以查看这些方法的更新。
+通过确保返回最终方法的输出并提供对状态的访问，CrewAI Flows 使得将 AI 工作流的结果集成到更大的应用程序或系统中变得容易，同时也能够在整个 Flow 的执行过程中维护和访问状态。
+
+## 流程状态管理 (Flow State Management)
+
+有效管理状态对于构建可靠且可维护的 AI 工作流至关重要。CrewAI Flows 为非结构化和结构化状态管理提供了强大的机制，允许开发者选择最适合其应用需求的方法。
+
+### 非结构化状态管理
+
+在非结构化状态管理中，所有状态都存储在 `Flow` 类的 `state` 属性中。
+这种方法提供了灵活性，允许开发者在不定义严格架构的情况下动态添加或修改状态属性。
+即使是非结构化状态，CrewAI Flows 也会自动为每个状态实例生成并维护一个唯一标识符 (UUID)。
+
+```python
+from crewai.flow.flow import Flow, listen, start
+
+class UnstructuredExampleFlow(Flow):
+
+    @start()
+    def first_method(self):
+        # 状态自动包含一个 'id' 字段
+        print(f"State ID: {self.state['id']}")
+        self.state['counter'] = 0
+        self.state['message'] = "Hello from structured flow"
+
+    @listen(first_method)
+    def second_method(self):
+        self.state['counter'] += 1
+        self.state['message'] += " - updated"
+
+    @listen(second_method)
+    def third_method(self):
+        self.state['counter'] += 1
+        self.state['message'] += " - updated again"
+
+        print(f"State after third_method: {self.state}")
+
+flow = UnstructuredExampleFlow()
+flow.plot("my_flow_plot")
+flow.kickoff()
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-3.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=1d64a80a490430f29b7fa1085a3062c4)
+
+**注意：** `id` 字段是自动生成并在整个流程执行过程中保留的。你不需要手动管理或设置它，即使使用新数据更新状态，它也会被保留。
+
+**关键点：**
+
+*   **灵活性：** 你可以动态地向 `self.state` 添加属性，没有预定义的约束。
+*   **简单性：** 非常适合状态结构极小或变化显著的简单工作流。
+
+### 结构化状态管理
+
+结构化状态管理利用预定义的架构来确保整个工作流的一致性和类型安全。
+通过使用像 Pydantic 的 `BaseModel` 这样的模型，开发者可以定义状态的确切形状，从而在开发环境中实现更好的验证和自动补全。
+CrewAI Flows 中的每个状态都会自动接收一个唯一标识符 (UUID)，以帮助跟踪和管理状态实例。此 ID 由 Flow 系统自动生成和管理。
+
+```python
+from crewai.flow.flow import Flow, listen, start
+from pydantic import BaseModel
+
+class ExampleState(BaseModel):
+    # 注意：'id' 字段会自动添加到所有状态中
+    counter: int = 0
+    message: str = ""
+
+class StructuredExampleFlow(Flow[ExampleState]):
+
+    @start()
+    def first_method(self):
+        # 如果需要，访问自动生成的 ID
+        print(f"State ID: {self.state.id}")
+        self.state.message = "Hello from structured flow"
+
+    @listen(first_method)
+    def second_method(self):
+        self.state.counter += 1
+        self.state.message += " - updated"
+
+    @listen(second_method)
+    def third_method(self):
+        self.state.counter += 1
+        self.state.message += " - updated again"
+
+        print(f"State after third_method: {self.state}")
+
+flow = StructuredExampleFlow()
+flow.kickoff()
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-3.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=1d64a80a490430f29b7fa1085a3062c4)
+
+**关键点：**
+
+*   **定义的架构：** `ExampleState` 清晰地概述了状态结构，提高了代码的可读性和可维护性。
+*   **类型安全：** 利用 Pydantic 确保状态属性符合指定的类型，减少运行时错误。
+*   **自动补全：** IDE 可以基于定义的状态模型提供更好的自动补全和错误检查。
+
+### 在非结构化和结构化状态管理之间选择
+
+*   **使用非结构化状态管理，当：**
+    *   工作流的状态很简单或高度动态。
+    *   灵活性优先于严格的状态定义。
+    *   需要快速原型设计，而不必花费精力定义架构。
+*   **使用结构化状态管理，当：**
+    *   工作流需要定义良好且一致的状态结构。
+    *   类型安全和验证对于应用程序的可靠性很重要。
+    *   你想利用 IDE 功能（如自动补全和类型检查）来获得更好的开发体验。
+
+通过提供非结构化和结构化状态管理选项，CrewAI Flows 赋予开发者构建既灵活又稳健的 AI 工作流的能力，满足广泛的应用需求。
+
+## 流程持久化 (Flow Persistence)
+
+`@persist` 装饰器在 CrewAI Flows 中启用自动状态持久化，允许你在重启或不同的工作流执行之间维护流程状态。此装饰器可以应用于类级别或方法级别，从而灵活地管理状态持久化。
+
+### 类级别持久化
+
+当应用于类级别时，`@persist` 装饰器会自动持久化所有流程方法的状态：
+
+```python
+@persist  # 默认使用 SQLiteFlowPersistence
+class MyFlow(Flow[MyState]):
+    @start()
+    def initialize_flow(self):
+        # 该方法的状态将自动持久化
+        self.state.counter = 1
+        print("Initialized flow. State ID:", self.state.id)
+
+    @listen(initialize_flow)
+    def next_step(self):
+        # 状态（包括 self.state.id）将自动重新加载
+        self.state.counter += 1
+        print("Flow state is persisted. Counter:", self.state.counter)
+```
+
+### 方法级别持久化
+
+为了进行更细粒度的控制，你可以将 `@persist` 应用于特定方法：
+
+```python
+class AnotherFlow(Flow[dict]):
+    @persist  # 仅持久化此方法的状态
+    @start()
+    def begin(self):
+        if "runs" not in self.state:
+            self.state["runs"] = 0
+        self.state["runs"] += 1
+        print("Method-level persisted runs:", self.state["runs"])
+```
+
+### 工作原理
+
+1.  **唯一状态标识**
+    *   每个流程状态自动接收一个唯一的 UUID。
+    *   ID 在状态更新和方法调用之间保持不变。
+    *   支持结构化（Pydantic BaseModel）和非结构化（字典）状态。
+2.  **默认 SQLite 后端**
+    *   `SQLiteFlowPersistence` 是默认的存储后端。
+    *   状态自动保存到本地 SQLite 数据库。
+    *   稳健的错误处理确保在数据库操作失败时提供清晰的消息。
+3.  **错误处理**
+    *   数据库操作的综合错误消息。
+    *   在保存和加载期间自动进行状态验证。
+    *   当持久化操作遇到问题时提供清晰的反馈。
+
+### 重要注意事项
+
+*   **状态类型**：支持结构化（Pydantic BaseModel）和非结构化（字典）状态。
+*   **自动 ID**：如果不存在，会自动添加 `id` 字段。
+*   **状态恢复**：失败或重启的流程可以自动重新加载其先前的状态。
+*   **自定义实现**：你可以为你特定的存储需求提供自己的 `FlowPersistence` 实现。
+
+## 流程控制 (Flow Control)
+
+### 条件逻辑：`or`
+
+Flows 中的 `or_` 函数允许你监听多个方法，并在任一指定方法发出输出时触发监听器方法。
+
+```python
+from crewai.flow.flow import Flow, listen, or_, start
+
+class OrExampleFlow(Flow):
+
+    @start()
+    def start_method(self):
+        return "Hello from the start method"
+
+    @listen(start_method)
+    def second_method(self):
+        return "Hello from the second method"
+
+    @listen(or_(start_method, second_method))
+    def logger(self, result):
+        print(f"Logger: {result}")
+
+flow = OrExampleFlow()
+flow.plot("my_flow_plot")
+flow.kickoff()
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-4.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=88ce9c9f10781b835f170847bc541a13)
+
+当你运行此 Flow 时，`logger` 方法将由 `start_method` 或 `second_method` 的输出触发。
+`or_` 函数用于监听多个方法，并在任一指定方法发出输出时触发监听器方法。
+
+### 条件逻辑：`and`
+
+Flows 中的 `and_` 函数允许你监听多个方法，并且仅当所有指定方法都发出输出时才触发监听器方法。
+
+```python
+from crewai.flow.flow import Flow, and_, listen, start
+
+class AndExampleFlow(Flow):
+
+    @start()
+    def start_method(self):
+        self.state["greeting"] = "Hello from the start method"
+
+    @listen(start_method)
+    def second_method(self):
+        self.state["joke"] = "What do computers eat? Microchips."
+
+    @listen(and_(start_method, second_method))
+    def logger(self):
+        print("---- Logger ----")
+        print(self.state)
+
+flow = AndExampleFlow()
+flow.plot()
+flow.kickoff()
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-5.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=104318219be9d3502ac57ebb513aded7)
+
+当你运行此 Flow 时，`logger` 方法仅在 `start_method` 和 `second_method` 都发出输出时才会触发。
+`and_` 函数用于监听多个方法，并且仅当所有指定方法都发出输出时才触发监听器方法。
+
+### 路由 (Router)
+
+Flows 中的 `@router()` 装饰器允许你根据方法的输出定义条件路由逻辑。
+你可以根据方法的输出指定不同的路径，从而动态控制执行流。
+
+```python
+import random
+from crewai.flow.flow import Flow, listen, router, start
+from pydantic import BaseModel
+
+class ExampleState(BaseModel):
+    success_flag: bool = False
+
+class RouterFlow(Flow[ExampleState]):
+
+    @start()
+    def start_method(self):
+        print("Starting the structured flow")
+        random_boolean = random.choice([True, False])
+        self.state.success_flag = random_boolean
+
+    @router(start_method)
+    def second_method(self):
+        if self.state.success_flag:
+            return "success"
+        else:
+            return "failed"
+
+    @listen("success")
+    def third_method(self):
+        print("Third method running")
+
+    @listen("failed")
+    def fourth_method(self):
+        print("Fourth method running")
+
+flow = RouterFlow()
+flow.plot("my_flow_plot")
+flow.kickoff()
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-6.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=f8cad73f073b4e936ef68d88545f1777)
+
+在上面的例子中，`start_method` 生成一个随机布尔值并在状态中设置它。
+`second_method` 使用 `@router()` 装饰器根据布尔值定义条件路由逻辑。
+如果布尔值为 `True`，该方法返回 `"success"`，如果为 `False`，该方法返回 `"failed"`。
+`third_method` 和 `fourth_method` 监听 `second_method` 的输出，并根据返回值执行。
+当你运行此 Flow 时，输出将根据 `start_method` 生成的随机布尔值而变化。
+
+### 人工介入 (Human in the Loop)
+
+`@human_feedback` 装饰器通过暂停流程执行以收集人类反馈，从而启用人机交互工作流。这对于需要人类判断的批准门槛、质量审查和决策点非常有用。
+
+```python
+from crewai.flow.flow import Flow, start, listen
+from crewai.flow.human_feedback import human_feedback, HumanFeedbackResult
+
+class ReviewFlow(Flow):
+    @start()
+    @human_feedback(
+        message="Do you approve this content?",
+        emit=["approved", "rejected", "needs_revision"],
+        llm="gpt-4o-mini",
+        default_outcome="needs_revision",
+    )
+    def generate_content(self):
+        return "Content to be reviewed..."
+
+    @listen("approved")
+    def on_approval(self, result: HumanFeedbackResult):
+        print(f"Approved! Feedback: {result.feedback}")
+
+    @listen("rejected")
+    def on_rejection(self, result: HumanFeedbackResult):
+        print(f"Rejected. Reason: {result.feedback}")
+```
+
+当指定 `emit` 时，人类的自由形式反馈将由 LLM 解释并折叠为指定的输出结果之一，然后触发相应的 `@listen` 装饰器。
+你也可以在不使用路由的情况下使用 `@human_feedback`，仅用于收集反馈：
+
+```python
+@start()
+@human_feedback(message="Any comments on this output?")
+def my_method(self):
+    return "Output for review"
+
+@listen(my_method)
+def next_step(self, result: HumanFeedbackResult):
+    # 通过 result.feedback 访问反馈
+    # 通过 result.output 访问原始输出
+    pass
+```
+
+通过 `self.last_human_feedback`（最近的）或 `self.human_feedback_history`（所有反馈的列表）访问流程期间收集的所有反馈。
+有关流程中人工反馈的完整指南，包括使用自定义提供商（Slack、Webhooks 等）进行**异步/非阻塞反馈**，请参阅 [Flow 中的人工反馈 (Human Feedback in Flows)](/en/learn/human-feedback-in-flows)。
+
+## 将代理添加到 Flows (Adding Agents to Flows)
+
+代理可以无缝集成到你的 Flows 中，当你需要更简单、更专注的任务执行时，这提供了完整 Crews 的轻量级替代方案。以下是如何在 Flow 中使用 Agent 进行市场研究的示例：
+
+```python
+import asyncio
+from typing import Any, Dict, List
+
+from crewai_tools import SerperDevTool
+from pydantic import BaseModel, Field
+
+from crewai.agent import Agent
+from crewai.flow.flow import Flow, listen, start
+
+# 定义结构化输出格式
+class MarketAnalysis(BaseModel):
+    key_trends: List[str] = Field(description="List of identified market trends")
+    market_size: str = Field(description="Estimated market size")
+    competitors: List[str] = Field(description="Major competitors in the space")
+
+# 定义流程状态
+class MarketResearchState(BaseModel):
+    product: str = ""
+    analysis: MarketAnalysis | None = None
+
+# 创建流程类
+class MarketResearchFlow(Flow[MarketResearchState]):
+    @start()
+    def initialize_research(self) -> Dict[str, Any]:
+        print(f"Starting market research for {self.state.product}")
+        return {"product": self.state.product}
+
+    @listen(initialize_research)
+    async def analyze_market(self) -> Dict[str, Any]:
+        # 为市场研究创建一个 Agent
+        analyst = Agent(
+            role="Market Research Analyst",
+            goal=f"Analyze the market for {self.state.product}",
+            backstory="You are an experienced market analyst with expertise in "
+            "identifying market trends and opportunities.",
+            tools=[SerperDevTool()],
+            verbose=True,
+        )
+
+        # 定义研究查询
+        query = f"""
+        Research the market for {self.state.product}. Include:
+        1. Key market trends
+        2. Market size
+        3. Major competitors
+
+        Format your response according to the specified structure.
+        """
+
+        # 使用结构化输出格式执行分析
+        result = await analyst.kickoff_async(query, response_format=MarketAnalysis)
+        if result.pydantic:
+            print("result", result.pydantic)
+        else:
+            print("result", result)
+
+        # 返回分析以更新状态
+        return {"analysis": result.pydantic}
+
+    @listen(analyze_market)
+    def present_results(self, analysis) -> None:
+        print("\nMarket Analysis Results")
+        print("=====================")
+
+        if isinstance(analysis, dict):
+            # 如果我们得到一个带有 'analysis' 键的字典，提取实际的分析对象
+            market_analysis = analysis.get("analysis")
+        else:
+            market_analysis = analysis
+
+        if market_analysis and isinstance(market_analysis, MarketAnalysis):
+            print("\nKey Market Trends:")
+            for trend in market_analysis.key_trends:
+                print(f"- {trend}")
+
+            print(f"\nMarket Size: {market_analysis.market_size}")
+
+            print("\nMajor Competitors:")
+            for competitor in market_analysis.competitors:
+                print(f"- {competitor}")
+        else:
+            print("No structured analysis data available.")
+            print("Raw analysis:", analysis)
+
+# 使用示例
+async def run_flow():
+    flow = MarketResearchFlow()
+    flow.plot("MarketResearchFlowPlot")
+    result = await flow.kickoff_async(inputs={"product": "AI-powered chatbots"})
+    return result
+
+# 运行流程
+if __name__ == "__main__":
+    asyncio.run(run_flow())
+```
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-7.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=6c60457e1a2b9bc0ef957c373a88359b)
+
+此示例展示了在 Flows 中使用 Agents 的几个关键特性：
+
+1.  **结构化输出**：使用 Pydantic 模型定义预期的输出格式 (`MarketAnalysis`) 确保整个流程中的类型安全和数据结构化。
+2.  **状态管理**：流程状态 (`MarketResearchState`) 维护步骤之间的上下文并存储输入和输出。
+3.  **工具集成**：代理可以使用工具（如 `WebsiteSearchTool`）来增强其能力。
+
+## 将 Crews 添加到 Flows (Adding Crews to Flows)
+
+在 CrewAI 中创建一个包含多个 Crews 的 Flow 非常简单。
+你可以通过运行以下命令生成一个新的 CrewAI 项目，其中包含创建具有多个 Crews 的 Flow 所需的所有脚手架：
+
+```bash
+crewai create flow name_of_flow
+```
+
+此命令将生成一个具有必要文件夹结构的新 CrewAI 项目。生成的项目包含一个名为 `poem_crew` 的预构建 Crew，它已经可以工作。你可以通过复制、粘贴和编辑它来将此 Crew 用作模板，以创建其他 Crews。
+
+### 文件夹结构
+
+运行 `crewai create flow name_of_flow` 命令后，你将看到类似以下的文件夹结构：
+
+| 目录/文件 | 描述 |
+| :--- | :--- |
+| `name_of_flow/` | Flow 的根目录。 |
+| ├── `crews/` | 包含特定 Crews 的目录。 |
+| │ └── `poem_crew/` | “poem_crew” 及其配置和脚本的目录。 |
+| │ ├── `config/` | “poem_crew” 的配置目录。 |
+| │ │ ├── `agents.yaml` | 定义 “poem_crew” 代理的 YAML 文件。 |
+| │ │ └── `tasks.yaml` | 定义 “poem_crew” 任务的 YAML 文件。 |
+| │ ├── `poem_crew.py` | “poem_crew” 功能的脚本。 |
+| ├── `tools/` | Flow 中使用的其他工具的目录。 |
+| │ └── `custom_tool.py` | 自定义工具实现。 |
+| ├── `main.py` | 运行 Flow 的主脚本。 |
+| ├── `README.md` | 项目描述和说明。 |
+| ├── `pyproject.toml` | 项目依赖项和设置的配置文件。 |
+| └── `.gitignore` | 指定在版本控制中忽略的文件和目录。 |
+
+### 连接 Crews 到 `main.py`
+
+`main.py` 文件是你创建 Flow 并将 Crews 连接在一起的地方。你可以使用 `Flow` 类以及装饰器 `@start` 和 `@listen` 来定义 Flow，以指定执行流程。
+
+以下是如何在 `main.py` 文件中连接 `poem_crew` 的示例：
+
+```python
+#!/usr/bin/env python
+from random import randint
+
+from pydantic import BaseModel
+from crewai.flow.flow import Flow, listen, start
+from .crews.poem_crew.poem_crew import PoemCrew
+
+class PoemState(BaseModel):
+    sentence_count: int = 1
+    poem: str = ""
+
+class PoemFlow(Flow[PoemState]):
+
+    @start()
+    def generate_sentence_count(self):
+        print("Generating sentence count")
+        self.state.sentence_count = randint(1, 5)
+
+    @listen(generate_sentence_count)
+    def generate_poem(self):
+        print("Generating poem")
+        result = PoemCrew().crew().kickoff(inputs={"sentence_count": self.state.sentence_count})
+
+        print("Poem generated", result.raw)
+        self.state.poem = result.raw
+
+    @listen(generate_poem)
+    def save_poem(self):
+        print("Saving poem")
+        with open("poem.txt", "w") as f:
+            f.write(self.state.poem)
+
+def kickoff():
+    poem_flow = PoemFlow()
+    poem_flow.kickoff()
+
+def plot():
+    poem_flow = PoemFlow()
+    poem_flow.plot("PoemFlowPlot")
+
+if __name__ == "__main__":
+    kickoff()
+    plot()
+```
+
+在此示例中，`PoemFlow` 类定义了一个流程，该流程生成句子计数，使用 `PoemCrew` 生成诗歌，然后将诗歌保存到文件。流程通过调用 `kickoff()` 方法启动。PoemFlowPlot 将由 `plot()` 方法生成。
+
+![Flow Visual image](https://mintcdn.com/crewai/5SZbe87tsCWZY09V/images/crewai-flow-8.png?fit=max&auto=format&n=5SZbe87tsCWZY09V&q=85&s=5321ca5d1f3c662dc7cff6950ba46000)
+
+### 运行 Flow
+
+(可选) 在运行 Flow 之前，你可以通过运行以下命令安装依赖项：
+
+```bash
+crewai install
+```
+
+一旦安装了所有依赖项，你需要通过运行以下命令激活虚拟环境：
+
+```bash
+source .venv/bin/activate
+```
+
+激活虚拟环境后，你可以通过执行以下命令之一来运行 Flow：
+
+```bash
+crewai flow kickoff
+```
+
+或者
+
+```bash
+uv run kickoff
+```
+
+Flow 将执行，你应该会在控制台中看到输出。
+
+## 绘制 Flows (Plot Flows)
+
+可视化 AI 工作流可以为 Flow 的结构和执行路径提供有价值的见解。CrewAI 提供了一个强大的可视化工具，允许你生成 Flow 的交互式图表，从而更容易理解和优化你的 AI 工作流。
+
+### 什么是 Plots?
+
+CrewAI 中的 Plots 是 AI 工作流的图形表示。它们显示了各种任务、它们的连接以及它们之间的数据流。这种可视化有助于理解操作顺序，识别瓶颈，并确保工作流逻辑符合你的预期。
+
+### 如何生成 Plot
+
+CrewAI 提供了两种方便的方法来生成 Flow 的图表：
+
+#### 选项 1：使用 `plot()` 方法
+
+如果你直接使用 flow 实例，可以通过在 flow 对象上调用 `plot()` 方法来生成图表。此方法将创建一个包含 Flow 交互式图表的 HTML 文件。
+
+```python
+# 假设你有一个 flow 实例
+flow.plot("my_flow_plot")
+```
+
+这将在当前目录中生成一个名为 `my_flow_plot.html` 的文件。你可以在 Web 浏览器中打开此文件以查看交互式图表。
+
+#### 选项 2：使用命令行
+
+如果你在结构化的 CrewAI 项目中工作，可以使用命令行生成图表。这对于想要可视化整个流程设置的大型项目特别有用。
+
+```bash
+crewai flow plot
+```
+
+此命令将生成一个 HTML 文件，其中包含你的 Flow 图表，类似于 `plot()` 方法。文件将保存在你的项目目录中，你可以在 Web 浏览器中打开它以探索 Flow。
+
+## 运行 Flows (Running Flows)
+
+运行 Flow 有两种方式：
+
+### 使用 Flow API
+
+你可以通过创建 Flow 类的实例并调用 `kickoff()` 方法来以编程方式运行 Flow：
+
+```python
+flow = ExampleFlow()
+result = flow.kickoff()
+```
+
+### 流式流程执行
+
+为了实时可见流程执行情况，你可以启用流式传输以在生成时接收输出：
+
+```python
+class StreamingFlow(Flow):
+    stream = True  # 启用流式传输
+
+    @start()
+    def research(self):
+        # 你的流程实现
+        pass
+
+# 迭代流式输出
+flow = StreamingFlow()
+streaming = flow.kickoff()
+for chunk in streaming:
+    print(chunk.content, end="", flush=True)
+
+# 访问最终结果
+result = streaming.result
+```
+
+### 使用 CLI
+
+从 0.103.0 版本开始，你可以使用 `crewai run` 命令运行 Flows：
+
+```bash
+crewai run
+```
+
+此命令会自动检测你的项目是否为 Flow（基于 pyproject.toml 中的 `type = "flow"` 设置）并相应地运行它。这是从命令行运行 Flows 的推荐方式。
+
+为了向后兼容，你也可以使用：
+
+```bash
+crewai flow kickoff
+```
+
+但是，`crewai run` 命令现在是首选方法，因为它对 Crews 和 Flows 都适用。

@@ -1,0 +1,270 @@
+这是 CrewAI 官方文档中关于“Tools（工具）”部分的中文翻译。
+
+---
+
+# 核心概念 - 工具 (Tools)
+
+了解并利用 CrewAI 框架中的工具来实现代理协作和任务执行。
+
+## 概览 (Overview)
+
+CrewAI 工具赋予代理各种能力，从网络搜索和数据分析，到协作以及在同事之间委派任务。本文档概述了如何在 CrewAI 框架内创建、集成和利用这些工具，包括对协作工具的新关注点。
+
+## 什么是工具？ (What is a Tool?)
+
+在 CrewAI 中，工具是代理可以利用来执行各种操作的技能或功能。这包括来自 [CrewAI Toolkit](https://github.com/joaomdmoura/crewai-tools) 和 [LangChain Tools](https://python.langchain.com/docs/integrations/tools) 的工具，支持从简单的搜索到复杂的交互以及代理之间的高效团队合作等各种功能。
+
+> CrewAI AOP 提供了一个全面的工具库 (Tools Repository)，其中包含针对常见业务系统和 API 的预构建集成。只需几分钟即可部署带有企业级工具的代理，而无需数天。
+
+## 工具的关键特性 (Key Characteristics of Tools)
+
+*   **实用性 (Utility)**：专为网络搜索、数据分析、内容生成和代理协作等任务而设计。
+*   **集成性 (Integration)**：通过将工具无缝集成到工作流中来增强代理的能力。
+*   **可定制性 (Customizability)**：提供开发自定义工具或利用现有工具的灵活性，以满足代理的特定需求。
+*   **错误处理 (Error Handling)**：包含强大的错误处理机制，以确运行畅。
+*   **缓存机制 (Caching Mechanism)**：具有智能缓存功能，通过减少冗余操作来优化性能。
+*   **异步支持 (Asynchronous Support)**：支持同步和异步工具，实现非阻塞操作。
+
+## 使用 CrewAI 工具 (Using CrewAI Tools)
+
+要使用 CrewAI 工具增强你的代理能力，首先需要安装我们额外的工具包：
+
+```bash
+pip install 'crewai[tools]'
+```
+
+以下是一个演示其用法的示例：
+
+```python
+import os
+from crewai import Agent, Task, Crew
+# 导入 crewAI 工具
+from crewai_tools import (
+    DirectoryReadTool,
+    FileReadTool,
+    SerperDevTool,
+    WebsiteSearchTool
+)
+
+# 设置 API 密钥
+os.environ["SERPER_API_KEY"] = "Your Key" # serper.dev API key
+os.environ["OPENAI_API_KEY"] = "Your Key"
+
+# 实例化工具
+docs_tool = DirectoryReadTool(directory='./blog-posts')
+file_tool = FileReadTool()
+search_tool = SerperDevTool()
+web_rag_tool = WebsiteSearchTool()
+
+# 创建代理
+researcher = Agent(
+    role='Market Research Analyst',
+    goal='Provide up-to-date market analysis of the AI industry',
+    backstory='An expert analyst with a keen eye for market trends.',
+    tools=[search_tool, web_rag_tool],
+    verbose=True
+)
+
+writer = Agent(
+    role='Content Writer',
+    goal='Craft engaging blog posts about the AI industry',
+    backstory='A skilled writer with a passion for technology.',
+    tools=[docs_tool, file_tool],
+    verbose=True
+)
+
+# 定义任务
+research = Task(
+    description='Research the latest trends in the AI industry and provide a summary.',
+    expected_output='A summary of the top 3 trending developments in the AI industry with a unique perspective on their significance.',
+    agent=researcher
+)
+
+write = Task(
+    description='Write an engaging blog post about the AI industry, based on the research analyst\'s summary. Draw inspiration from the latest blog posts in the directory.',
+    expected_output='A 4-paragraph blog post formatted in markdown with engaging, informative, and accessible content, avoiding complex jargon.',
+    agent=writer,
+    output_file='blog-posts/new_post.md'  # 最终博客文章将保存在此处
+)
+
+# 组建带有规划功能的 Crew
+crew = Crew(
+    agents=[researcher, writer],
+    tasks=[research, write],
+    verbose=True,
+    planning=True,  # 启用规划功能
+)
+
+# 执行任务
+crew.kickoff()
+```
+
+## 可用的 CrewAI 工具 (Available CrewAI Tools)
+
+*   **错误处理**：所有工具都内置了错误处理功能，允许代理优雅地管理异常并继续执行其任务。
+*   **缓存机制**：所有工具都支持缓存，使代理能够有效地重用先前获得的结果，减少外部资源的负载并加快执行时间。你还可以使用工具上的 `cache_function` 属性对缓存机制进行更精细的控制。
+
+以下是可用工具及其描述的列表：
+
+| 工具 | 描述 |
+| :--- | :--- |
+| **ApifyActorsTool** | 将 Apify Actors 与你的工作流集成，用于网络抓取和自动化任务。 |
+| **BrowserbaseLoadTool** | 用于与网络浏览器交互并从中提取数据的工具。 |
+| **CodeDocsSearchTool** | 针对代码文档和相关技术文档搜索优化的 RAG 工具。 |
+| **CodeInterpreterTool** | 用于解释 Python 代码的工具。 |
+| **ComposioTool** | 启用 Composio 工具的使用。 |
+| **CSVSearchTool** | 专为在 CSV 文件中搜索而设计的 RAG 工具，用于处理结构化数据。 |
+| **DALL-E Tool** | 使用 DALL-E API 生成图像的工具。 |
+| **DirectorySearchTool** | 用于在目录中搜索的 RAG 工具，适用于浏览文件系统。 |
+| **DOCXSearchTool** | 旨在搜索 DOCX 文档的 RAG 工具，非常适合处理 Word 文件。 |
+| **DirectoryReadTool** | 促进目录结构及其内容的读取和处理。 |
+| **EXASearchTool** | 旨在跨各种数据源执行详尽搜索的工具。 |
+| **FileReadTool** | 启用从文件中读取和提取数据，支持各种文件格式。 |
+| **FirecrawlSearchTool** | 使用 Firecrawl 搜索网页并返回结果的工具。 |
+| **FirecrawlCrawlWebsiteTool** | 使用 Firecrawl 爬取网页的工具。 |
+| **FirecrawlScrapeWebsiteTool** | 使用 Firecrawl 抓取网页 URL 并返回其内容的工具。 |
+| **GithubSearchTool** | 用于在 GitHub 仓库中搜索的 RAG 工具，适用于代码和文档搜索。 |
+| **SerperDevTool** | 用于开发目的的专用工具，具有正在开发中的特定功能。 |
+| **TXTSearchTool** | 专注于在文本 (.txt) 文件中搜索的 RAG 工具，适用于非结构化数据。 |
+| **JSONSearchTool** | 专为在 JSON 文件中搜索而设计的 RAG 工具，以满足结构化数据处理需求。 |
+| **LlamaIndexTool** | 启用 LlamaIndex 工具的使用。 |
+| **MDXSearchTool** | 专为在 Markdown (MDX) 文件中搜索而定制的 RAG 工具，适用于文档。 |
+| **PDFSearchTool** | 旨在搜索 PDF 文档的 RAG 工具，非常适合处理扫描文档。 |
+| **PGSearchTool** | 针对 PostgreSQL 数据库搜索优化的 RAG 工具，适用于数据库查询。 |
+| **Vision Tool** | 使用 DALL-E API 生成图像的工具。 |
+| **RagTool** | 一种通用的 RAG 工具，能够处理各种数据源和类型。 |
+| **ScrapeElementFromWebsiteTool** | 启用从网站抓取特定元素的功能，适用于有针对性的数据提取。 |
+| **ScrapeWebsiteTool** | 促进抓取整个网站，非常适合全面的数据收集。 |
+| **WebsiteSearchTool** | 用于搜索网站内容的 RAG 工具，针对网络数据提取进行了优化。 |
+| **XMLSearchTool** | 专为在 XML 文件中搜索而设计的 RAG 工具，适用于结构化数据格式。 |
+| **YoutubeChannelSearchTool** | 用于在 YouTube 频道中搜索的 RAG 工具，适用于视频内容分析。 |
+| **YoutubeVideoSearchTool** | 旨在 YouTube 视频中搜索的 RAG 工具，非常适合视频数据提取。 |
+
+## 创建你自己的工具 (Creating your own Tools)
+
+开发人员可以根据代理的需求制作 `custom tools`（自定义工具），也可以利用预构建的选项。
+
+创建 CrewAI 工具主要有两种方式：
+
+### 子类化 `BaseTool` (Subclassing `BaseTool`)
+
+```python
+from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
+
+class MyToolInput(BaseModel):
+    """MyCustomTool 的输入模式。"""
+    argument: str = Field(..., description="Description of the argument.")
+
+class MyCustomTool(BaseTool):
+    name: str = "Name of my tool"
+    description: str = "What this tool does. It's vital for effective utilization."
+    args_schema: Type[BaseModel] = MyToolInput
+
+    def _run(self, argument: str) -> str:
+        # 你的工具逻辑在这里
+        return "Tool's result"
+```
+
+## 异步工具支持 (Asynchronous Tool Support)
+
+CrewAI 支持异步工具，允许你实现执行非阻塞操作（如网络请求、文件 I/O 或其他异步操作）的工具，而不会阻塞主执行线程。
+
+### 创建异步工具 (Creating Async Tools)
+
+你可以通过两种方式创建异步工具：
+
+#### 1. 使用带有异步函数的 `tool` 装饰器
+
+```python
+from crewai.tools import tool
+import asyncio
+
+@tool("fetch_data_async")
+async def fetch_data_async(query: str) -> str:
+    """Asynchronously fetch data based on the query."""
+    # 模拟异步操作
+    await asyncio.sleep(1)
+    return f"Data retrieved for {query}"
+```
+
+#### 2. 在自定义工具类中实现异步方法
+
+```python
+from crewai.tools import BaseTool
+import asyncio
+
+class AsyncCustomTool(BaseTool):
+    name: str = "async_custom_tool"
+    description: str = "An asynchronous custom tool"
+
+    async def _run(self, query: str = "") -> str:
+        """Asynchronously run the tool"""
+        # 你的异步实现
+        await asyncio.sleep(1)
+        return f"Processed {query} asynchronously"
+```
+
+### 使用异步工具 (Using Async Tools)
+
+异步工具在标准 Crew 工作流和基于 Flow 的工作流中均可无缝工作：
+
+```python
+# 在标准 Crew 中
+agent = Agent(role="researcher", tools=[async_custom_tool])
+
+# 在 Flow 中
+class MyFlow(Flow):
+    @start()
+    async def begin(self):
+        crew = Crew(agents=[agent])
+        result = await crew.kickoff_async()
+        return result
+```
+
+CrewAI 框架会自动处理同步和异步工具的执行，因此你无需担心如何以不同方式调用它们。
+
+### 利用 `tool` 装饰器 (Utilizing the `tool` Decorator)
+
+```python
+from crewai.tools import tool
+
+@tool("Name of my tool")
+def my_tool(question: str) -> str:
+    """Clear description for what this tool is useful for, your agent will need this information to use it."""
+    # 函数逻辑在这里
+    return "Result from your custom tool"
+```
+
+### 自定义缓存机制 (Custom Caching Mechanism)
+
+工具可以选择实现 `cache_function` 以微调缓存行为。此函数根据特定条件确定何时缓存结果，从而提供对缓存逻辑的精细控制。
+
+```python
+from crewai.tools import tool
+
+@tool
+def multiplication_tool(first_number: int, second_number: int) -> str:
+    """Useful for when you need to multiply two numbers together."""
+    return first_number * second_number
+
+def cache_func(args, result):
+    # 在这种情况下，我们仅当结果是 2 的倍数时才缓存
+    cache = result % 2 == 0
+    return cache
+
+multiplication_tool.cache_function = cache_func
+
+writer1 = Agent(
+        role="Writer",
+        goal="You write lessons of math for kids.",
+        backstory="You're an expert in writing and you love to teach kids but you know nothing of math.",
+        tools=[multiplication_tool],
+        allow_delegation=False,
+    )
+    #...
+```
+
+## 结论 (Conclusion)
+
+工具在扩展 CrewAI 代理能力方面起着关键作用，使它们能够承担广泛的任务并进行有效协作。在构建 CrewAI 解决方案时，请同时利用自定义工具和现有工具来增强你的代理并提升 AI 生态系统。请考虑利用错误处理、缓存机制以及灵活的工具参数来优化代理的性能和能力。

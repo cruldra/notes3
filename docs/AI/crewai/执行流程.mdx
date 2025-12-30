@@ -1,0 +1,68 @@
+这是 CrewAI 官方文档中关于“Processes（执行流程）”部分的中文翻译。
+
+---
+
+# 核心概念 - 执行流程 (Processes)
+
+关于通过 CrewAI 中的流程进行工作流管理的详细指南，包含更新的实现细节。
+
+## 概览 (Overview)
+
+流程（Processes）负责编排代理（Agents）的任务执行，类似于人类团队中的项目管理。
+这些流程确保任务根据预定义的策略高效地分配和执行。
+
+## 流程实现 (Process Implementations)
+
+*   **顺序执行 (Sequential)**：按顺序执行任务，确保任务有序进行。
+*   **层级执行 (Hierarchical)**：按管理层级组织任务，任务根据结构化的指挥链进行委派和执行。必须在 Crew 中指定管理语言模型（`manager_llm`）或自定义管理代理（`manager_agent`）以启用层级流程，从而促进管理者创建和管理任务。
+*   **共识流程 (Consensual Process)（计划中）**：旨在实现代理之间关于任务执行的协作决策，该流程类型在 CrewAI 任务管理中引入了一种民主的方法。该功能计划在未来开发，目前尚未在代码库中实现。
+
+## 流程在团队合作中的作用 (The Role of Processes in Teamwork)
+
+流程使各个代理能够作为一个有凝聚力的单元运作，简化他们的工作，从而高效且协调地实现共同目标。
+
+## 为 Crew 分配流程 (Assigning Processes to a Crew)
+
+要为 Crew 分配流程，请在创建 Crew 时指定流程类型以设置执行策略。对于层级流程，请确保为管理代理定义 `manager_llm` 或 `manager_agent`。
+
+```python
+from crewai import Crew, Process
+
+# 示例：创建一个顺序流程的 Crew
+crew = Crew(
+    agents=my_agents,
+    tasks=my_tasks,
+    process=Process.sequential
+)
+
+# 示例：创建一个层级流程的 Crew
+# 确保提供 manager_llm 或 manager_agent
+crew = Crew(
+    agents=my_agents,
+    tasks=my_tasks,
+    process=Process.hierarchical,
+    manager_llm="gpt-4o"
+    # 或者
+    # manager_agent=my_manager_agent
+)
+```
+
+**注意：** 确保在创建 `Crew` 对象之前定义好 `my_agents` 和 `my_tasks`，并且对于层级流程，`manager_llm` 或 `manager_agent` 也是必需的。
+
+## 顺序流程 (Sequential Process)
+
+这种方法反映了动态的团队工作流，以周到且系统的方式推进任务。任务执行遵循任务列表中的预定义顺序，一个任务的输出作为下一个任务的上下文。
+要自定义任务上下文，请利用 `Task` 类中的 `context` 参数来指定应用作后续任务上下文的输出。
+
+## 层级流程 (Hierarchical Process)
+
+模仿企业层级结构，CrewAI 允许指定自定义管理代理或自动创建一个（需要指定管理语言模型 `manager_llm`）。该代理监督任务执行，包括规划、委派和验证。任务不是预先分配的；管理者根据代理的能力将任务分配给代理、审查输出并评估任务完成情况。
+
+## Process 类：详细概览 (Process Class: Detailed Overview)
+
+`Process` 类实现为枚举（`Enum`），确保类型安全并将流程值限制为定义的类型（`sequential`、`hierarchical`）。共识流程计划在未来纳入，强调了我们对持续开发和创新的承诺。
+
+## 结论 (Conclusion)
+
+CrewAI 中的流程所促进的结构化协作对于实现代理之间的系统化团队合作至关重要。
+本文档已更新，以反映最新的功能、增强以及共识流程的计划集成，确保用户能够访问最新和最全面的信息。

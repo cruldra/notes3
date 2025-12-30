@@ -1,0 +1,146 @@
+这是 CrewAI 官方文档中关于“Reasoning（推理）”部分的中文翻译。
+
+---
+
+# 核心概念 - 推理 (Reasoning)
+
+学习如何启用和使用代理推理来改进任务执行。
+
+## 概览 (Overview)
+
+代理推理是一项允许代理在执行前对任务进行反思并制定计划的功能。这有助于代理更有条理地处理任务，并确保它们准备好执行分配的工作。
+
+## 用法 (Usage)
+
+要为代理启用推理功能，只需在创建代理时设置 `reasoning=True`：
+
+```python
+from crewai import Agent
+
+agent = Agent(
+    role="Data Analyst",
+    goal="Analyze complex datasets and provide insights",
+    backstory="You are an experienced data analyst with expertise in finding patterns in complex data.",
+    reasoning=True,  # 启用推理
+    max_reasoning_attempts=3  # 可选：设置最大推理尝试次数
+)
+```
+
+## 工作原理 (How It Works)
+
+当启用推理时，在执行任务之前，代理将：
+
+1.  反思任务并制定详细计划
+2.  评估其是否准备好执行任务
+3.  根据需要完善计划，直到准备就绪或达到 `max_reasoning_attempts`
+4.  在执行前将推理计划注入任务描述中
+
+这个过程有助于代理将复杂任务分解为可管理的步骤，并在开始之前识别潜在的挑战。
+
+## 配置选项 (Configuration Options)
+
+| 参数 | 类型 | 默认值 | 描述 |
+| :--- | :--- | :--- | :--- |
+| `reasoning` | `bool` | `"False"` | 启用或禁用推理。 |
+| `max_reasoning_attempts` | `int` | `"None"` | 在继续执行之前完善计划的最大尝试次数。如果为 `None`（默认值），代理将持续完善直到准备就绪。 |
+
+## 示例 (Example)
+
+这是一个完整的示例：
+
+```python
+from crewai import Agent, Task, Crew
+
+# 创建一个启用了推理的代理
+analyst = Agent(
+    role="Data Analyst",
+    goal="Analyze data and provide insights",
+    backstory="You are an expert data analyst.",
+    reasoning=True,
+    max_reasoning_attempts=3  # 可选：设置推理尝试次数的限制
+)
+
+# 创建一个任务
+analysis_task = Task(
+    description="Analyze the provided sales data and identify key trends.",
+    expected_output="A report highlighting the top 3 sales trends.",
+    agent=analyst
+)
+
+# 创建一个 crew 并运行任务
+crew = Crew(agents=[analyst], tasks=[analysis_task])
+result = crew.kickoff()
+
+print(result)
+```
+
+## 错误处理 (Error Handling)
+
+推理过程被设计为稳健的，并内置了错误处理机制。如果推理过程中发生错误，代理将继续执行任务而不使用推理计划。这确保了即使推理过程失败，任务仍然可以被执行。
+
+以下是如何在代码中处理潜在错误：
+
+```python
+from crewai import Agent, Task
+import logging
+
+# 设置日志记录以捕获任何推理错误
+logging.basicConfig(level=logging.INFO)
+
+# 创建一个启用了推理的代理
+agent = Agent(
+    role="Data Analyst",
+    goal="Analyze data and provide insights",
+    reasoning=True,
+    max_reasoning_attempts=3
+)
+
+# 创建一个任务
+task = Task(
+    description="Analyze the provided sales data and identify key trends.",
+    expected_output="A report highlighting the top 3 sales trends.",
+    agent=agent
+)
+
+# 执行任务
+# 如果推理过程中发生错误，它将被记录，并且执行将继续
+result = agent.execute_task(task)
+```
+
+## 推理输出示例 (Example Reasoning Output)
+
+以下是数据分析任务的推理计划示例：
+
+```text
+Task: Analyze the provided sales data and identify key trends.
+
+Reasoning Plan:
+I'll analyze the sales data to identify the top 3 trends.
+
+1. Understanding of the task:
+   I need to analyze sales data to identify key trends that would be valuable for business decision-making.
+
+2. Key steps I'll take:
+   - First, I'll examine the data structure to understand what fields are available
+   - Then I'll perform exploratory data analysis to identify patterns
+   - Next, I'll analyze sales by time periods to identify temporal trends
+   - I'll also analyze sales by product categories and customer segments
+   - Finally, I'll identify the top 3 most significant trends
+
+3. Approach to challenges:
+   - If the data has missing values, I'll decide whether to fill or filter them
+   - If the data has outliers, I'll investigate whether they're valid data points or errors
+   - If trends aren't immediately obvious, I'll apply statistical methods to uncover patterns
+
+4. Use of available tools:
+   - I'll use data analysis tools to explore and visualize the data
+   - I'll use statistical tools to identify significant patterns
+   - I'll use knowledge retrieval to access relevant information about sales analysis
+
+5. Expected outcome:
+   A concise report highlighting the top 3 sales trends with supporting evidence from the data.
+
+READY: I am ready to execute the task.
+```
+
+这个推理计划有助于代理组织其任务处理方法，考虑潜在挑战，并确保它交付预期的输出。
