@@ -1,0 +1,216 @@
+这是 CrewAI 官方文档中关于“CrewAI Tracing（CrewAI 追踪）”部分的中文翻译。
+
+---
+
+# 可观测性 - CrewAI 追踪 (CrewAI Tracing)
+
+使用 CrewAI AOP 平台对 CrewAI Crews 和 Flows 进行内置追踪。
+
+# CrewAI 内置追踪 (CrewAI Built-in Tracing)
+
+CrewAI 提供了内置的追踪功能，允许你实时监控和调试你的 Crews 和 Flows。本指南演示了如何使用 CrewAI 的集成可观测性平台为 **Crews** 和 **Flows** 启用追踪。
+
+> **什么是 CrewAI 追踪？** CrewAI 的内置追踪为你的 AI 代理提供了全面的可观测性，包括代理决策、任务执行时间线、工具使用情况和 LLM（大型语言模型）调用——所有这些都可以通过 [CrewAI AOP 平台](https://app.crewai.com) 访问。
+
+![CrewAI Tracing Interface](https://mintcdn.com/crewai/xsUWvx-8zGU3Skk0/images/crewai-tracing.png?fit=max&auto=format&n=xsUWvx-8zGU3Skk0&q=85&s=b7e95a8f56ed3c459699acf641b4ae5a)
+
+## 前提条件 (Prerequisites)
+
+在使用 CrewAI 追踪之前，你需要：
+
+1.  **CrewAI AOP 账户**：在 [app.crewai.com](https://app.crewai.com) 注册一个免费账户。
+2.  **CLI 认证**：使用 CrewAI CLI 对你的本地环境进行身份验证。
+
+```bash
+crewai login
+```
+
+## 设置指南 (Setup Instructions)
+
+### 第 1 步：创建你的 CrewAI AOP 账户 (Step 1: Create Your CrewAI AOP Account)
+
+访问 [app.crewai.com](https://app.crewai.com) 并创建你的免费账户。这将赋予你访问 CrewAI AOP 平台的权限，你可以在那里查看追踪记录、指标并管理你的 Crews。
+
+### 第 2 步：安装 CrewAI CLI 并认证 (Step 2: Install CrewAI CLI and Authenticate)
+
+如果你还没有安装，请使用 CLI 工具安装 CrewAI：
+
+```bash
+uv add crewai[tools]
+```
+
+然后使用你的 CrewAI AOP 账户对 CLI 进行身份验证：
+
+```bash
+crewai login
+```
+
+此命令将：
+
+1.  打开浏览器并跳转到认证页面。
+2.  提示你输入设备代码。
+3.  使用你的 CrewAI AOP 账户认证你的本地环境。
+4.  为你的本地开发启用追踪功能。
+
+### 第 3 步：在 Crew 中启用追踪 (Step 3: Enable Tracing in Your Crew)
+
+你可以通过将 `tracing` 参数设置为 `True` 来为你的 Crew 启用追踪：
+
+```python
+from crewai import Agent, Crew, Process, Task
+from crewai_tools import SerperDevTool
+
+# 定义你的代理
+researcher = Agent(
+    role="Senior Research Analyst",
+    goal="Uncover cutting-edge developments in AI and data science",
+    backstory="""You work at a leading tech think tank.
+    Your expertise lies in identifying emerging trends.
+    You have a knack for dissecting complex data and presenting actionable insights.""",
+    verbose=True,
+    tools=[SerperDevTool()],
+)
+
+writer = Agent(
+    role="Tech Content Strategist",
+    goal="Craft compelling content on tech advancements",
+    backstory="""You are a renowned Content Strategist, known for your insightful and engaging articles.
+    You transform complex concepts into compelling narratives.""",
+    verbose=True,
+)
+
+# 为你的代理创建任务
+research_task = Task(
+    description="""Conduct a comprehensive analysis of the latest advancements in AI in 2024.
+    Identify key trends, breakthrough technologies, and potential industry impacts.""",
+    expected_output="Full analysis report in bullet points",
+    agent=researcher,
+)
+
+writing_task = Task(
+    description="""Using the insights provided, develop an engaging blog
+    post that highlights the most significant AI advancements.
+    Your post should be informative yet accessible, catering to a tech-savvy audience.""",
+    expected_output="Full blog post of at least 4 paragraphs",
+    agent=writer,
+)
+
+# 在你的 Crew 中启用追踪
+crew = Crew(
+    agents=[researcher, writer],
+    tasks=[research_task, writing_task],
+    process=Process.sequential,
+    tracing=True,  # 启用内置追踪
+    verbose=True
+)
+
+# 执行你的 Crew
+result = crew.kickoff()
+```
+
+### 第 4 步：在 Flow 中启用追踪 (Step 4: Enable Tracing in Your Flow)
+
+同样，你可以为 CrewAI Flows 启用追踪：
+
+```python
+from crewai.flow.flow import Flow, listen, start
+from pydantic import BaseModel
+
+class ExampleState(BaseModel):
+    counter: int = 0
+    message: str = ""
+
+class ExampleFlow(Flow[ExampleState]):
+    def __init__(self):
+        super().__init__(tracing=True)  # 为 Flow 启用追踪
+
+    @start()
+    def first_method(self):
+        print("Starting the flow")
+        self.state.counter = 1
+        self.state.message = "Flow started"
+        return "continue"
+
+    @listen("continue")
+    def second_method(self):
+        print("Continuing the flow")
+        self.state.counter += 1
+        self.state.message = "Flow continued"
+        return "finish"
+
+    @listen("finish")
+    def final_method(self):
+        print("Finishing the flow")
+        self.state.counter += 1
+        self.state.message = "Flow completed"
+
+# 创建并运行启用了追踪的 Flow
+flow = ExampleFlow(tracing=True)
+result = flow.kickoff()
+```
+
+### 第 5 步：在 CrewAI AOP 仪表板中查看追踪 (Step 5: View Traces in the CrewAI AOP Dashboard)
+
+运行 Crew 或 Flow 后，你可以在 CrewAI AOP 仪表板中查看 CrewAI 应用程序生成的追踪记录。你应该能看到代理交互、工具使用和 LLM 调用的详细步骤。
+只需点击下面的链接查看追踪，或前往仪表板中的追踪选项卡：[这里](https://app.crewai.com/crewai_plus/trace_batches)
+
+![CrewAI Tracing Interface](https://mintcdn.com/crewai/iG0g1htk7RWkFuad/images/view-traces.png?fit=max&auto=format&n=iG0g1htk7RWkFuad&q=85&s=72981ddafcda030270c059f08b98db03)
+
+### 替代方案：环境变量配置 (Alternative: Environment Variable Configuration)
+
+你也可以通过设置环境变量来全局启用追踪：
+
+```bash
+export CREWAI_TRACING_ENABLED=true
+```
+
+或者将其添加到你的 `.env` 文件中：
+
+```bash
+CREWAI_TRACING_ENABLED=true
+```
+
+当设置了此环境变量时，所有 Crews 和 Flows 将自动启用追踪，即使没有显式设置 `tracing=True`。
+
+## 查看你的追踪记录 (Viewing Your Traces)
+
+### 访问 CrewAI AOP 仪表板 (Access the CrewAI AOP Dashboard)
+
+1.  访问 [app.crewai.com](https://app.crewai.com) 并登录你的账户。
+2.  导航到你的项目仪表板。
+3.  点击 **Traces (追踪)** 选项卡以查看执行详情。
+
+### 你将在追踪记录中看到什么 (What You’ll See in Traces)
+
+CrewAI 追踪提供了对以下内容的全面可见性：
+
+*   **代理决策 (Agent Decisions)**：查看代理如何推理任务并做出决策。
+*   **任务执行时间线 (Task Execution Timeline)**：任务顺序和依赖关系的可视化表示。
+*   **工具使用 (Tool Usage)**：监控调用了哪些工具以及其结果。
+*   **LLM 调用 (LLM Calls)**：追踪所有语言模型交互，包括提示词和响应。
+*   **性能指标 (Performance Metrics)**：执行时间、Token 使用量和成本。
+*   **错误追踪 (Error Tracking)**：详细的错误信息和堆栈跟踪。
+
+### 追踪功能 (Trace Features)
+
+*   **执行时间线**：点击查看不同的执行阶段。
+*   **详细日志**：访问用于调试的综合日志。
+*   **性能分析**：分析执行模式并优化性能。
+*   **导出功能**：下载追踪记录以供进一步分析。
+
+### 认证问题 (Authentication Issues)
+
+如果你遇到认证问题：
+
+1.  确保你已登录：`crewai login`。
+2.  检查你的互联网连接。
+3.  在 [app.crewai.com](https://app.crewai.com) 验证你的账户。
+
+### 追踪未显示 (Traces Not Appearing)
+
+如果追踪没有显示在仪表板中：
+
+1.  确认在你的 Crew/Flow 中已设置 `tracing=True`。
+2.  如果使用环境变量，检查是否设置了 `CREWAI_TRACING_ENABLED=true`。
+3.  确保你已通过 `crewai login` 进行身份验证。
+4.  验证你的 Crew/Flow 是否实际正在执行。

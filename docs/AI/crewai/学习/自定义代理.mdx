@@ -1,0 +1,113 @@
+这是 CrewAI 官方文档中关于“Customize Agents（自定义代理）”部分的中文翻译。
+
+---
+
+# 自定义代理 (Customize Agents)
+
+本指南全面介绍了如何在 CrewAI 框架内为特定角色、任务和高级自定义功能量身定制代理。
+
+## 可自定义属性 (Customizable Attributes)
+
+打造一支高效的 CrewAI 团队，关键在于是否有能力根据任何项目的独特需求动态地定制您的 AI 代理。本节涵盖了您可以自定义的基础属性。
+
+### 用于自定义的关键属性 (Key Attributes for Customization)
+
+| 属性 | 描述 |
+| :--- | :--- |
+| **Role (角色)** | 指定代理在团队中的工作，例如“分析师”或“客户服务代表”。 |
+| **Goal (目标)** | 定义代理的目标，与其角色和团队的总体使命保持一致。 |
+| **Backstory (背景故事)** | 为代理的角色设定提供深度，增强其在这个团队中的动机和参与感。 |
+| **Tools (工具)** *(可选)* | 代表代理用于执行任务的能力或方法，从简单的函数到复杂的集成。 |
+| **Cache (缓存)** *(可选)* | 决定代理是否应使用缓存来存储工具的使用结果。 |
+| **Max RPM (最大每分钟请求数)** | 设置每分钟的最大请求数 (`max_rpm`)。可以设置为 `None` 以取消对外部服务的请求限制。 |
+| **Verbose (详细模式)** *(可选)* | 启用详细日志记录以便于调试和优化，提供对执行过程的洞察。 |
+| **Allow Delegation (允许委派)** *(可选)* | 控制是否允许将任务委派给其他代理，默认为 `False`。 |
+| **Max Iter (最大迭代次数)** *(可选)* | 限制一项任务的最大迭代次数 (`max_iter`) 以防止无限循环，默认值为 25。 |
+| **Max Execution Time (最大执行时间)** *(可选)* | 设置代理完成任务所允许的最长时间。 |
+| **System Template (系统模板)** *(可选)* | 定义代理的系统提示词格式。 |
+| **Prompt Template (提示词模板)** *(可选)* | 定义代理的提示词格式。 |
+| **Response Template (响应模板)** *(可选)* | 定义代理的响应格式。 |
+| **Use System Prompt (使用系统提示词)** *(可选)* | 控制代理在任务执行期间是否使用系统提示词。 |
+| **Respect Context Window (尊重上下文窗口)** | 默认启用滑动上下文窗口，以保持上下文大小在限制范围内。 |
+| **Max Retry Limit (最大重试限制)** | 设置代理在出错时的最大重试次数 (`max_retry_limit`)。 |
+
+## 高级自定义选项 (Advanced Customization Options)
+
+除了基本属性外，CrewAI 还允许进行深度自定义，以显著增强代理的行为和能力。
+
+### 语言模型自定义 (Language Model Customization)
+
+代理可以使用特定的语言模型 (`llm`) 和函数调用语言模型 (`function_calling_llm`) 进行自定义，从而对其处理和决策能力进行高级控制。
+值得注意的是，设置 `function_calling_llm` 允许覆盖默认的团队函数调用语言模型，从而提供更高级别的自定义。
+
+## 性能和调试设置 (Performance and Debugging Settings)
+
+调整代理的性能并监控其操作对于高效执行任务至关重要。
+
+### 详细模式和 RPM 限制 (Verbose Mode and RPM Limit)
+
+*   **详细模式 (Verbose Mode)**：启用代理操作的详细日志记录，对调试和优化非常有用。具体来说，它可以深入了解代理的执行过程，有助于优化性能。
+*   **RPM 限制 (RPM Limit)**：设置每分钟的最大请求数 (`max_rpm`)。此属性是可选的，可以设置为 `None` 表示不限制，如果需要，允许对外部服务进行无限制的查询。
+
+### 任务执行的最大迭代次数 (Maximum Iterations for Task Execution)
+
+`max_iter` 属性允许用户定义代理执行单个任务的最大迭代次数，从而防止无限循环或过长的执行时间。
+默认值设置为 25，这在彻底性和效率之间取得了平衡。一旦代理接近此数字，它将尽力给出一个好的答案。
+
+## 自定义代理和工具 (Customizing Agents and Tools)
+
+代理是通过在初始化期间定义其属性和工具来进行自定义的。工具对于代理的功能至关重要，使它们能够执行专门的任务。
+`tools` 属性应该是一个代理可以使用的工具数组，默认初始化为空列表。可以在代理初始化后添加或修改工具，以适应新的需求。
+
+```bash
+pip install 'crewai[tools]'
+```
+
+### 示例：为代理分配工具 (Example: Assigning Tools to an Agent)
+
+```python
+import os
+from crewai import Agent
+from crewai_tools import SerperDevTool
+
+# 设置工具初始化所需的 API 密钥
+os.environ["OPENAI_API_KEY"] = "Your Key"
+os.environ["SERPER_API_KEY"] = "Your Key"
+
+# 初始化搜索工具
+search_tool = SerperDevTool()
+
+# 使用高级选项初始化代理
+agent = Agent(
+  role='Research Analyst',
+  goal='Provide up-to-date market analysis',
+  backstory='An expert analyst with a keen eye for market trends.',
+  tools=[search_tool],
+  memory=True, # 启用记忆
+  verbose=True,
+  max_rpm=None, # 不限制每分钟请求数
+  max_iter=25, # 最大迭代次数的默认值
+)
+```
+
+## 委派和自主性 (Delegation and Autonomy)
+
+控制代理委派任务或提问的能力，对于在 CrewAI 框架内调整其自主性和协作动态至关重要。默认情况下，
+`allow_delegation` 属性现在设置为 `False`，禁止代理在需要时寻求帮助或委派任务。可以更改此默认行为以促进 CrewAI 生态系统内的协作解决问题和效率。如果需要，可以启用委派以适应特定的操作要求。
+
+### 示例：为代理启用委派 (Example: Enabling Delegation for an Agent)
+
+*(注：原文标题为 Disabling，但示例代码和该段落语境中的 allow_delegation=True 实际上是 Enabling 启用委派，此处按照代码逻辑翻译为启用)*
+
+```python
+agent = Agent(
+  role='Content Writer',
+  goal='Write engaging content on market trends',
+  backstory='A seasoned writer with expertise in market analysis.',
+  allow_delegation=True # 启用委派
+)
+```
+
+## 结论 (Conclusion)
+
+在 CrewAI 中自定义代理，通过设定其角色、目标、背景故事和工具，并结合语言模型自定义、记忆、性能设置和委派偏好等高级选项，可以打造一支细致入微且能力强大的 AI 团队，随时准备应对复杂的挑战。
