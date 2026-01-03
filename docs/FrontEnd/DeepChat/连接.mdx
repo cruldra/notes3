@@ -2,7 +2,7 @@
 
 ## 如何连接到 API
 
-您可以通过在 [`connect`](/docs/connect#connect-1) 属性中定义其详细信息来连接到任何 API。目标端点需要能够使用下面描述的格式进行接收和响应。
+您可以通过在 connect 属性中定义其详细信息来连接到任何 API。目标端点需要能够使用下面描述的格式进行接收和响应。
 
 [视频演示](https://youtu.be/NuRhPeqDCus)
 
@@ -21,11 +21,11 @@
 
 ### 响应消息 (Response message)
 
-来自目标服务器的响应需要使用 [`Response`](#Response) JSON 类型。
+来自目标服务器的响应需要使用 Response JSON 类型。
 
 > **提示**
 >
-> 如果您不想/无法更改目标服务器来处理所需的对象类型，请使用 [`interceptor`](/docs/interceptors)（拦截器）属性来增强传输的对象，或使用 [`handler`](#Handler) 函数来控制请求代码。
+> 如果您不想/无法更改目标服务器来处理所需的对象类型，请使用 interceptor（拦截器）属性来增强传输的对象，或使用 handler 函数来控制请求代码。
 
 ## 连接属性
 
@@ -38,9 +38,9 @@
          `headers?: {[string]: string}`,
          `additionalBodyProps?: {[string]: any}`,
          [`credentials?: string`](https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials),
-         [`websocket?: Websocket`](#Websocket),
-         [`stream?: Stream`](#Stream),
-         [`handler?: Handler`](#Handler)
+         [`websocket?: Websocket`],
+         [`stream?: Stream`],
+         [`handler?: Handler`]
     }
 ```
 
@@ -94,7 +94,7 @@
 用于限制将包含在发出请求中的内容。
 `maxMessages` 是从最新一条开始计算的最大消息数量。如果将其设置为大于 *0* 的数字（例如 *1*），则发出的请求将仅包含新的用户消息；如果是 *2* - 它还将包含最新消息之前的一条消息（来自 AI 或用户），依此类推... 如果该数字为 *0* 或更小 - 请求将包含聊天中的所有消息。如果是 *undefined*，请求将仅包含输入的文本/文件。
 `totalMessagesMaxCharLength` 是从最新消息开始计算的，请求中发送的文本字符的总最大数量。
-这些限制不包括 [`introMessage`](/docs/messages#introMessage)。
+这些限制不包括 introMessage。
 
 #### 示例
 
@@ -131,16 +131,16 @@
 ### `Response`
 
 ```
-类型: {[`MessageContent`](/docs/messages/#MessageContent), `error?: string`, `overwrite?: boolean`} | `Array`
+类型: {MessageContent, `error?: string`, `overwrite?: boolean`} | `Array`
 ```
 
-包含来自目标服务响应信息的对象。它具有与 [`MessageContent`](/docs/messages/#MessageContent) 相同的属性，并附加了可选的 `error` 和 `overwrite` 属性：
+包含来自目标服务响应信息的对象。它具有与 MessageContent 相同的属性，并附加了可选的 `error` 和 `overwrite` 属性：
 `text` 是文本消息的内容。
 `files` 是一个封装响应件详情的数组。
-`html` 是定义 [自定义元素](/docs/messages/HTML) 标记的字符串。它必须描述完整的元素。
-`error` 描述有关服务器错误的信息。如果 [`errorMessages`](/docs/messages#errorMessages) 中的 *displayServiceErrorMessages* 属性设置为 *true*，则相同的消息将显示在聊天的错误气泡中。
-`overwrite` 替换来自同一角色的最后一条消息，如果未找到则创建一个新消息。[状态气泡](#status-bubble-example) 示例。
-Deep Chat 也接受 `Array` 中的多个 `Response` 对象，但是 [`Stream`](#Stream) 不支持此功能。
+`html` 是定义自定义元素标记的字符串。它必须描述完整的元素。
+`error` 描述有关服务器错误的信息。如果 errorMessages 中的 *displayServiceErrorMessages* 属性设置为 *true*，则相同的消息将显示在聊天的错误气泡中。
+`overwrite` 替换来自同一角色的最后一条消息，如果未找到则创建一个新消息。状态气泡示例见下文。
+Deep Chat 也接受 `Array` 中的多个 `Response` 对象，但是 Stream 不支持此功能。
 
 #### 示例：
 
@@ -154,8 +154,8 @@ Deep Chat 也接受 `Array` 中的多个 `Response` 对象，但是 [`Stream`](#
 
 *   类型: `boolean` | `string` | `string[]`
 
-这用于与您的服务器建立 websocket 连接。通过在 [`connect`](#connect-1) 对象中将 `websocket` 属性定义为 `boolean` *true* 或字符串类型的 [连接协议](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications#creating_a_websocket_object)（或多个协议的字符串数组）来启用它。
-需要注意的是，交换的消息必须是字符串化的 JSON（Stringified JSONs），其中 Deep Chat 将使用 [Request message](/docs/connect) 格式发送其消息，而服务器必须使用 [`Response`](#Response) 格式发送其消息。消息示例：
+这用于与您的服务器建立 websocket 连接。通过在 connect 对象中将 `websocket` 属性定义为 `boolean` *true* 或字符串类型的连接协议（或多个协议的字符串数组）来启用它。
+需要注意的是，交换的消息必须是字符串化的 JSON（Stringified JSONs），其中 Deep Chat 将使用 Request message 格式发送其消息，而服务器必须使用 Response 格式发送其消息。消息示例：
 Deep Chat 消息：
 `'{"messages":[{"role":"user","text":"Message from Deep Chat"}]}'`
 服务器消息：
@@ -265,15 +265,15 @@ Messages from the server (来自服务器的消息):
 
 > **注意**
 >
-> 当定义了 [`demo`](https://deepchat.dev/docs/modes#demo) 时，可以在 [`connect`](/docs/connect) 中单独使用 `stream`。
+> 当定义了 demo 时，可以在 connect 中单独使用 `stream`。
 
 ### `Handler`
 
-*   类型: (`body: any`, [`signals: Signals`](#Signals)) => `void`
+*   类型: (`body: any`, `signals: Signals`) => `void`
 
 此函数让开发人员可以完全控制使用自己的代码发出服务器请求。
 当用户尝试发送消息时会调用此函数，它包含两个核心参数：
-`body` 是一个包含发出消息详情的对象，使用 [`Request message`](/docs/connect) 类型。
+`body` 是一个包含发出消息详情的对象，使用 Request message 类型。
 `signals` 是一个函数映射，用于通知 Deep Chat 请求的状态及其结果。可用的信号函数根据您建立的连接类型而有所不同。请参见下面的示例。
 
 [视频演示](https://youtu.be/orRVFA5AWfU)
@@ -374,7 +374,7 @@ chatElementRef.connect = {
 
 ```
 类型: {
-        [`onResponse: (response: Response) => Promise<void>`](#Response),
+        [`onResponse: (response: Response) => Promise<void>`],
         `onOpen: () => void`,
         `onClose: () => void`,
         `stopClicked: {listener: () => void}`,

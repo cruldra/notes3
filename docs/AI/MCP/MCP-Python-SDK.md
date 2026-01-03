@@ -3,36 +3,35 @@
 **模型上下文协议(MCP)的Python实现** [![PyPI][pypi-badge]][pypi-url] [![MIT licensed][mit-badge]][mit-url] [![Python Version][python-badge]][python-url] [![Documentation][docs-badge]][docs-url] [![Specification][spec-badge]][spec-url] [![GitHub Discussions][discussions-badge]][discussions-url]
 
 ## 目录
-- [MCP Python SDK](#mcp-python-sdk)
-- [概述](#概述)
-- [安装](#安装)
-- [将MCP添加到你的Python项目](#将mcp添加到你的python项目)
-- [运行独立的MCP开发工具](#运行独立的mcp开发工具)
-- [快速入门](#快速入门)
-- [什么是MCP？](#什么是mcp)
-- [核心概念](#核心概念)
-- [服务器](#服务器)
-- [资源](#资源)
-- [工具](#工具)
-- [提示](#提示)
-- [图像](#图像)
-- [上下文](#上下文)
-- [运行你的服务器](#运行你的服务器)
-- [开发模式](#开发模式)
-- [Claude Desktop集成](#claude-desktop集成)
-- [直接执行](#直接执行)
-- [挂载到现有的ASGI服务器](#挂载到现有的asgi服务器)
-- [示例](#示例)
-- [回显服务器](#回显服务器)
-- [SQLite浏览器](#sqlite浏览器)
-- [高级用法](#高级用法)
-- [低级服务器](#低级服务器)
-- [编写MCP客户端](#编写mcp客户端)
-- [MCP原语](#mcp原语)
-- [服务器能力](#服务器能力)
-- [文档](#文档)
-- [贡献](#贡献)
-- [许可证](#许可证)
+- 概述
+- 安装
+- 将MCP添加到你的Python项目
+- 运行独立的MCP开发工具
+- 快速入门
+- 什么是MCP？
+- 核心概念
+- 服务器
+- 资源
+- 工具
+- 提示
+- 图像
+- 上下文
+- 运行你的服务器
+- 开发模式
+- Claude Desktop集成
+- 直接执行
+- 挂载到现有的ASGI服务器
+- 示例
+- 回显服务器
+- SQLite浏览器
+- 高级用法
+- 低级服务器
+- 编写MCP客户端
+- MCP原语
+- 服务器能力
+- 文档
+- 贡献
+- 许可证
 
 [pypi-badge]: https://img.shields.io/pypi/v/mcp.svg
 [pypi-url]: https://pypi.org/project/mcp/

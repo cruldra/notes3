@@ -47,7 +47,7 @@ CrewAI 中的 Crew 代表一组为了完成一系列任务而协同工作的 Age
 
 使用 YAML 配置提供了一种更整洁、更易于维护的方式来定义 Crew，并且与 CrewAI 项目中定义 Agent 和任务的方式保持一致。
 
-按照[安装](/en/installation)部分的说明创建 CrewAI 项目后，您可以在继承自 `CrewBase` 的类中定义 Crew，并使用装饰器来定义 Agent、任务和 Crew 本身。
+按照安装部分的说明创建 CrewAI 项目后，您可以在继承自 `CrewBase` 的类中定义 Crew，并使用装饰器来定义 Agent、任务和 Crew 本身。
 
 #### 使用装饰器的 Crew 类示例
 
@@ -360,7 +360,7 @@ for async_result in async_results:
     print(async_result)
 ```
 
-这些方法为您管理和执行 Crew 内的任务提供了灵活性，允许根据您的需求定制同步和异步工作流。有关详细的异步示例，请参阅[异步启动 Crew](/en/learn/kickoff-async) 指南。
+这些方法为您管理和执行 Crew 内的任务提供了灵活性，允许根据您的需求定制同步和异步工作流。有关详细的异步示例，请参阅异步启动 Crew 指南。
 
 ### 流式 Crew 执行 (Streaming Crew Execution)
 
@@ -383,7 +383,7 @@ for chunk in streaming:
 result = streaming.result
 ```
 
-在 [流式 Crew 执行](/en/learn/streaming-crew-execution) 指南中了解更多相关信息。
+在流式 Crew 执行指南中了解更多相关信息。
 
 ### 从特定任务重放 (Replaying from a Specific Task)
 
