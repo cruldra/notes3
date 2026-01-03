@@ -5,8 +5,8 @@
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">MCP Python SDK | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/AI/MCP/MCP-Python-SDK"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="MCP Python SDK | Cruldra"><meta data-rh="true" name="description" content="模型上下文协议(MCP)的Python实现 PyPI MIT licensed Python Version Documentation Specification GitHub Discussions"><meta data-rh="true" property="og:description" content="模型上下文协议(MCP)的Python实现 PyPI MIT licensed Python Version Documentation Specification GitHub Discussions"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/AI/MCP/MCP-Python-SDK"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/MCP/MCP-Python-SDK" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/MCP/MCP-Python-SDK" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"MCP Python SDK","item":"https://your-docusaurus-site.example.com/notes3/docs/AI/MCP/MCP-Python-SDK"}]}</script><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.f3dc2d00.css">
-<script src="/notes3/assets/js/runtime~main.ca6d8e20.js" defer="defer"></script>
-<script src="/notes3/assets/js/main.93d55afe.js" defer="defer"></script>
+<script src="/notes3/assets/js/runtime~main.efc03b29.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.9ccd4651.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -16,36 +16,35 @@
 <p><strong>模型上下文协议(MCP)的Python实现</strong> <a href="https://pypi.org/project/mcp/" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/pypi/v/mcp.svg" alt="PyPI" class="img_HIUB"></a> <a href="https://github.com/modelcontextprotocol/python-sdk/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/pypi/l/mcp.svg" alt="MIT licensed" class="img_HIUB"></a> <a href="https://www.python.org/downloads/" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/pypi/pyversions/mcp.svg" alt="Python Version" class="img_HIUB"></a> <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/badge/docs-modelcontextprotocol.io-blue.svg" alt="Documentation" class="img_HIUB"></a> <a href="https://spec.modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/badge/spec-spec.modelcontextprotocol.io-blue.svg" alt="Specification" class="img_HIUB"></a> <a href="https://github.com/modelcontextprotocol/python-sdk/discussions" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.shields.io/github/discussions/modelcontextprotocol/python-sdk" alt="GitHub Discussions" class="img_HIUB"></a></p>
 <h2 class="anchor anchorTargetStickyNavbar_FzkC" id="目录">目录<a href="#目录" class="hash-link" aria-label="Direct link to 目录" title="Direct link to 目录" translate="no">​</a></h2>
 <ul>
-<li class=""><a href="#mcp-python-sdk" class="">MCP Python SDK</a></li>
-<li class=""><a href="#%E6%A6%82%E8%BF%B0" class="">概述</a></li>
-<li class=""><a href="#%E5%AE%89%E8%A3%85" class="">安装</a></li>
-<li class=""><a href="#%E5%B0%86mcp%E6%B7%BB%E5%8A%A0%E5%88%B0%E4%BD%A0%E7%9A%84python%E9%A1%B9%E7%9B%AE" class="">将MCP添加到你的Python项目</a></li>
-<li class=""><a href="#%E8%BF%90%E8%A1%8C%E7%8B%AC%E7%AB%8B%E7%9A%84mcp%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7" class="">运行独立的MCP开发工具</a></li>
-<li class=""><a href="#%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8" class="">快速入门</a></li>
-<li class=""><a href="#%E4%BB%80%E4%B9%88%E6%98%AFmcp" class="">什么是MCP？</a></li>
-<li class=""><a href="#%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5" class="">核心概念</a></li>
-<li class=""><a href="#%E6%9C%8D%E5%8A%A1%E5%99%A8" class="">服务器</a></li>
-<li class=""><a href="#%E8%B5%84%E6%BA%90" class="">资源</a></li>
-<li class=""><a href="#%E5%B7%A5%E5%85%B7" class="">工具</a></li>
-<li class=""><a href="#%E6%8F%90%E7%A4%BA" class="">提示</a></li>
-<li class=""><a href="#%E5%9B%BE%E5%83%8F" class="">图像</a></li>
-<li class=""><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87" class="">上下文</a></li>
-<li class=""><a href="#%E8%BF%90%E8%A1%8C%E4%BD%A0%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8" class="">运行你的服务器</a></li>
-<li class=""><a href="#%E5%BC%80%E5%8F%91%E6%A8%A1%E5%BC%8F" class="">开发模式</a></li>
-<li class=""><a href="#claude-desktop%E9%9B%86%E6%88%90" class="">Claude Desktop集成</a></li>
-<li class=""><a href="#%E7%9B%B4%E6%8E%A5%E6%89%A7%E8%A1%8C" class="">直接执行</a></li>
-<li class=""><a href="#%E6%8C%82%E8%BD%BD%E5%88%B0%E7%8E%B0%E6%9C%89%E7%9A%84asgi%E6%9C%8D%E5%8A%A1%E5%99%A8" class="">挂载到现有的ASGI服务器</a></li>
-<li class=""><a href="#%E7%A4%BA%E4%BE%8B" class="">示例</a></li>
-<li class=""><a href="#%E5%9B%9E%E6%98%BE%E6%9C%8D%E5%8A%A1%E5%99%A8" class="">回显服务器</a></li>
-<li class=""><a href="#sqlite%E6%B5%8F%E8%A7%88%E5%99%A8" class="">SQLite浏览器</a></li>
-<li class=""><a href="#%E9%AB%98%E7%BA%A7%E7%94%A8%E6%B3%95" class="">高级用法</a></li>
-<li class=""><a href="#%E4%BD%8E%E7%BA%A7%E6%9C%8D%E5%8A%A1%E5%99%A8" class="">低级服务器</a></li>
-<li class=""><a href="#%E7%BC%96%E5%86%99mcp%E5%AE%A2%E6%88%B7%E7%AB%AF" class="">编写MCP客户端</a></li>
-<li class=""><a href="#mcp%E5%8E%9F%E8%AF%AD" class="">MCP原语</a></li>
-<li class=""><a href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%83%BD%E5%8A%9B" class="">服务器能力</a></li>
-<li class=""><a href="#%E6%96%87%E6%A1%A3" class="">文档</a></li>
-<li class=""><a href="#%E8%B4%A1%E7%8C%AE" class="">贡献</a></li>
-<li class=""><a href="#%E8%AE%B8%E5%8F%AF%E8%AF%81" class="">许可证</a></li>
+<li class="">概述</li>
+<li class="">安装</li>
+<li class="">将MCP添加到你的Python项目</li>
+<li class="">运行独立的MCP开发工具</li>
+<li class="">快速入门</li>
+<li class="">什么是MCP？</li>
+<li class="">核心概念</li>
+<li class="">服务器</li>
+<li class="">资源</li>
+<li class="">工具</li>
+<li class="">提示</li>
+<li class="">图像</li>
+<li class="">上下文</li>
+<li class="">运行你的服务器</li>
+<li class="">开发模式</li>
+<li class="">Claude Desktop集成</li>
+<li class="">直接执行</li>
+<li class="">挂载到现有的ASGI服务器</li>
+<li class="">示例</li>
+<li class="">回显服务器</li>
+<li class="">SQLite浏览器</li>
+<li class="">高级用法</li>
+<li class="">低级服务器</li>
+<li class="">编写MCP客户端</li>
+<li class="">MCP原语</li>
+<li class="">服务器能力</li>
+<li class="">文档</li>
+<li class="">贡献</li>
+<li class="">许可证</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_FzkC" id="概述">概述<a href="#概述" class="hash-link" aria-label="Direct link to 概述" title="Direct link to 概述" translate="no">​</a></h2>
 <p>模型上下文协议允许应用程序以标准化的方式为LLMs提供上下文，将提供上下文的关注点与实际的LLM交互分离。这个Python SDK实现了完整的MCP规范，使以下操作变得简单：</p>
