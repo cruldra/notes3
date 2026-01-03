@@ -1,0 +1,61 @@
+要想把这一串操作变成一个简单的命令（比如输入 `go-gemini` 直接运行），最“地道”的方法是**修改 PowerShell 的配置文件 (Profile)**。
+
+这样设置后，每次你打开 PowerShell，这个命令就会自动生效，不用每次都去手动执行脚本文件。
+
+以下是具体步骤：
+
+### 第一步：打开 PowerShell 配置文件
+在 PowerShell 中输入以下命令并回车，它会自动用记事本打开你的配置文件（如果文件不存在，它会提示是否创建，选“是”）：
+
+```powershell
+if (!(Test-Path $PROFILE)) { New-Item -Type File -Path $PROFILE -Force }
+notepad $PROFILE
+```
+
+### 第二步：添加自定义函数
+在弹出的记事本窗口中，**复制并粘贴**以下代码。你可以把 `go-gemini` 改成任何你喜欢的简短名字（比如 `gg` 或 `run-g`）。
+
+```powershell
+function go-gemini {
+    # 1. 设置环境变量
+    $env:GOOGLE_CLOUD_PROJECT = "gen-lang-client-0039573825"
+    $env:HTTP_PROXY = "http://127.0.0.1:7890"
+    $env:HTTPS_PROXY = "http://127.0.0.1:7890"
+
+    # 2. 打印一点提示（可选，让你知道它在工作）
+    Write-Host "🚀 代理已设置，正在启动 Gemini..." -ForegroundColor Green
+
+    # 3. 运行 gemini
+    gemini
+}
+```
+
+保存文件 (`Ctrl + S`)，然后关闭记事本。
+
+### 第三步：使配置立即生效
+回到 PowerShell 窗口，输入以下命令让刚才的修改立即生效（或者你直接关掉 PowerShell 再重新打开也可以）：
+
+```powershell
+. $PROFILE
+```
+*(注意：最前面有个点，点和$之间有空格)*
+
+### 🎉 大功告成
+
+现在，你在任何路径下的 PowerShell 窗口里，只需要输入你定义的名字：
+
+```powershell
+go-gemini
+```
+
+它就会自动配置好所有代理和项目 ID，并启动 `gemini`。
+
+---
+
+**❓ 如果报错“禁止运行脚本”**
+如果你在执行 `. $PROFILE` 时看到红色的错误提示“在此系统上禁止运行脚本”，请在管理员权限的 PowerShell 中运行下面这行命令开启权限：
+
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+(输入 `Y` 确认即可)

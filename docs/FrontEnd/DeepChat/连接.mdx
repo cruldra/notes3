@@ -1,0 +1,387 @@
+# 连接 (Connect)
+
+## 如何连接到 API
+
+您可以通过在 [`connect`](/docs/connect#connect-1) 属性中定义其详细信息来连接到任何 API。目标端点需要能够使用下面描述的格式进行接收和响应。
+
+[视频演示](https://youtu.be/NuRhPeqDCus)
+
+### 请求消息 (Request message)
+
+发出的 Deep Chat 请求体被封装为以下格式之一：
+
+*   当仅发送基于**文本**的消息时，请求体将具有以下 JSON 类型：
+`{messages: MessageContent[]}`
+*   当发送包含**文件**的消息时，请求体将序列化为 [FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData) 类型，其中新文件存储在一个名为 *"files"* 的数组属性中，所有其他内容存储在具有对应索引的
+`{files: File[], message1: MessageContent, message2: MessageContent... }`
+
+> **注意**
+>
+> 解析 [FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData) 的 JS 示例：`formData.get("message1")`
+
+### 响应消息 (Response message)
+
+来自目标服务器的响应需要使用 [`Response`](#Response) JSON 类型。
+
+> **提示**
+>
+> 如果您不想/无法更改目标服务器来处理所需的对象类型，请使用 [`interceptor`](/docs/interceptors)（拦截器）属性来增强传输的对象，或使用 [`handler`](#Handler) 函数来控制请求代码。
+
+## 连接属性
+
+### `connect`
+
+```
+类型: {
+         `url?: string`,
+         `method?: string`,
+         `headers?: {[string]: string}`,
+         `additionalBodyProps?: {[string]: any}`,
+         [`credentials?: string`](https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials),
+         [`websocket?: Websocket`](#Websocket),
+         [`stream?: Stream`](#Stream),
+         [`handler?: Handler`](#Handler)
+    }
+```
+
+
+```
+默认值: *{ method: "POST", credentials: "same-origin" }*
+
+```
+
+发出 API 请求的设置。此对象必须定义 `url` 或 `handler` 属性。
+`additionalBodyProps` 用于向发出的消息体添加额外的键值属性。
+`credentials` 用于配置发出的请求是否应包含 cookie。[更多信息](https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials)。
+`websocket` 用于建立 websocket 连接，而不是发送 REST 请求。
+
+[视频演示](https://youtu.be/NuRhPeqDCus?si=B98OGweTBwiMnMzb&t=40)
+
+#### 示例
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  connect='{
+    "url": "https://customapi.com/message",
+    "method": "POST",
+    "headers": {"customName": "customHeaderValue"},
+    "additionalBodyProps": {"customBodyField": "customBodyValue"}
+  }'
+></deep-chat>
+```
+
+```html
+<!-- 此示例适用于原生 JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  connect='{
+    "url": "https://customapi.com/message",
+    "method": "POST",
+    "headers": {"customName": "customHeaderValue"},
+    "additionalBodyProps": {"customBodyField": "customBodyValue"}
+  }'
+  style="border-radius: 8px"
+></deep-chat>
+```
+
+### `requestBodyLimits`
+
+*   类型: {`maxMessages?: number`, `totalMessagesMaxCharLength?: number`}
+
+用于限制将包含在发出请求中的内容。
+`maxMessages` 是从最新一条开始计算的最大消息数量。如果将其设置为大于 *0* 的数字（例如 *1*），则发出的请求将仅包含新的用户消息；如果是 *2* - 它还将包含最新消息之前的一条消息（来自 AI 或用户），依此类推... 如果该数字为 *0* 或更小 - 请求将包含聊天中的所有消息。如果是 *undefined*，请求将仅包含输入的文本/文件。
+`totalMessagesMaxCharLength` 是从最新消息开始计算的，请求中发送的文本字符的总最大数量。
+这些限制不包括 [`introMessage`](/docs/messages#introMessage)。
+
+#### 示例
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  requestBodyLimits='{
+    "totalMessagesMaxCharLength": 20,
+    "maxMessages": 2
+  }'
+></deep-chat>
+```
+
+```html
+<!-- 此示例适用于原生 JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  requestBodyLimits='{
+    "totalMessagesMaxCharLength": 20,
+    "maxMessages": 2
+  }'
+  style="border-radius: 8px"
+  demo="true"
+  introMessage='{"text": Observe the data that is going to be sent below."}'
+></deep-chat>
+```
+
+## 类型 (Types)
+
+与其他组件属性共享的类型：
+
+### `Response`
+
+```
+类型: {[`MessageContent`](/docs/messages/#MessageContent), `error?: string`, `overwrite?: boolean`} | `Array`
+```
+
+包含来自目标服务响应信息的对象。它具有与 [`MessageContent`](/docs/messages/#MessageContent) 相同的属性，并附加了可选的 `error` 和 `overwrite` 属性：
+`text` 是文本消息的内容。
+`files` 是一个封装响应件详情的数组。
+`html` 是定义 [自定义元素](/docs/messages/HTML) 标记的字符串。它必须描述完整的元素。
+`error` 描述有关服务器错误的信息。如果 [`errorMessages`](/docs/messages#errorMessages) 中的 *displayServiceErrorMessages* 属性设置为 *true*，则相同的消息将显示在聊天的错误气泡中。
+`overwrite` 替换来自同一角色的最后一条消息，如果未找到则创建一个新消息。[状态气泡](#status-bubble-example) 示例。
+Deep Chat 也接受 `Array` 中的多个 `Response` 对象，但是 [`Stream`](#Stream) 不支持此功能。
+
+#### 示例：
+
+简单 - `{text: "Simple response"}`
+混合 - `{files: [{name: "file.txt"}], html: "<div>Custom Element</div>"}`
+自定义角色 - `{role: "bob", text: "Message from bob"}`
+错误 - `{error: "Service Error"}`
+覆盖 - `{text: "New text", overwrite: true}`
+
+### `Websocket`
+
+*   类型: `boolean` | `string` | `string[]`
+
+这用于与您的服务器建立 websocket 连接。通过在 [`connect`](#connect-1) 对象中将 `websocket` 属性定义为 `boolean` *true* 或字符串类型的 [连接协议](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications#creating_a_websocket_object)（或多个协议的字符串数组）来启用它。
+需要注意的是，交换的消息必须是字符串化的 JSON（Stringified JSONs），其中 Deep Chat 将使用 [Request message](/docs/connect) 格式发送其消息，而服务器必须使用 [`Response`](#Response) 格式发送其消息。消息示例：
+Deep Chat 消息：
+`'{"messages":[{"role":"user","text":"Message from Deep Chat"}]}'`
+服务器消息：
+`'{"text":"Message from the server"}'`
+
+#### 示例
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat connect='{"url": "ws://customapi.com", "websocket": true}'></deep-chat>
+```
+
+```html
+<!-- 此示例适用于原生 JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  connect='{"url": "ws://customapi.com", "websocket": true}'
+  style="border-radius: 8px"
+  introMessage='{"text": Chat will attempt to establish a websocket connection as soon as the component loads up."}'
+></deep-chat>
+```
+
+> **提示**
+>
+> Check the [websocket 服务器模板](https://github.com/OvidijusParsiunas/deep-chat/tree/main/example-servers/node/websockets) 以帮助您入门。
+
+#### 状态气泡示例
+
+
+*   示例代码
+*   完整代码
+
+```
+Messages from the server (来自服务器的消息):
+1: {text: "Downloading...", overwrite: true}
+2: {text: "Loading...", overwrite: true}
+3: {text: "Processing...", overwrite: true}
+4: {text: "Ready...", overwrite: true}
+```
+
+```
+Component configuration (组件配置):
+<deep-chat connect='{"url": "ws://customapi.com", "websocket": true}'></deep-chat>
+
+Messages from the server (来自服务器的消息):
+1: {text: "Downloading...", overwrite: true}
+2: {text: "Loading...", overwrite: true}
+3: {text: "Processing...", overwrite: true}
+4: {text: "Ready...", overwrite: true}
+```
+
+### `Stream`
+
+*   类型: `true` | {
+         `simulation?: boolean | number | string`,
+         `readable?: boolean`,
+         `partialRender?: boolean`
+    }
+
+用于流式传输来自目标服务的响应。
+通过设置为 *true* - 聊天将流式传输来自服务器的传入 [`server-sent events`](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)（服务器发送事件）。 参见 [`示例`](https://deepchat.dev/examples/servers) 服务器代码。
+`simulation` 通过逐渐填充消息气泡，为非流式连接提供类似**流式传输**的体验。将其指定为一个数字以控制每个单词出现的毫秒间隔（默认为 *6*），或者指定为一个字符串值作为 *end-phrase*（结束短语），以便在使用 websocket 时停止填充消息气泡。
+`readable` 用于处理来自具有 [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) 的服务器的响应。
+`partialRender` 防止每次接收到新的流事件时重新渲染整个消息气泡，而是仅重新渲染在 `"\n\n"` 语法之后创建的最新消息段落。
+
+#### 流式服务示例
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat connect='{"stream": true}'></deep-chat>
+```
+
+```html
+<!-- 此示例适用于原生 JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  connect='{"stream": true}'
+  demo="true"
+  style="border-radius: 8px"
+  introMessage='{"text": The response message bubble will be populated gradually with text events."}'
+></deep-chat>
+```
+
+#### 常规服务示例
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat connect='{"stream": {"simulation": 6}}'></deep-chat>
+```
+
+```html
+<!-- 此示例适用于原生 JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  connect='{"stream": {"simulation": 6}}'
+  demo="true"
+  style="border-radius: 8px"
+  introMessage='{"text": The response message bubble will be populated gradually with text events."}'
+></deep-chat>
+```
+
+> **注意**
+>
+> 当定义了 [`demo`](https://deepchat.dev/docs/modes#demo) 时，可以在 [`connect`](/docs/connect) 中单独使用 `stream`。
+
+### `Handler`
+
+*   类型: (`body: any`, [`signals: Signals`](#Signals)) => `void`
+
+此函数让开发人员可以完全控制使用自己的代码发出服务器请求。
+当用户尝试发送消息时会调用此函数，它包含两个核心参数：
+`body` 是一个包含发出消息详情的对象，使用 [`Request message`](/docs/connect) 类型。
+`signals` 是一个函数映射，用于通知 Deep Chat 请求的状态及其结果。可用的信号函数根据您建立的连接类型而有所不同。请参见下面的示例。
+
+[视频演示](https://youtu.be/orRVFA5AWfU)
+
+#### 示例
+
+*   基础 (Basic)
+*   流式 (Stream)
+*   Websocket
+
+```javascript
+chatElementRef.connect = {
+  handler: (body, signals) => {
+    try {
+      fetch('custom-url').then((response) => {
+        signals.onResponse({text: 'Handler response'}); // 显示响应文本消息
+      });
+    } catch (e) {
+      signals.onResponse({error: 'Error'}); // 显示错误消息
+    }
+  },
+};
+```
+
+```javascript
+chatElementRef.stream = true;
+chatElementRef.connect = {
+  handler: (body, signals) => {
+    try {
+      // 这是用于创建流的 伪代码
+      fetchEventSource('custom-url', {
+        async onopen(response) {
+          if (response.ok) {
+            signals.onOpen(); // 停止加载气泡
+          } else {
+            signals.onResponse({error: 'error'}); // 显示错误消息
+          }
+        },
+        onmessage(message) {
+          signals.onResponse({text: message}); // 添加文本到消息气泡中
+        },
+        onerror(message) {
+          signals.onResponse({error: message}); // 显示错误消息
+        },
+        onclose() {
+          signals.onClose(); // 停止按钮将变回提交按钮
+        },
+      });
+      // 当用户点击停止按钮时触发
+      signals.stopClicked.listener = () => {
+        // 停止流的逻辑，例如创建 abortController
+      };
+    } catch (e) {
+      signals.onResponse({error: 'error'}); // 显示错误消息
+    }
+  },
+};
+```
+
+```javascript
+// 此 handler 在组件加载时调用
+chatElementRef.connect = {
+  websocket: true,
+  handler: (_, signals) => {
+    try {
+      const websocket = new WebSocket('custom-url');
+      websocket.onopen = () => {
+        signals.onOpen(); // 允许用户发送消息
+      };
+      websocket.onmessage = (message) => {
+        const response = JSON.parse(message.data);
+        signals.onResponse(response); // 显示来自服务器的文本消息
+      };
+      websocket.onclose = () => {
+        signals.onClose(); // 停止用户发送消息
+      };
+      websocket.onerror = () => {
+        // 'Connection error' 是一个特殊字符串，也会显示在 Deep Chat 中
+        signals.onResponse({error: 'Connection error'});
+      };
+      // 当用户发送消息时触发
+      signals.newUserMessage.listener = (body) => {
+        websocket.send(JSON.stringify(body));
+      };
+    } catch (e) {
+      signals.onResponse({error: 'error'}); // 显示错误消息
+      signals.onClose(); // 停止用户发送消息
+    }
+  },
+};
+```
+
+> **信息**
+>
+> 错误处理必须在 `handler` 函数内完成。
+
+#### `Signals`
+
+```
+类型: {
+        [`onResponse: (response: Response) => Promise<void>`](#Response),
+        `onOpen: () => void`,
+        `onClose: () => void`,
+        `stopClicked: {listener: () => void}`,
+        `newUserMessage: {listener: (body: any) => void}`
+    }
+
+```
+
+包含用于通知 Deep Chat 组件当前请求状态的函数的对象。
+`stopClicked` 和 `newUserMessage` 函数由 Deep Chat 本身触发，并包含 `listener` 属性，可以为其分配自定义函数以监听它们何时被调用（请参见上面的示例）。

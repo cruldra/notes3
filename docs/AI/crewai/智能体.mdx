@@ -1,0 +1,710 @@
+这是 CrewAI 官方文档中关于 **Agents (智能体)** 章节的中文翻译。
+
+---
+
+# 智能体 (Agents)
+
+> 关于在 CrewAI 框架中创建和管理智能体的详细指南。
+
+## 智能体概览
+
+在 CrewAI 框架中，`Agent`（智能体）是一个自主单元，它可以：
+
+*   执行特定任务
+*   根据其角色和目标做决策
+*   使用工具完成目标
+*   与其他智能体沟通和协作
+*   保持交互记忆
+*   在允许的情况下委派任务
+
+> **提示**
+> 可以把智能体想象成具有特定技能、专业知识和职责的专家团队成员。例如，`Researcher`（研究员）智能体可能擅长收集和分析信息，而 `Writer`（作家）智能体可能更擅长创作内容。
+
+> **信息：企业级增强功能 - 可视化智能体构建器**
+> CrewAI AOP 包含一个可视化智能体构建器，无需编写代码即可简化智能体的创建和配置。您可以可视化地设计智能体并实时测试它们。
+> 
+> 可视化智能体构建器支持：
+> *   通过表单界面进行直观的智能体配置
+> *   实时测试和验证
+> *   包含预配置智能体类型的模板库
+> *   轻松自定义智能体属性和行为
+
+## 智能体属性 (Agent Attributes)
+
+| 属性 | 参数 | 类型 | 描述 |
+| :--- | :--- | :--- | :--- |
+| **Role (角色)** | `role` | `str` | 定义智能体在团队中的职能和专长。 |
+| **Goal (目标)** | `goal` | `str` | 指导智能体决策的个人目标。 |
+| **Backstory (背景故事)** | `backstory` | `str` | 为智能体提供上下文和个性，丰富交互内容。 |
+| **LLM (大语言模型)** *(可选)* | `llm` | `Union[str, LLM, Any]` | 驱动智能体的语言模型。默认为 `OPENAI_MODEL_NAME` 中指定的模型或 "gpt-4"。 |
+| **Tools (工具)** *(可选)* | `tools` | `List[BaseTool]` | 智能体可用的能力或功能。默认为空列表。 |
+| **Function Calling LLM** *(可选)* | `function_calling_llm` | `Optional[Any]` | 用于工具调用的语言模型，如果指定，将覆盖智能体的主 LLM。 |
+| **Max Iterations (最大迭代次数)** *(可选)* | `max_iter` | `int` | 智能体必须提供最佳答案前的最大迭代次数。默认为 20。 |
+| **Max RPM (最大每分钟请求数)** *(可选)* | `max_rpm` | `Optional[int]` | 每分钟最大请求数，用于避免速率限制。 |
+| **Max Execution Time (最大执行时间)** *(可选)* | `max_execution_time` | `Optional[int]` | 任务执行的最长时间（秒）。 |
+| **Verbose (详细模式)** *(可选)* | `verbose` | `bool` | 启用详细的执行日志以便调试。默认为 False。 |
+| **Allow Delegation (允许委派)** *(可选)* | `allow_delegation` | `bool` | 允许智能体将任务委派给其他智能体。默认为 False。 |
+| **Step Callback (步骤回调)** *(可选)* | `step_callback` | `Optional[Any]` | 智能体每一步后调用的函数，覆盖 Crew 的回调。 |
+| **Cache (缓存)** *(可选)* | `cache` | `bool` | 启用工具使用的缓存。默认为 True。 |
+| **System Template (系统模板)** *(可选)* | `system_template` | `Optional[str]` | 智能体的自定义系统提示词模板。 |
+| **Prompt Template (提示词模板)** *(可选)* | `prompt_template` | `Optional[str]` | 智能体的自定义提示词模板。 |
+| **Response Template (响应模板)** *(可选)* | `response_template` | `Optional[str]` | 智能体的自定义响应模板。 |
+| **Allow Code Execution (允许代码执行)** *(可选)* | `allow_code_execution` | `Optional[bool]` | 启用智能体的代码执行功能。默认为 False。 |
+| **Max Retry Limit (最大重试限制)** *(可选)* | `max_retry_limit` | `int` | 发生错误时的最大重试次数。默认为 2。 |
+| **Respect Context Window (尊重上下文窗口)** *(可选)* | `respect_context_window` | `bool` | 通过摘要保持消息在上下文窗口大小限制内。默认为 True。 |
+| **Code Execution Mode (代码执行模式)** *(可选)* | `code_execution_mode` | `Literal["safe", "unsafe"]` | 代码执行模式：'safe'（使用 Docker）或 'unsafe'（直接执行）。默认为 'safe'。 |
+| **Multimodal (多模态)** *(可选)* | `multimodal` | `bool` | 智能体是否支持多模态能力。默认为 False。 |
+| **Inject Date (注入日期)** *(可选)* | `inject_date` | `bool` | 是否自动将当前日期注入到任务中。默认为 False。 |
+| **Date Format (日期格式)** *(可选)* | `date_format` | `str` | 当启用 `inject_date` 时的日期格式字符串。默认为 "%Y-%m-%d" (ISO 格式)。 |
+| **Reasoning (推理)** *(可选)* | `reasoning` | `bool` | 智能体是否应该在执行任务前进行反思并制定计划。默认为 False。 |
+| **Max Reasoning Attempts (最大推理尝试次数)** *(可选)* | `max_reasoning_attempts` | `Optional[int]` | 执行任务前的最大推理尝试次数。如果为 None，将尝试直到准备好为止。 |
+| **Embedder (嵌入器)** *(可选)* | `embedder` | `Optional[Dict[str, Any]]` | 智能体使用的嵌入器配置。 |
+| **Knowledge Sources (知识源)** *(可选)* | `knowledge_sources` | `Optional[List[BaseKnowledgeSource]]` | 智能体可用的知识源。 |
+| **Use System Prompt (使用系统提示词)** *(可选)* | `use_system_prompt` | `Optional[bool]` | 是否使用系统提示词（用于支持 o1 模型）。默认为 True。 |
+
+## 创建智能体
+
+在 CrewAI 中创建智能体有两种方式：使用 **YAML 配置（推荐）** 或 **直接在代码中定义**。
+
+### YAML 配置（推荐）
+
+使用 YAML 配置提供了一种更清晰、更易于维护的定义智能体的方式。我们强烈建议在您的 CrewAI 项目中使用这种方法。
+
+按照[安装](/en/installation)部分的说明创建 CrewAI 项目后，导航到 `src/latest_ai_development/config/agents.yaml` 文件并修改模板以满足您的需求。
+
+> **注意**
+> 在运行 Crew 时，YAML 文件中的变量（如 `{topic}`）将被输入中的值替换：
+>
+> ```python
+> crew.kickoff(inputs={'topic': 'AI Agents'})
+> ```
+
+以下是如何使用 YAML 配置智能体的示例：
+
+```yaml agents.yaml
+# src/latest_ai_development/config/agents.yaml
+researcher:
+  role: >
+    {topic} 高级数据研究员
+  goal: >
+    揭示 {topic} 领域的前沿发展
+  backstory: >
+    你是一名经验丰富的研究员，擅长发掘 {topic} 领域的最新动态。
+    你以能够找到最相关的信息并以清晰简洁的方式呈现而闻名。
+
+reporting_analyst:
+  role: >
+    {topic} 报告分析师
+  goal: >
+    基于 {topic} 数据分析和研究发现创建详细报告
+  backstory: >
+    你是一名一丝不苟的分析师，拥有敏锐的细节洞察力。
+    你以能够将复杂数据转化为清晰简洁的报告而闻名，
+    这使得他人很容易理解并依据你提供的信息采取行动。
+```
+
+要在代码中使用此 YAML 配置，请创建一个继承自 `CrewBase` 的 Crew 类：
+
+```python
+# src/latest_ai_development/crew.py
+from crewai import Agent, Crew, Process
+from crewai.project import CrewBase, agent, crew
+from crewai_tools import SerperDevTool
+
+@CrewBase
+class LatestAiDevelopmentCrew():
+  """LatestAiDevelopment crew"""
+
+  agents_config = "config/agents.yaml"
+
+  @agent
+  def researcher(self) -> Agent:
+    return Agent(
+      config=self.agents_config['researcher'], # type: ignore[index]
+      verbose=True,
+      tools=[SerperDevTool()]
+    )
+
+  @agent
+  def reporting_analyst(self) -> Agent:
+    return Agent(
+      config=self.agents_config['reporting_analyst'], # type: ignore[index]
+      verbose=True
+    )
+```
+
+> **注意**
+> 您在 YAML 文件（`agents.yaml`）中使用的名称应与 Python 代码中的方法名称相匹配。
+
+### 直接代码定义
+
+您可以通过实例化 `Agent` 类直接在代码中创建智能体。下面是一个展示所有可用参数的综合示例：
+
+```python
+from crewai import Agent
+from crewai_tools import SerperDevTool
+
+# 创建一个带有所有可用参数的智能体
+agent = Agent(
+    role="高级数据科学家",
+    goal="分析和解释复杂数据集以提供可操作的见解",
+    backstory="拥有超过10年的数据科学和机器学习经验，"
+              "你擅长在复杂数据集中发现模式。",
+    llm="gpt-4",  # 默认: OPENAI_MODEL_NAME 或 "gpt-4"
+    function_calling_llm=None,  # 可选: 用于工具调用的独立 LLM
+    verbose=False,  # 默认: False
+    allow_delegation=False,  # 默认: False
+    max_iter=20,  # 默认: 20 次迭代
+    max_rpm=None,  # 可选: API 调用速率限制
+    max_execution_time=None,  # 可选: 最大执行时间（秒）
+    max_retry_limit=2,  # 默认: 出错时重试 2 次
+    allow_code_execution=False,  # 默认: False
+    code_execution_mode="safe",  # 默认: "safe" (选项: "safe", "unsafe")
+    respect_context_window=True,  # 默认: True
+    use_system_prompt=True,  # 默认: True
+    multimodal=False,  # 默认: False
+    inject_date=False,  # 默认: False
+    date_format="%Y-%m-%d",  # 默认: ISO 格式
+    reasoning=False,  # 默认: False
+    max_reasoning_attempts=None,  # 默认: None
+    tools=[SerperDevTool()],  # 可选: 工具列表
+    knowledge_sources=None,  # 可选: 知识源列表
+    embedder=None,  # 可选: 自定义嵌入器配置
+    system_template=None,  # 可选: 自定义系统提示词模板
+    prompt_template=None,  # 可选: 自定义提示词模板
+    response_template=None,  # 可选: 自定义响应模板
+    step_callback=None,  # 可选: 用于监控的回调函数
+)
+```
+
+让我们针对常见用例分解一些关键参数组合：
+
+#### 基础研究员智能体
+
+```python
+research_agent = Agent(
+    role="研究分析师",
+    goal="查找并总结有关特定主题的信息",
+    backstory="你是一位注重细节且经验丰富的研究员",
+    tools=[SerperDevTool()],
+    verbose=True  # 启用日志以便调试
+)
+```
+
+#### 代码开发智能体
+
+```python
+dev_agent = Agent(
+    role="高级 Python 开发人员",
+    goal="编写和调试 Python 代码",
+    backstory="拥有10年经验的 Python 开发专家",
+    allow_code_execution=True,
+    code_execution_mode="safe",  # 使用 Docker 确保安全
+    max_execution_time=300,  # 5分钟超时
+    max_retry_limit=3  # 针对复杂代码任务增加重试次数
+)
+```
+
+#### 长期运行分析智能体
+
+```python
+analysis_agent = Agent(
+    role="数据分析师",
+    goal="对大型数据集进行深度分析",
+    backstory="专注于大数据分析和模式识别",
+    memory=True,
+    respect_context_window=True,
+    max_rpm=10,  # 限制 API 调用
+    function_calling_llm="gpt-4o-mini"  # 使用更便宜的模型进行工具调用
+)
+```
+
+#### 自定义模板智能体
+
+```python
+custom_agent = Agent(
+    role="客户服务代表",
+    goal="协助客户解决咨询问题",
+    backstory="在客户支持方面经验丰富，注重满意度",
+    system_template="""<|start_header_id|>system<|end_header_id|>
+                        {{ .System }}<|eot_id|>""",
+    prompt_template="""<|start_header_id|>user<|end_header_id|>
+                        {{ .Prompt }}<|eot_id|>""",
+    response_template="""<|start_header_id|>assistant<|end_header_id|>
+                        {{ .Response }}<|eot_id|>""",
+)
+```
+
+#### 具有日期感知和推理能力的智能体
+
+```python
+strategic_agent = Agent(
+    role="市场分析师",
+    goal="通过精确的日期参考和战略规划跟踪市场动向",
+    backstory="时效性金融分析和战略报告专家",
+    inject_date=True,  # 自动将当前日期注入任务
+    date_format="%B %d, %Y",  # 格式如 "May 21, 2025"
+    reasoning=True,  # 启用战略规划
+    max_reasoning_attempts=2,  # 限制规划迭代次数
+    verbose=True
+)
+```
+
+#### 推理智能体
+
+```python
+reasoning_agent = Agent(
+    role="战略规划师",
+    goal="分析复杂问题并制定详细的执行计划",
+    backstory="有条不紊地分解复杂挑战的战略规划专家",
+    reasoning=True,  # 启用推理和规划
+    max_reasoning_attempts=3,  # 限制推理尝试次数
+    max_iter=30,  # 允许更多迭代以进行复杂规划
+    verbose=True
+)
+```
+
+#### 多模态智能体
+
+```python
+multimodal_agent = Agent(
+    role="视觉内容分析师",
+    goal="分析和处理文本及视觉内容",
+    backstory="专注于结合文本和图像理解的多模态分析",
+    multimodal=True,  # 启用多模态能力
+    verbose=True
+)
+```
+
+### 参数详解
+
+#### 关键参数
+
+*   `role`（角色）, `goal`（目标）, 和 `backstory`（背景故事）是必需的，它们塑造了智能体的行为。
+*   `llm` 决定所使用的语言模型（默认：OpenAI 的 GPT-4）。
+
+#### 记忆与上下文
+
+*   `memory`: 启用以保持对话历史。
+*   `respect_context_window`: 防止 token 限制问题。
+*   `knowledge_sources`: 添加领域特定的知识库。
+
+#### 执行控制
+
+*   `max_iter`: 给出最佳答案前的最大尝试次数。
+*   `max_execution_time`: 超时时间（秒）。
+*   `max_rpm`: API 调用的速率限制。
+*   `max_retry_limit`: 错误重试次数。
+
+#### 代码执行
+
+*   `allow_code_execution`: 必须为 True 才能运行代码。
+*   `code_execution_mode`:
+    *   `"safe"`: 使用 Docker（生产环境推荐）。
+    *   `"unsafe"`: 直接执行（仅在受信任的环境中使用）。
+
+> **注意**
+> 这将运行默认的 Docker 镜像。如果您想配置 Docker 镜像，请查看工具部分的 Code Interpreter Tool（代码解释器工具）。
+> 将代码解释器工具作为工具参数添加到智能体中。
+
+#### 高级功能
+
+*   `multimodal`: 启用处理文本和视觉内容的多模态能力。
+*   `reasoning`: 启用智能体在执行任务前进行反思和制定计划。
+*   `inject_date`: 自动将当前日期注入任务描述中。
+
+#### 模板
+
+*   `system_template`: 定义智能体的核心行为。
+*   `prompt_template`: 定制输入格式。
+*   `response_template`: 格式化智能体响应。
+
+> **注意**
+> 当使用自定义模板时，请确保同时定义 `system_template` 和 `prompt_template`。`response_template` 是可选的，但建议使用以保持输出格式一致。
+
+> **注意**
+> 当使用自定义模板时，您可以在模板中使用 `{role}`, `{goal}`, 和 `{backstory}` 等变量。这些将在执行期间自动填充。
+
+## 智能体工具
+
+智能体可以配备各种工具以增强其能力。CrewAI 支持来自以下来源的工具：
+
+*   [CrewAI Toolkit](https://github.com/joaomdmoura/crewai-tools)
+*   [LangChain Tools](https://python.langchain.com/docs/integrations/tools)
+
+以下是如何向智能体添加工具：
+
+```python
+from crewai import Agent
+from crewai_tools import SerperDevTool, WikipediaTools
+
+# 创建工具
+search_tool = SerperDevTool()
+wiki_tool = WikipediaTools()
+
+# 添加工具到智能体
+researcher = Agent(
+    role="AI 技术研究员",
+    goal="研究最新的 AI 发展",
+    tools=[search_tool, wiki_tool],
+    verbose=True
+)
+```
+
+## 智能体记忆与上下文
+
+智能体可以保持交互的记忆，并使用先前任务的上下文。这对于需要在多个任务之间保留信息的复杂工作流特别有用。
+
+```python
+from crewai import Agent
+
+analyst = Agent(
+    role="数据分析师",
+    goal="分析并记住复杂的数据模式",
+    memory=True,  # 启用记忆
+    verbose=True
+)
+```
+
+> **注意**
+> 当启用 `memory` 时，智能体将在多个交互中保持上下文，提高其处理复杂、多步骤任务的能力。
+
+## 上下文窗口管理 (Context Window Management)
+
+CrewAI 包含复杂的自动上下文窗口管理，以处理对话超出语言模型 Token 限制的情况。这个强大的功能由 `respect_context_window` 参数控制。
+
+### 上下文窗口管理如何工作
+
+当智能体的对话历史对于 LLM 的上下文窗口来说过大时，CrewAI 会自动检测这种情况，并可以：
+
+1.  **自动摘要内容**（当 `respect_context_window=True`）
+2.  **报错停止执行**（当 `respect_context_window=False`）
+
+### 自动上下文处理 (`respect_context_window=True`)
+
+这是大多数用例的**默认推荐设置**。启用时，CrewAI 将：
+
+```python
+# 具有自动上下文管理的智能体（默认）
+smart_agent = Agent(
+    role="研究分析师",
+    goal="分析大型文档和数据集",
+    backstory="处理大量信息的专家",
+    respect_context_window=True,  # 🔑 默认: 自动处理上下文限制
+    verbose=True
+)
+```
+
+**当超出上下文限制时会发生什么：**
+
+*   ⚠️ **警告消息**: `"Context length exceeded. Summarizing content to fit the model context window."` （超出上下文长度。正在摘要内容以适应模型上下文窗口。）
+*   🔄 **自动摘要**: CrewAI 智能地摘要对话历史。
+*   ✅ **继续执行**: 任务执行使用摘要后的上下文无缝继续。
+*   📝 **保留信息**: 保留关键信息的同时减少 Token 数量。
+
+### 严格的上下文限制 (`respect_context_window=False`)
+
+当您需要精确控制，宁愿停止执行也不愿丢失任何信息时：
+
+```python
+# 具有严格上下文限制的智能体
+strict_agent = Agent(
+    role="法律文档审查员",
+    goal="提供精确的法律分析，无信息丢失",
+    backstory="需要完整上下文以进行准确分析的法律专家",
+    respect_context_window=False,  # ❌ 遇到上下文限制时停止执行
+    verbose=True
+)
+```
+
+**当超出上下文限制时会发生什么：**
+
+*   ❌ **错误消息**: `"Context length exceeded. Consider using smaller text or RAG tools from crewai_tools."` （超出上下文长度。考虑使用更小的文本或 crewai_tools 中的 RAG 工具。）
+*   🛑 **执行停止**: 任务执行立即停止。
+*   🔧 **需要人工干预**: 您需要修改您的方法。
+
+### 选择正确的设置
+
+#### 在以下情况下使用 `respect_context_window=True`（默认）：
+
+*   **处理可能超出上下文限制的大型文档**
+*   **长期运行的对话**，其中一定程度的摘要是可以接受的
+*   **研究任务**，其中一般上下文比确切细节更重要
+*   **原型设计和开发**，您希望执行过程稳健
+
+```python
+# 非常适合文档处理
+document_processor = Agent(
+    role="文档分析师",
+    goal="从大型研究论文中提取见解",
+    backstory="分析大量文档的专家",
+    respect_context_window=True,  # 优雅地处理大型文档
+    max_iter=50,  # 分配更多迭代以进行复杂分析
+    verbose=True
+)
+```
+
+#### 在以下情况下使用 `respect_context_window=False`：
+
+*   **精度至关重要**，信息丢失不可接受
+*   **法律或医疗任务**，需要完整的上下文
+*   **代码审查**，遗漏细节可能会引入 Bug
+*   **财务分析**，准确性至关重要
+
+```python
+# 非常适合精度任务
+precision_agent = Agent(
+    role="代码安全审计员",
+    goal="识别代码中的安全漏洞",
+    backstory="需要完整代码上下文的安全专家",
+    respect_context_window=False,  # 宁愿失败也不愿分析不完整
+    max_retry_limit=1,  # 在上下文问题上快速失败
+    verbose=True
+)
+```
+
+### 处理大数据的替代方法
+
+当处理非常大的数据集时，请考虑以下策略：
+
+#### 1. 使用 RAG 工具
+
+```python
+from crewai_tools import RagTool
+
+# 创建用于大型文档处理的 RAG 工具
+rag_tool = RagTool()
+
+rag_agent = Agent(
+    role="研究助理",
+    goal="高效查询大型知识库",
+    backstory="使用 RAG 工具进行信息检索的专家",
+    tools=[rag_tool],  # 使用 RAG 而不是大上下文窗口
+    respect_context_window=True,
+    verbose=True
+)
+```
+
+#### 2. 使用知识源
+
+```python
+# 使用知识源而不是大型提示词
+knowledge_agent = Agent(
+    role="知识专家",
+    goal="使用精选知识回答问题",
+    backstory="利用结构化知识源的专家",
+    knowledge_sources=[your_knowledge_sources],  # 预处理的知识
+    respect_context_window=True,
+    verbose=True
+)
+```
+
+### 上下文窗口最佳实践
+
+1.  **监控上下文使用情况**: 启用 `verbose=True` 以查看上下文管理的实际运作。
+2.  **以效率为设计目标**: 结构化任务以尽量减少上下文积累。
+3.  **使用合适的模型**: 选择具有适合您任务的上下文窗口的 LLM。
+4.  **测试两种设置**: 尝试 `True` 和 `False`，看哪种更适合您的用例。
+5.  **结合 RAG 使用**: 对于非常大的数据集，使用 RAG 工具，而不是仅依赖上下文窗口。
+
+### 常见上下文问题排查
+
+**如果您收到上下文限制错误：**
+
+```python
+# 快速修复: 启用自动处理
+agent.respect_context_window = True
+
+# 更好的解决方案: 对大数据使用 RAG 工具
+from crewai_tools import RagTool
+agent.tools = [RagTool()]
+
+# 替代方案: 将任务分解为更小的部分
+# 或者使用知识源代替大型提示词
+```
+
+**如果自动摘要丢失了重要信息：**
+
+```python
+# 禁用自动摘要并改用 RAG
+agent = Agent(
+    role="详细分析师",
+    goal="保持完整的信息准确性",
+    backstory="需完整上下文的专家",
+    respect_context_window=False,  # 不摘要
+    tools=[RagTool()],  # 对大数据使用 RAG
+    verbose=True
+)
+```
+
+> **注意**
+> 上下文窗口管理功能在后台自动工作。您无需调用任何特殊函数——只需将 `respect_context_window` 设置为您偏好的行为，CrewAI 就会处理剩下的事情！
+
+## 使用 `kickoff()` 直接交互
+
+使用 `kickoff()` 方法，可以直接使用智能体，而无需通过 Task 或 Crew 工作流。这为您不需要完整的 Crew 编排能力时提供了一种更简单的与智能体交互的方式。
+
+### `kickoff()` 如何工作
+
+`kickoff()` 方法允许您直接向智能体发送消息并获得响应，类似于您与 LLM 交互的方式，但具有所有智能体的能力（工具、推理等）。
+
+```python
+from crewai import Agent
+from crewai_tools import SerperDevTool
+
+# 创建一个智能体
+researcher = Agent(
+    role="AI 技术研究员",
+    goal="研究最新的 AI 发展",
+    tools=[SerperDevTool()],
+    verbose=True
+)
+
+# 使用 kickoff() 直接与智能体交互
+result = researcher.kickoff("语言模型的最新进展是什么？")
+
+# 访问原始响应
+print(result.raw)
+```
+
+### 参数和返回值
+
+| 参数 | 类型 | 描述 |
+| :--- | :--- | :--- |
+| `messages` | `Union[str, List[Dict[str, str]]]` | 字符串查询或包含角色/内容的消息字典列表 |
+| `response_format` | `Optional[Type[Any]]` | 可选的 Pydantic 模型，用于结构化输出 |
+
+该方法返回一个 `LiteAgentOutput` 对象，包含以下属性：
+
+*   `raw`: 包含原始输出文本的字符串
+*   `pydantic`: 解析后的 Pydantic 模型（如果提供了 `response_format`）
+*   `agent_role`: 产生输出的智能体角色
+*   `usage_metrics`: 执行的 Token 使用指标
+
+### 结构化输出
+
+通过提供 Pydantic 模型作为 `response_format`，您可以获得结构化输出：
+
+```python
+from pydantic import BaseModel
+from typing import List
+
+class ResearchFindings(BaseModel):
+    main_points: List[str]
+    key_technologies: List[str]
+    future_predictions: str
+
+# 获取结构化输出
+result = researcher.kickoff(
+    "总结 2025 年 AI 的最新发展",
+    response_format=ResearchFindings
+)
+
+# 访问结构化数据
+print(result.pydantic.main_points)
+print(result.pydantic.future_predictions)
+```
+
+### 多条消息
+
+您也可以提供对话历史作为消息字典列表：
+
+```python
+messages = [
+    {"role": "user", "content": "我需要关于大型语言模型的信息"},
+    {"role": "assistant", "content": "我很乐意为您提供帮助！具体的您想了解什么？"},
+    {"role": "user", "content": "2025 年的最新进展是什么？"}
+]
+
+result = researcher.kickoff(messages)
+```
+
+### 异步支持
+
+通过 `kickoff_async()` 提供异步版本，参数相同：
+
+```python
+import asyncio
+
+async def main():
+    result = await researcher.kickoff_async("AI 的最新进展是什么？")
+    print(result.raw)
+
+asyncio.run(main())
+```
+
+> **注意**
+> `kickoff()` 方法内部使用了 `LiteAgent`，它提供了更简单的执行流程，同时保留了智能体的所有配置（角色、目标、背景故事、工具等）。
+
+## 重要注意事项和最佳实践
+
+### 安全性和代码执行
+
+*   当使用 `allow_code_execution` 时，请对用户输入保持谨慎并始终进行验证。
+*   在生产环境中使用 `code_execution_mode: "safe"` (Docker)。
+*   考虑设置适当的 `max_execution_time` 限制以防止无限循环。
+
+### 性能优化
+
+*   使用 `respect_context_window: true` 以防止 Token 限制问题。
+*   设置适当的 `max_rpm` 以避免速率限制。
+*   启用 `cache: true` 以提高重复任务的性能。
+*   根据任务复杂性调整 `max_iter` 和 `max_retry_limit`。
+
+### 记忆和上下文管理
+
+*   利用 `knowledge_sources` 获取领域特定信息。
+*   使用自定义嵌入模型时配置 `embedder`。
+*   使用自定义模板（`system_template`, `prompt_template`, `response_template`）对智能体行为进行细粒度控制。
+
+### 高级功能
+
+*   对需要执行复杂任务前进行规划和反思的智能体启用 `reasoning: true`。
+*   设置适当的 `max_reasoning_attempts` 以控制规划迭代（None 表示无限制）。
+*   使用 `inject_date: true` 为智能体提供当前日期感知，用于时效性任务。
+*   使用标准 Python datetime 格式代码自定义 `date_format`。
+*   对需要处理文本和视觉内容的智能体启用 `multimodal: true`。
+
+### 智能体协作
+
+*   当智能体需要协同工作时，启用 `allow_delegation: true`。
+*   使用 `step_callback` 监控并记录智能体交互。
+*   考虑针对不同目的使用不同的 LLM：
+    *   主 `llm` 用于复杂推理。
+    *   `function_calling_llm` 用于高效的工具使用。
+
+### 日期感知和推理
+
+*   使用 `inject_date: true` 为智能体提供当前日期感知，用于时效性任务。
+*   使用标准 Python datetime 格式代码自定义 `date_format`。
+*   有效的格式代码包括：%Y（年）、%m（月）、%d（日）、%B（全月名）等。
+*   无效的日期格式将被记录为警告，并且不会修改任务描述。
+*   为受益于前期规划和反思的复杂任务启用 `reasoning: true`。
+
+### 模型兼容性
+
+*   对于不支持系统消息的旧模型，设置 `use_system_prompt: false`。
+*   确保您选择的 `llm` 支持您需要的功能（如函数调用）。
+
+## 常见问题排查
+
+1.  **速率限制**: 如果您触及 API 速率限制：
+    *   实施适当的 `max_rpm`。
+    *   对重复操作使用缓存。
+    *   考虑批量请求。
+
+2.  **上下文窗口错误**: 如果您超出上下文限制：
+    *   启用 `respect_context_window`。
+    *   使用更高效的提示词。
+    *   定期清除智能体记忆。
+
+3.  **代码执行问题**: 如果代码执行失败：
+    *   验证是否安装了 Docker（针对安全模式）。
+    *   检查执行权限。
+    *   审查代码沙箱设置。
+
+4.  **记忆问题**: 如果智能体响应看起来不一致：
+    *   检查知识源配置。
+    *   审查对话历史管理。
+
+请记住，根据具体用例配置智能体时效果最佳。花时间了解您的需求并相应地调整这些参数。

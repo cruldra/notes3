@@ -1,0 +1,416 @@
+这是 CrewAI 官方文档中关于 **Crews (团队)** 章节的中文翻译。
+
+---
+
+# Crews (团队)
+
+> 全面了解并使用 CrewAI 框架中的 Crew 及其属性和功能。
+
+## 概览 (Overview)
+
+CrewAI 中的 Crew 代表一组为了完成一系列任务而协同工作的 Agent（智能体）。每个 Crew 定义了任务执行的策略、Agent 之间的协作方式以及整体工作流程。
+
+## Crew 属性 (Crew Attributes)
+
+| 属性 | 参数 | 描述 |
+| :--- | :--- | :--- |
+| **Tasks** (任务) | `tasks` | 分配给 Crew 的任务列表。 |
+| **Agents** (智能体) | `agents` | 组成 Crew 的 Agent 列表。 |
+| **Process** (流程) *(可选)* | `process` | Crew 遵循的流程（例如：顺序执行、层级执行）。默认为 `sequential`（顺序）。 |
+| **Verbose** (详细模式) *(可选)* | `verbose` | 执行期间的日志详细程度。默认为 `False`。 |
+| **Manager LLM** (经理 LLM) *(可选)* | `manager_llm` | 在层级流程中，经理 Agent 使用的语言模型。**当使用层级流程时，此项为必填。** |
+| **Function Calling LLM** (函数调用 LLM) *(可选)* | `function_calling_llm` | 如果传递此参数，Crew 将使用此 LLM 为 Crew 中的所有 Agent 处理工具的函数调用。每个 Agent 也可以拥有自己的 LLM，这将覆盖 Crew 的 LLM 进行函数调用。 |
+| **Config** (配置) *(可选)* | `config` | Crew 的可选配置设置，格式为 `Json` 或 `Dict[str, Any]`。 |
+| **Max RPM** (最大 RPM) *(可选)* | `max_rpm` | Crew 在执行期间遵守的最大每分钟请求数 (Requests Per Minute)。默认为 `None`。 |
+| **Memory** (记忆) *(可选)* | `memory` | 用于存储执行记忆（短期、长期、实体记忆）。 |
+| **Cache** (缓存) *(可选)* | `cache` | 指定是否使用缓存来存储工具执行的结果。默认为 `True`。 |
+| **Embedder** (嵌入器) *(可选)* | `embedder` | Crew 使用的嵌入器配置。目前主要用于记忆功能。默认为 `{"provider": "openai"}`。 |
+| **Step Callback** (步骤回调) *(可选)* | `step_callback` | 每个 Agent 每一步操作后调用的函数。可用于记录 Agent 的行为或执行其他操作；它不会覆盖 Agent 特有的 `step_callback`。 |
+| **Task Callback** (任务回调) *(可选)* | `task_callback` | 每个任务完成后调用的函数。用于监控或任务执行后的额外操作。 |
+| **Share Crew** (分享 Crew) *(可选)* | `share_crew` | 是否愿意将完整的 Crew 信息和执行情况分享给 CrewAI 团队以改进库，并允许我们训练模型。 |
+| **Output Log File** (输出日志文件) *(可选)* | `output_log_file` | 设置为 True 以在当前目录保存 `logs.txt`，或提供文件路径。如果文件名以 .json 结尾，日志将为 JSON 格式，否则为 .txt。默认为 `None`。 |
+| **Manager Agent** (经理 Agent) *(可选)* | `manager_agent` | `manager` 设置一个自定义 Agent 作为经理。 |
+| **Prompt File** (提示词文件) *(可选)* | `prompt_file` | Crew 使用的提示词 JSON 文件路径。 |
+| **Planning** (规划) *(可选)* | `planning` | 为 Crew 增加规划能力。当激活时，在只要 Crew 迭代之前，所有 Crew 数据都会发送给 AgentPlanner，由其对任务进行规划，该计划将被添加到每个任务描述中。 |
+| **Planning LLM** (规划 LLM) *(可选)* | `planning_llm` | AgentPlanner 在规划过程中使用的语言模型。 |
+| **Knowledge Sources** (知识源) *(可选)* | `knowledge_sources` | Crew 级别可用的知识源，所有 Agent 均可访问。 |
+| **Stream** (流式) *(可选)* | `stream` | 启用流式输出以在 Crew 执行期间接收实时更新。返回一个 `CrewStreamingOutput` 对象，可迭代获取数据块。默认为 `False`。 |
+
+> **提示**
+> **Crew 最大 RPM**: `max_rpm` 属性设置了 Crew 每分钟可以执行的最大请求数，以避免触发速率限制。如果您设置了它，它将覆盖各个 Agent 的 `max_rpm` 设置。
+
+## 创建 Crew (Creating Crews)
+
+在 CrewAI 中创建 Crew 有两种方式：使用 **YAML 配置（推荐）** 或 **直接在代码中定义**。
+
+### YAML 配置（推荐）
+
+使用 YAML 配置提供了一种更整洁、更易于维护的方式来定义 Crew，并且与 CrewAI 项目中定义 Agent 和任务的方式保持一致。
+
+按照[安装](/en/installation)部分的说明创建 CrewAI 项目后，您可以在继承自 `CrewBase` 的类中定义 Crew，并使用装饰器来定义 Agent、任务和 Crew 本身。
+
+#### 使用装饰器的 Crew 类示例
+
+```python
+from crewai import Agent, Crew, Task, Process
+from crewai.project import CrewBase, agent, task, crew, before_kickoff, after_kickoff
+from crewai.agents.agent_builder.base_agent import BaseAgent
+from typing import List
+
+@CrewBase
+class YourCrewName:
+    """Description of your crew"""
+
+    agents: List[BaseAgent]
+    tasks: List[Task]
+
+    # 您的 YAML 配置文件路径
+    # 查看 YAML 中定义 Agent 和任务的示例，请查阅以下内容：
+    # - Task: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
+    # - Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
+    agents_config = 'config/agents.yaml'
+    tasks_config = 'config/tasks.yaml'
+
+    @before_kickoff
+    def prepare_inputs(self, inputs):
+        # 在 Crew 启动前修改输入
+        inputs['additional_data'] = "Some extra information"
+        return inputs
+
+    @after_kickoff
+    def process_output(self, output):
+        # 在 Crew 完成后修改输出
+        output.raw += "\nProcessed after kickoff."
+        return output
+
+    @agent
+    def agent_one(self) -> Agent:
+        return Agent(
+            config=self.agents_config['agent_one'], # type: ignore[index]
+            verbose=True
+        )
+
+    @agent
+    def agent_two(self) -> Agent:
+        return Agent(
+            config=self.agents_config['agent_two'], # type: ignore[index]
+            verbose=True
+        )
+
+    @task
+    def task_one(self) -> Task:
+        return Task(
+            config=self.tasks_config['task_one'] # type: ignore[index]
+        )
+
+    @task
+    def task_two(self) -> Task:
+        return Task(
+            config=self.tasks_config['task_two'] # type: ignore[index]
+        )
+
+    @crew
+    def crew(self) -> Crew:
+        return Crew(
+            agents=self.agents,  # 由 @agent 装饰器自动收集
+            tasks=self.tasks,    # 由 @task 装饰器自动收集
+            process=Process.sequential,
+            verbose=True,
+        )
+```
+
+如何运行上述代码：
+
+```python
+YourCrewName().crew().kickoff(inputs={"any": "input here"})
+```
+
+> **注意**
+> 任务将按照它们定义的顺序执行。
+
+`CrewBase` 类连同这些装饰器自动完成了 Agent 和任务的收集工作，减少了手动管理的需要。
+
+#### `annotations.py` 中的装饰器概览
+
+CrewAI 在 `annotations.py` 文件中提供了几个装饰器，用于标记 Crew 类中的方法以进行特殊处理：
+
+*   `@CrewBase`: 将类标记为 Crew 基类。
+*   `@agent`: 表示该方法返回一个 `Agent` 对象。
+*   `@task`: 表示该方法返回一个 `Task` 对象。
+*   `@crew`: 表示该方法返回 `Crew` 对象。
+*   `@before_kickoff`: （可选）标记一个在 Crew 启动之前执行的方法。
+*   `@after_kickoff`: （可选）标记一个在 Crew 完成之后执行的方法。
+
+这些装饰器有助于组织 Crew 的结构，并自动收集 Agent 和任务，而无需手动列出它们。
+
+### 直接代码定义（替代方案）
+
+或者，您可以直接在代码中定义 Crew，而无需使用 YAML 配置文件。
+
+```python
+from crewai import Agent, Crew, Task, Process
+from crewai_tools import YourCustomTool
+
+class YourCrewName:
+    def agent_one(self) -> Agent:
+        return Agent(
+            role="Data Analyst",
+            goal="Analyze data trends in the market",
+            backstory="An experienced data analyst with a background in economics",
+            verbose=True,
+            tools=[YourCustomTool()]
+        )
+
+    def agent_two(self) -> Agent:
+        return Agent(
+            role="Market Researcher",
+            goal="Gather information on market dynamics",
+            backstory="A diligent researcher with a keen eye for detail",
+            verbose=True
+        )
+
+    def task_one(self) -> Task:
+        return Task(
+            description="Collect recent market data and identify trends.",
+            expected_output="A report summarizing key trends in the market.",
+            agent=self.agent_one()
+        )
+
+    def task_two(self) -> Task:
+        return Task(
+            description="Research factors affecting market dynamics.",
+            expected_output="An analysis of factors influencing the market.",
+            agent=self.agent_two()
+        )
+
+    def crew(self) -> Crew:
+        return Crew(
+            agents=[self.agent_one(), self.agent_two()],
+            tasks=[self.task_one(), self.task_two()],
+            process=Process.sequential,
+            verbose=True
+        )
+```
+
+如何运行上述代码：
+
+```python
+YourCrewName().crew().kickoff(inputs={})
+```
+
+在这个例子中：
+
+*   Agent 和任务直接在类中定义，没有使用装饰器。
+*   我们手动创建和管理 Agent 和任务列表。
+*   这种方法提供了更多的控制权，但对于大型项目来说，可维护性较差。
+
+## Crew 输出 (Crew Output)
+
+CrewAI 框架中 Crew 的输出被封装在 `CrewOutput` 类中。
+该类提供了一种结构化的方式来访问 Crew 的执行结果，包括原始字符串、JSON 和 Pydantic 模型等多种格式。
+`CrewOutput` 包含最终任务输出、Token 使用情况以及各个任务的输出结果。
+
+### Crew 输出属性
+
+| 属性 | 参数 | 类型 | 描述 |
+| :--- | :--- | :--- | :--- |
+| **Raw** | `raw` | `str` | Crew 的原始输出。这是输出的默认格式。 |
+| **Pydantic** | `pydantic` | `Optional[BaseModel]` | 代表 Crew 结构化输出的 Pydantic 模型对象。 |
+| **JSON Dict** | `json_dict` | `Optional[Dict[str, Any]]` | 代表 Crew JSON 输出的字典。 |
+| **Tasks Output** | `tasks_output` | `List[TaskOutput]` | `TaskOutput` 对象列表，每个对象代表 Crew 中一个任务的输出。 |
+| **Token Usage** | `token_usage` | `Dict[str, Any]` | Token 使用情况摘要，用于了解执行期间语言模型的性能。 |
+
+### Crew 输出方法和属性
+
+| 方法/属性 | 描述 |
+| :--- | :--- |
+| **json** | 如果输出格式为 JSON，则返回 Crew 输出的 JSON 字符串表示形式。 |
+| **to\_dict** | 将 JSON 和 Pydantic 输出转换为字典。 |
+| **str** | 返回 Crew 输出的字符串表示形式，优先级为：Pydantic > JSON > Raw。 |
+
+### 访问 Crew 输出
+
+一旦 Crew 执行完毕，可以通过 `Crew` 对象的 `output` 属性访问其输出。`CrewOutput` 类提供了多种交互和展示此输出的方式。
+
+#### 示例
+
+```python
+# Crew 执行示例
+crew = Crew(
+    agents=[research_agent, writer_agent],
+    tasks=[research_task, write_article_task],
+    verbose=True
+)
+
+crew_output = crew.kickoff()
+
+# 访问 Crew 输出
+print(f"Raw Output: {crew_output.raw}")
+if crew_output.json_dict:
+    print(f"JSON Output: {json.dumps(crew_output.json_dict, indent=2)}")
+if crew_output.pydantic:
+    print(f"Pydantic Output: {crew_output.pydantic}")
+print(f"Tasks Output: {crew_output.tasks_output}")
+print(f"Token Usage: {crew_output.token_usage}")
+```
+
+## 访问 Crew 日志 (Accessing Crew Logs)
+
+您可以通过将 `output_log_file` 设置为 `True(布尔值)` 或 `文件名(字符串)` 来查看 Crew 执行的实时日志。支持将事件记录为 `file_name.txt` 和 `file_name.json`。
+如果设置为 `True(布尔值)`，将保存为 `logs.txt`。
+
+如果 `output_log_file` 设置为 `False(布尔值)` 或 `None`，则不会生成日志。
+
+```python
+# 保存 Crew 日志
+crew = Crew(output_log_file = True)  # 日志将保存为 logs.txt
+crew = Crew(output_log_file = file_name)  # 日志将保存为 file_name.txt
+crew = Crew(output_log_file = file_name.txt)  # 日志将保存为 file_name.txt
+crew = Crew(output_log_file = file_name.json)  # 日志将保存为 file_name.json
+```
+
+## 记忆利用 (Memory Utilization)
+
+Crew 可以利用记忆（短期、长期和实体记忆）来增强其随时间推移的执行和学习能力。此功能允许 Crew 存储和回忆执行记忆，有助于决策和制定任务执行策略。
+
+## 缓存利用 (Cache Utilization)
+
+可以使用缓存来存储工具的执行结果，从而减少重新执行相同任务的需要，使流程更加高效。
+
+## Crew 使用指标 (Crew Usage Metrics)
+
+Crew 执行后，您可以访问 `usage_metrics` 属性来查看 Crew 执行所有任务的语言模型 (LLM) 使用指标。这提供了对运营效率和改进领域的洞察。
+
+```python
+# 访问 Crew 的使用指标
+crew = Crew(agents=[agent1, agent2], tasks=[task1, task2])
+crew.kickoff()
+print(crew.usage_metrics)
+```
+
+## Crew 执行流程 (Crew Execution Process)
+
+*   **顺序流程 (Sequential Process)**：任务一个接一个地执行，实现线性的工作流。
+*   **层级流程 (Hierarchical Process)**：一个经理 Agent 协调 Crew，在继续下一步之前分配任务并验证结果。**注意**：此流程需要 `manager_llm` 或 `manager_agent`，且这对于验证流程流转至关重要。
+
+### 启动 Crew (Kicking Off a Crew)
+
+组装好 Crew 后，使用 `kickoff()` 方法启动工作流。这将根据定义的流程开始执行过程。
+
+```python
+# 启动 Crew 的任务执行
+result = my_crew.kickoff()
+print(result)
+```
+
+### 启动 Crew 的不同方式
+
+组装好 Crew 后，使用适当的启动方法初始化工作流。CrewAI 提供了几种方法来更好地控制启动过程。
+
+#### 同步方法
+
+*   `kickoff()`: 根据定义的流程开始执行过程。
+*   `kickoff_for_each()`: 为集合中的每个输入事件或项目顺序执行任务。
+
+#### 异步方法
+
+CrewAI 提供两种异步执行方式：
+
+| 方法 | 类型 | 描述 |
+| :--- | :--- | :--- |
+| `akickoff()` | 原生异步 | 整个执行链中真正的 async/await。 |
+| `akickoff_for_each()` | 原生异步 | 列表中每个输入的本机异步执行。 |
+| `kickoff_async()` | 基于线程 | 将同步执行包装在 `asyncio.to_thread` 中。 |
+| `kickoff_for_each_async()` | 基于线程 | 列表中每个输入的基于线程的异步执行。 |
+
+> **注意**
+> 对于高并发工作负载，推荐使用 `akickoff()` and `akickoff_for_each()`，因为它们在任务执行、记忆操作和知识检索中使用原生异步。
+
+```python
+# 启动 Crew 的任务执行
+result = my_crew.kickoff()
+print(result)
+
+# 使用 kickoff_for_each 的示例
+inputs_array = [{'topic': 'AI in healthcare'}, {'topic': 'AI in finance'}]
+results = my_crew.kickoff_for_each(inputs=inputs_array)
+for result in results:
+    print(result)
+
+# 使用原生异步 akickoff 的示例
+inputs = {'topic': 'AI in healthcare'}
+async_result = await my_crew.akickoff(inputs=inputs)
+print(async_result)
+
+# 使用原生异步 akickoff_for_each 的示例
+inputs_array = [{'topic': 'AI in healthcare'}, {'topic': 'AI in finance'}]
+async_results = await my_crew.akickoff_for_each(inputs=inputs_array)
+for async_result in async_results:
+    print(async_result)
+
+# 使用基于线程的 kickoff_async 的示例
+inputs = {'topic': 'AI in healthcare'}
+async_result = await my_crew.kickoff_async(inputs=inputs)
+print(async_result)
+
+# 使用基于线程的 kickoff_for_each_async 的示例
+inputs_array = [{'topic': 'AI in healthcare'}, {'topic': 'AI in finance'}]
+async_results = await my_crew.kickoff_for_each_async(inputs=inputs_array)
+for async_result in async_results:
+    print(async_result)
+```
+
+这些方法为您管理和执行 Crew 内的任务提供了灵活性，允许根据您的需求定制同步和异步工作流。有关详细的异步示例，请参阅[异步启动 Crew](/en/learn/kickoff-async) 指南。
+
+### 流式 Crew 执行 (Streaming Crew Execution)
+
+为了实时查看 Crew 的执行情况，您可以启用流式传输以在生成输出时接收它：
+
+```python
+# 启用流式传输
+crew = Crew(
+    agents=[researcher],
+    tasks=[task],
+    stream=True
+)
+
+# 迭代流式输出
+streaming = crew.kickoff(inputs={"topic": "AI"})
+for chunk in streaming:
+    print(chunk.content, end="", flush=True)
+
+# 访问最终结果
+result = streaming.result
+```
+
+在 [流式 Crew 执行](/en/learn/streaming-crew-execution) 指南中了解更多相关信息。
+
+### 从特定任务重放 (Replaying from a Specific Task)
+
+您现在可以使用我们的 CLI 命令 `replay` 从特定任务进行重放。
+
+CrewAI 中的重放功能允许您使用命令行界面 (CLI) 从特定任务进行重放。通过运行命令 `crewai replay -t <task_id>`，您可以指定重放过程的 `task_id`。
+
+启动（Kickoffs）现在会在本地保存最新启动返回的任务输出，以便您能够从中进行重放。
+
+### 使用 CLI 从特定任务重放
+
+要使用重放功能，请按照以下步骤操作：
+
+1.  打开终端或命令提示符。
+2.  导航到您的 CrewAI 项目所在的目录。
+3.  运行以下命令：
+
+要查看最新的启动任务 ID，请使用：
+
+```shell
+crewai log-tasks-outputs
+```
+
+然后，要从特定任务重放，请使用：
+
+```shell
+crewai replay -t <task_id>
+```
+
+这些命令允许您从最新的启动任务中进行重放，同时仍保留先前执行任务的上下文。
