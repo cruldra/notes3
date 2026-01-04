@@ -1,0 +1,938 @@
+# 按钮
+
+与按钮样式相关的属性。
+
+### `customButtons`[​](#customButtons "customButtons 的直接链接")
+
+```
+类型: { `styles?:` {[`button?: CustomButtonStyles`](#CustomButtonStyles), [`dropup?: CustomDropupItemStyles`](#CustomDropupItemStyles)}, [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip), [`initialState?: CustomButtonState`](#CustomButtonState), [`setState?: SetCustomButtonState`](#SetCustomButtonState), [`onClick?: OnClickCustomButton`](#OnClickCustomButton) }[]
+```
+用于定义自定义按钮对象配置的数组。
+`styles` 用于定义[按钮](#CustomButtonStyles)和[上拉菜单项](#CustomDropupItemStyles)的样式选项。
+`position` 用于设置按钮位置。
+`tooltip` 为按钮添加工具提示。
+`initialState` 是聊天加载时按钮的初始状态。
+`setState` 用于以编程方式更改按钮状态。
+`onClick` 用于分配在单击按钮时触发的函数。
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat customButtons="[{}]"></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  customButtons='[
+    {
+      "position": "inside-start",
+      "styles": {
+        "button": {
+          "default": {
+            "container": {
+              "default": {"border": "1px solid #e2e2e2", "borderRadius": "10px", "marginBottom": "4px"}
+            },
+            "svg": {
+              "content": "\n <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\" -0.5 0 25 25\" fill=\"none\">
+ <path d=\"M12 22.3201C17.5228 22.3201 22 17.8429 22 12.3201C22 6.79722 17.5228 2.32007 12 2.32007C6.47715 2.32007 2 6.79722 2 12.3201C2 17.8429 6.47715 22.3201 12 22.3201Z\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>
+ <path d=\"M2 12.3201H22\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>
+ <path d=\"M12 22.3201C13.933 22.3201 15.5 17.8429 15.5 12.3201C15.5 6.79722 13.933 2.32007 12 2.32007C10.067 2.32007 8.5 6.79722 8.5 12.3201C8.5 17.8429 10.067 22.3201 12 22.3201Z\" stroke=\"#000000\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>
+  </svg>"
+            },
+            "text": {
+              "content": "Search"
+            }}}
+      }
+    }
+  ]'
+  textInput='{
+    "styles": {
+      "container": {"paddingBottom": "30px"},
+      "text": {"padding": "0.5rem 0.7rem"}
+    }
+  }'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+```javascript
+<!-- onClick 函数可以按如下方式构造 -->
+const onClick = (state) => (state === 'active' ? 'default' : 'active')
+
+```
+
+### `submitButtonStyles`[​](#submitButtonStyles "submitButtonStyles 的直接链接")
+
+```
+类型: { [`submit?: ButtonStyles`](#ButtonStyles), [`loading?: ButtonStyles`](#ButtonStyles), [`stop?: ButtonStyles`](#ButtonStyles), [`disabled?: ButtonStyles`](#ButtonStyles), `alwaysEnabled?: boolean`, [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip) }
+```
+提交按钮的自定义样式。
+`submit` 状态在用户输入有效且可以发送时显示。
+`loading` 在等待来自目标服务器的消息响应时使用。
+`stop` 在消息响应正在 [`流式传输`](/docs/connect#Stream)时使用。
+`disabled` 在用户输入无法发送（参见 [`validateInput`](/docs/interceptors#validateInput)）或 [websocket](/docs/connect#Websocket) 连接未激活时使用。
+您还可以通过调用 [`disableSubmitButton`](/docs/methods#disableSubmitButton) 方法手动设置此状态。
+`alwaysEnabled` 可防止使用 `disabled` 按钮状态。
+`position` 设置输入区域内按钮的位置。
+`tooltip` 为按钮添加工具提示。
+
+info
+
+`loading`、`stop` 和 `disabled` 样式将自动继承您的 `submit` 样式 `default` 状态值。
+
+#### SVG 示例[​](#svg-example "SVG 示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#e3f0ff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "svg": {
+        "styles": {
+          "default": {
+            "filter":
+              "brightness(0) saturate(100%) invert(58%) sepia(53%) saturate(6828%) hue-rotate(214deg) brightness(100%) contrast(100%)"
+          }
+        }
+      }
+    },
+    "alwaysEnabled": true,
+    "position": "outside-end"
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#e3f0ff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "svg": {
+        "styles": {
+          "default": {
+            "filter":
+              "brightness(0) saturate(100%) invert(58%) sepia(53%) saturate(6828%) hue-rotate(214deg) brightness(100%) contrast(100%)"
+          }
+        }
+      }
+    },
+    "alwaysEnabled": true,
+    "position": "outside-end"
+  }'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+#### 文本示例[​](#text-example "文本示例的直接链接")
+
+需要注意的是，`submit` 状态的 `default` 属性会自动复制到其他状态中，但是 `hover` 和 `submit` 需要单独定义。
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#ddedff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {
+        "content": "Submit",
+        "styles": {"default": {"color": "#6c6c6c"}, "hover": {"color": "#2c2c2c"}}
+      },
+      "svg": {"content": ""}
+    },
+    "loading": {
+      "text": {"content": "Loading"},
+      "svg": {"content": ""}
+    },
+    "stop": {
+      "container": {
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {"content": "Stop"},
+      "svg": {"content": ""}
+    },
+    "alwaysEnabled": true
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  textInput='{"styles": {"text": {"paddingRight": "70px"}}}'
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#ddedff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {
+        "content": "Submit",
+        "styles": {"default": {"color": "#6c6c6c"}, "hover": {"color": "#2c2c2c"}}
+      },
+      "svg": {"content": ""}
+    },
+    "loading": {
+      "text": {"content": "Loading"},
+      "svg": {"content": ""}
+    },
+    "stop": {
+      "container": {
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {"content": "Stop"},
+      "svg": {"content": ""}
+    },
+    "alwaysEnabled": true
+  }'
+  style="border-radius: 8px"
+  connect='{"stream": true}'
+  demo="true"
+></deep-chat>
+
+```
+
+#### 禁用示例[​](#disabled-example "禁用示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  submitButtonStyles='{
+    "disabled": {
+      "container": {"default": {"cursor": "auto"}},
+      "svg": {
+        "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <svg viewBox=\"0 0 25 25\" xmlns=\"http://www.w3.org/2000/svg\"> <path fill-rule=\"evenodd\" d=\"M5.781 4.414a7 7 0 019.62 10.039l-9.62-10.04zm-1.408 1.42a7 7 0 009.549 9.964L4.373 5.836zM10 1a9 9 0 100 18 9 9 0 000-18z"/> </svg>",
+        "styles": {"default": {"paddingTop": "2.4px", "paddingLeft": "2px"}}
+      }
+    }
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  submitButtonStyles='{
+    "disabled": {
+      "container": {"default": {"cursor": "auto"}},
+      "svg": {
+        "content": "<?xml version=\"1.0\" encoding=\"utf-8\"?> <svg viewBox=\"0 0 25 25\" xmlns=\"http://www.w3.org/2000/svg\"> <path fill-rule=\"evenodd\" d=\"M5.781 4.414a7 7 0 019.62 10.039l-9.62-10.04zm-1.408 1.42a7 7 0 009.549 9.964L4.373 5.836zM10 1a9 9 0 100 18 9 9 0 000-18z"/> </svg>",
+        "styles": {"default": {"paddingTop": "2.4px", "paddingLeft": "2px"}}
+      }
+    }
+  }'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+#### 组合示例[​](#combination-example "组合示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#ddedff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {
+        "content": "Send",
+        "styles": {"default": {"color": "#6c6c6c"}, "hover": {"color": "#2c2c2c"}}
+      }
+    },
+    "loading": {
+      "container": {"default": {"backgroundColor": "unset"}},
+      "text": {"content": "Loading"},
+      "svg": {
+        "content":
+          "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<svg viewBox=\"0 0 32 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">
+<title>stop</title>
+<path d=\"M5.92 24.096q0 0.832 0.576 1.408t1.44 0.608h16.128q0.832 0 1.44-0.608t0.576-1.408v-16.16q0-0.832-0.576-1.44t-1.44-0.576h-16.128q-0.832 0-1.44 0.576t-0.576 1.44v16.16z\"></path>
+</svg>"
+      }
+    },
+    "stop": {
+      "container": {"default": {"backgroundColor": "unset"}},
+      "text": {"content": "Stop"},
+      "svg": {
+        "content":
+          "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<svg viewBox=\"0 0 32 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">
+<title>stop</title>
+<path d=\"M5.92 24.096q0 0.832 0.576 1.408t1.44 0.608h16.128q0.832 0 1.44-0.608t0.576-1.408v-16.16q0-0.832-0.576-1.44t-1.44-0.576h-16.128q-0.832 0-1.44 0.576t-0.576 1.44v16.16z\"></path>
+</svg>"
+      }
+    },
+    "disabled": {"text": {"content": "Waiting"}}
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "#ddedff"},
+        "hover": {"backgroundColor": "#c6e1ff"},
+        "click": {"backgroundColor": "#acd3ff"}
+      },
+      "text": {
+        "content": "Send",
+        "styles": {"default": {"color": "#6c6c6c"}, "hover": {"color": "#2c2c2c"}}
+      }
+    },
+    "loading": {
+      "container": {"default": {"backgroundColor": "unset"}},
+      "text": {"content": "Loading"},
+      "svg": {
+        "content":
+          "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<svg viewBox=\"0 0 32 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">
+<title>stop</title>
+<path d=\"M5.92 24.096q0 0.832 0.576 1.408t1.44 0.608h16.128q0.832 0 1.44-0.608t0.576-1.408v-16.16q0-0.832-0.576-1.44t-1.44-0.576h-16.128q-0.832 0-1.44 0.576t-0.576 1.44v16.16z\"></path>
+</svg>"
+      }
+    },
+    "stop": {
+      "container": {"default": {"backgroundColor": "unset"}},
+      "text": {"content": "Stop"},
+      "svg": {
+        "content":
+          "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<svg viewBox=\"0 0 32 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">
+<title>stop</title>
+<path d=\"M5.92 24.096q0 0.832 0.576 1.408t1.44 0.608h16.128q0.832 0 1.44-0.608t0.576-1.408v-16.16q0-0.832-0.576-1.44t-1.44-0.576h-16.128q-0.832 0-1.44 0.576t-0.576 1.44v16.16z\"></path>
+</svg>"
+      }
+    },
+    "disabled": {"text": {"content": "Waiting"}}
+  }'
+  textInput='{
+    "styles": {
+      "container": {"paddingBottom": "2px"},
+      "text": {"paddingRight": "74px"}
+    }}'
+  style="border-radius: 8px"
+  connect='{"stream": true}'
+  demo="true"
+></deep-chat>
+
+```
+
+## 自定义按钮类型[​](#custom-button-types "自定义按钮类型的直接链接")
+
+自定义按钮属性共享的类型：
+
+### `CustomButtonState`[​](#CustomButtonState "CustomButtonState 的直接链接")
+
+*   类型: "default" | "active" | "disabled"
+
+自定义按钮的可用状态。
+
+### `CustomButtonStyles`[​](#CustomButtonStyles "CustomButtonStyles 的直接链接")
+
+```
+类型: {[`default?: ButtonStyles`](#ButtonStyles), [`active?: ButtonStyles`](#ButtonStyles), [`disabled?: ButtonStyles`](#ButtonStyles)}
+```
+自定义按钮状态的样式。
+
+#### 示例[​](#example "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  customButtons='[
+    {
+      "styles": {
+        "button": {
+          "default": {
+            "svg": {
+              "styles": {
+                "default": {
+                  "filter":
+                    "brightness(0) saturate(100%) invert(42%) sepia(81%) saturate(1870%) hue-rotate(85deg) brightness(106%) contrast(103%)"
+                }
+              }
+            },
+            "text": {
+              "styles": {"default": {"color": "#09C000"}},
+              "content": "Button"
+            }}}
+      }
+    }
+  ]'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  demo="true"
+  style="border-radius: 8px"
+  customButtons='[
+    {
+      "styles": {
+        "button": {
+          "default": {
+            "svg": {
+              "styles": {
+                "default": {
+                  "filter":
+                    "brightness(0) saturate(100%) invert(42%) sepia(81%) saturate(1870%) hue-rotate(85deg) brightness(106%) contrast(103%)"
+                }
+              }
+            },
+            "text": {
+              "styles": {"default": {"color": "#09C000"}},
+              "content": "Button"
+            }}}
+      }
+    }
+  ]'
+  textInput='{
+    "styles": {
+      "container": { "width": "200px", "marginLeft": "-48px" }
+    }
+  }'
+></deep-chat>
+
+```
+
+### `CustomDropupItemStyles`[​](#CustomDropupItemStyles "CustomDropupItemStyles 的直接链接")
+
+```
+类型: { [`default?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles), [`active?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles), [`disabled?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles) }
+```
+自定义上拉菜单项状态的样式。
+
+### `CustomDropupItemStateStyles`[​](#CustomDropupItemStateStyles "CustomDropupItemStateStyles 的直接链接")
+
+```
+类型: {[`item?: StatefulStyles`](/docs/styles#StatefulStyles), [`iconContainer?: CustomStyle`](/docs/styles#CustomStyle), [`text?: CustomStyle`](/docs/styles#CustomStyle)}
+```
+
+上拉菜单中自定义项的样式。
+上拉菜单项的 *svg 图标*和*文本*通过 [`CustomButtonStyles`](#CustomButtonStyles) 中的 `content` 属性定义。
+有关默认和其他上拉菜单样式，请参见 [`dropupStyles`](/docs/styles/#dropupStyles)。
+
+#### 示例[​](#example-1 "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  customButtons='[
+    {
+      "styles": {
+        "dropup": {
+          "default": {
+            "text": {"color": "green"},
+            "item": {"default": {"border": "1px solid green"}},
+            "iconContainer": {
+              "filter": "brightness(0) saturate(100%) invert(23%) sepia(67%) saturate(2914%) hue-rotate(104deg) brightness(99%) contrast(103%)"
+            }
+          }
+        },
+        "button": {
+          "default": {
+            "text": {
+              "content": "Button"
+            }}}
+      }
+    }
+  ]'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  demo="true"
+  style="border-radius: 8px"
+  customButtons='[
+    {
+      "position": "dropup-menu",
+      "styles": {
+        "dropup": {
+          "default": {
+            "text": {"color": "green"},
+            "item": {"default": {"border": "1px solid green"}},
+            "iconContainer": {
+              "filter": "brightness(0) saturate(100%) invert(23%) sepia(67%) saturate(2914%) hue-rotate(104deg) brightness(99%) contrast(103%)"
+            }
+          }
+        },
+        "button": {
+          "default": {
+            "text": {
+              "content": "Button"
+            }}}
+      }
+    }
+  ]'
+></deep-chat>
+
+```
+
+### `SetCustomButtonState`[​](#SetCustomButtonState "SetCustomButtonState 的直接链接")
+
+*   类型: ([`newState: CustomButtonState`](#CustomButtonState)) => `void`
+
+以编程方式更改按钮状态。
+
+#### 示例[​](#example-2 "示例的直接链接")
+
+调用方法
+
+*   代码
+
+```javascript
+chatElementRef.customButtons[0].setState('active');
+
+```
+
+### `OnClickCustomButton`[​](#OnClickCustomButton "OnClickCustomButton 的直接链接")
+
+*   类型: ([`currentState: CustomButtonState`](#CustomButtonState)) => [`CustomButtonState`](#CustomButtonState) | `void`
+
+分配一个在单击自定义按钮时触发的函数。
+您可以选择返回一个 [`CustomButtonState`](#CustomButtonState) 字符串来为按钮赋予新状态。
+
+#### 示例[​](#example-3 "示例的直接链接")
+
+*   函数
+*   命名函数
+
+```javascript
+chatElementRef.customButtons[0].onClick = (state) => (state === 'default' ? 'active' : 'default');
+
+```
+
+```javascript
+chatElementRef.customButtons[0].onClick = function (state) {
+  return state === 'default' ? 'active' : 'default';
+};
+
+```
+
+## 类型[​](#types "类型的直接链接")
+
+按钮样式属性共享的类型。
+
+### `Button`[​](#Button "按钮的直接链接")
+
+```
+类型: {[`styles?: ButtonStyles`](#ButtonStyles), [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip)}
+```
+聊天视图中按钮的样式首选项。
+`styles` 定义按钮样式。
+`position` 用于设置按钮位置。
+`tooltip` 为按钮添加工具提示。
+
+#### 示例[​](#example-4 "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  images='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "#e6f0ff"},
+          "hover": {"backgroundColor": "#dbe9ff"},
+          "click": {"backgroundColor": "#c4dbff"}
+        }
+      },
+      "position": "outside-start"
+    }
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  images='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "#e6f0ff"},
+          "hover": {"backgroundColor": "#dbe9ff"},
+          "click": {"backgroundColor": "#c4dbff"}
+        }
+      },
+      "position": "outside-start"
+    }
+  }'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+### `ButtonStyles`[​](#ButtonStyles "ButtonStyles 的直接链接")
+
+```
+类型: { [`container?: StatefulStyles`](/docs/styles#StatefulStyles), [`svg?: ButtonInnerStyles`](#ButtonInnerStyles), [`text?: ButtonInnerStyles`](#ButtonInnerStyles) }
+```
+
+聊天视图中按钮的样式。
+`container` 用于为其各种鼠标状态设置按钮基础元素的样式。
+`svg` 用于在按钮内部设置 svg 图标（默认内部元素）的样式。
+`text` 用于在按钮内部创建和设置文本图标的样式。
+
+#### 示例[​](#example-5 "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "black"},
+        "hover": {"backgroundColor": "#3D3D3D"},
+        "click": {"backgroundColor": "#555555"}
+      },
+      "svg": {
+        "styles": {
+          "default": {
+            "filter":
+              "brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(273deg) brightness(103%) contrast(103%)"
+          }
+        },
+        "content":
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\">
+<path d=\"M12 5V19M12 5L6 11M12 5L18 11\" stroke=\"#000000\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>
+</svg>"
+      }
+    }
+  }'
+  images='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "unset", "width": "1.4em", "bottom": "0.75em"}
+        },
+        "svg": {
+          "content": "<?xml version=\"1.0\" ?> <svg viewBox=\"0 0 20 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"> <g id=\"layer1\"> <path d=\"M 10,2 C 4.5399633,2 0,5.5155856 0,10 a 0.50005,0.50005 0 0 0 0,0.002 c 0.00211683,0.498935 0.0623158,0.997281 0.1796875,1.486328 a 0.50005,0.50005 0 0 0 0.65625,0.353516 c 0.166982,-0.06005 0.3346003,-0.11455 0.5058594,-0.162109 3.2465843,-0.86948 6.3865589,0.651858 7.0898437,3.277343 0.1999132,0.753403 0.1847938,1.55275 -0.046875,2.341797 A 0.50005,0.50005 0 0 0 8.8144531,17.9375 C 9.2066201,17.97715 9.6008792,17.99763 9.9960938,18 A 0.50005,0.50005 0 0 0 10,18 C 15.460037,18 20,14.484414 20,10 20,5.5155856 15.460037,2 10,2 Z m 0,1 c 5.033373,0 9,3.2001431 9,7 0,3.798831 -3.964655,6.998273 -8.996094,7 C 9.7877816,16.9987 9.5727572,16.978264 9.3574219,16.964844 9.490202,16.205055 9.5915438,15.434329 9.3964844,14.699219 8.5282549,11.457966 4.7749194,9.7293469 1.0878906,10.714844 1.0549598,10.475808 1.0010202,10.238508 1,9.9980469 1.0013454,6.1990381 4.9674803,3 10,3 Z M 9.5,4 C 8.677494,4 8,4.677495 8,5.5 8,6.322505 8.677494,7 9.5,7 10.322505,7 11,6.322505 11,5.5 11,4.677495 10.322505,4 9.5,4 Z m -4,1 C 4.677495,5 4,5.677495 4,6.5 4,7.322505 4.677495,8 5.5,8 6.322505,8 7,7.322505 7,6.5 7,5.677495 6.322505,5 5.5,5 Z m 4,0 C 9.782065,5 10,5.217935 10,5.5 10,5.782065 9.782065,6 9.5,6 9.217935,6 9,5.782065 9,5.5 9,5.217935 9.217935,5 9.5,5 Z m 4,0 C 12.677494,5 12,5.677495 12,6.5 12,7.322505 12.677494,8 13.5,8 14.322505,8 15,7.322505 15,6.5 15,5.677495 14.322505,5 13.5,5 Z m -8,1 C 5.782065,6 6,6.217935 6,6.5 6,6.782065 5.782065,7 5.5,7 5.217935,7 5,6.782065 5,6.5 5,6.217935 5.217935,6 5.5,6 Z m 8,0 C 13.782065,6 14,6.217935 14,6.5 14,6.782065 13.782065,7 13.5,7 13.217935,7 13,6.782065 13,6.5 13,6.217935 13.217935,6 13.5,6 Z m 3,2 C 15.677494,8 15,8.677495 15,9.5 15,10.322505 15.677494,11 16.5,11 17.322505,11 18,10.322505 18,9.5 18,8.677495 17.322505,8 16.5,8 Z m 0,1 C 16.782065,9 17,9.217935 17,9.5 17,9.782065 16.78... [truncated]"
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(45%) sepia(20%) saturate(0%) hue-rotate(255deg) brightness(99%) contrast(101%)"
+            },
+            "hover": {
+              "filter":
+                "brightness(0) saturate(100%) invert(61%) sepia(41%) saturate(5169%) hue-rotate(187deg) brightness(99%) contrast(105%)"
+            },
+            "click": {
+              "filter":
+                "brightness(0) saturate(100%) invert(58%) sepia(68%) saturate(541%) hue-rotate(179deg) brightness(104%) contrast(100%)"
+            }
+          }
+        }
+      }
+    }
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  textInput='{"styles": {"text": {"paddingRight": "40px"}}}'
+  style="border-radius: 8px"
+  demo="true"
+  submitButtonStyles='{
+    "submit": {
+      "container": {
+        "default": {"backgroundColor": "black"},
+        "hover": {"backgroundColor": "#3D3D3D"},
+        "click": {"backgroundColor": "#555555"}
+      },
+      "svg": {
+        "styles": {
+          "default": {
+            "filter":
+              "brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(273deg) brightness(103%) contrast(103%)"
+          }
+        },
+        "content":
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\">
+<path d=\"M12 5V19M12 5L6 11M12 5L18 11\" stroke=\"#000000\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>
+</svg>"
+      }
+    }
+  }'
+  images='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "unset", "width": "1.4em", "bottom": "0.75em"}
+        },
+        "svg": {
+          "content": "<?xml version=\"1.0\" ?> <svg viewBox=\"0 0 20 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"> <g id=\"layer1\"> <path d=\"M 10,2 C 4.5399633,2 0,5.5155856 0,10 a 0.50005,0.50005 0 0 0 0,0.002 c 0.00211683,0.498935 0.0623158,0.997281 0.1796875,1.486328 a 0.50005,0.50005 0 0 0 0.65625,0.353516 c 0.166982,-0.06005 0.3346003,-0.11455 0.5058594,-0.162109 3.2465843,-0.86948 6.3865589,0.651858 7.0898437,3.277343 0.1999132,0.753403 0.1847938,1.55275 -0.046875,2.341797 A 0.50005,0.50005 0 0 0 8.8144531,17.9375 C 9.2066201,17.97715 9.6008792,17.99763 9.9960938,18 A 0.50005,0.50005 0 0 0 10,18 C 15.460037,18 20,14.484414 20,10 20,5.5155856 15.460037,2 10,2 Z m 0,1 c 5.033373,0 9,3.2001431 9,7 0,3.798831 -3.964655,6.998273 -8.996094,7 C 9.7877816,16.9987 9.5727572,16.978264 9.3574219,16.964844 9.490202,16.205055 9.5915438,15.434329 9.3964844,14.699219 8.5282549,11.457966 4.7749194,9.7293469 1.0878906,10.714844 1.0549598,10.475808 1.0010202,10.238508 1,9.9980469 1.0013454,6.1990381 4.9674803,3 10,3 Z M 9.5,4 C 8.677494,4 8,4.677495 8,5.5 8,6.322505 8.677494,7 9.5,7 10.322505,7 11,6.322505 11,5.5 11,4.677495 10.322505,4 9.5,4 Z m -4,1 C 4.677495,5 4,5.677495 4,6.5 4,7.322505 4.677495,8 5.5,8 6.322505,8 7,7.322505 7,6.5 7,5.677495 6.322505,5 5.5,5 Z m 4,0 C 9.782065,5 10,5.217935 10,5.5 10,5.782065 9.782065,6 9.5,6 9.217935,6 9,5.782065 9,5.5 9,5.217935 9.217935,5 9.5,5 Z m 4,0 C 12.677494,5 12,5.677495 12,6.5 12,7.322505 12.677494,8 13.5,8 14.322505,8 15,7.322505 15,6.5 15,5.677495 14.322505,5 13.5,5 Z m -8,1 C 5.782065,6 6,6.217935 6,6.5 6,6.782065 5.782065,7 5.5,7 5.217935,7 5,6.782065 5,6.5 5,6.217935 5.217935,6 5.5,6 Z m 8,0 C 13.782065,6 14,6.217935 14,6.5 14,6.782065 13.782065,7 13.5,7 13.217935,7 13,6.782065 13,6.5 13,6.217935 13.217935,6 13.5,6 Z m 3,2 C 15.677494,8 15,8.677495 15,9.5 15,10.322505 15.677494,11 16.5,11 17.322505,11 18,10.322505 18,9.5 18,8.677495 17.322505,8 16.5,8 Z m 0,1 C 16.782065,9 17,9.217935 17,9.5 17,9.782065 16.78... [truncated]"
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(45%) sepia(20%) saturate(0%) hue-rotate(255deg) brightness(99%) contrast(101%)"
+            },
+            "hover": {
+              "filter":
+                "brightness(0) saturate(100%) invert(61%) sepia(41%) saturate(5169%) hue-rotate(187deg) brightness(99%) contrast(105%)"
+            },
+            "click": {
+              "filter":
+                "brightness(0) saturate(100%) invert(58%) sepia(68%) saturate(541%) hue-rotate(179deg) brightness(104%) contrast(100%)"
+            }
+          }
+        }
+      }
+    }
+  }'
+></deep-chat>
+
+```
+
+tip
+
+您可以使用 [`CSSFilterConverter`](https://cssfilterconverter.com/) 工具为图标颜色生成滤镜值。
+
+### `ButtonPosition`[​](#ButtonPosition "ButtonPosition 的直接链接")
+
+*   类型: "inside-start" | "inside-end" | "outside-start" | "outside-end" | "dropup-menu"
+
+按钮的位置，可以在[文本输入容器](/docs/styles#textInput) *内部*，*外部*（*左*或*右*）或[`上拉菜单`](/docs/styles#dropupStyles)内部。
+
+#### 示例[​](#example-6 "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  gifs='{"button": {"position": "dropup-menu"}}'
+  audio='{"button": {"position": "dropup-menu"}}'
+  camera='{"button": {"position": "dropup-menu"}}'
+  mixedFiles='{"button": {"position": "inside-start"}}'
+  microphone='{"button": {"position": "outside-end"}}'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  demo="true"
+  style="border-radius: 8px"
+  gifs='{"button": {"position": "dropup-menu"}}'
+  audio='{"button": {"position": "dropup-menu"}}'
+  camera='{"button": {"position": "dropup-menu"}}'
+  mixedFiles='{"button": {"position": "inside-start"}}'
+  microphone='{"button": {"position": "outside-end"}}'
+></deep-chat>
+
+```
+
+### `Tooltip`[​](#Tooltip "Tooltip 的直接链接")
+
+```
+类型: `true` | {`text?: string`, `timeout?: number`, [`style?: CustomStyle`](/docs/styles#CustomStyle)}
+
+默认: *{timeout: 0}*
+```
+
+
+按钮的工具提示。您可以通过将值设置为 *true* 或定义一个包含以下任意属性的对象来启用它：
+`text` 是工具提示文本。
+`timeout` 是工具提示出现所需的时间（毫秒）。
+`style` 用于添加自定义样式。
+
+#### 示例[​](#example-7 "示例的直接链接")
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat images='{"button": {"tooltip": {"text": "Upload an image", "style": {"left": "200px"}}}}'></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  demo="true"
+  style="border-radius: 8px"
+  images='{"button": {"tooltip": {"text": "Upload an image", "style": {"left": "200px"}}}}'
+></deep-chat>
+
+```
+
+### `MicrophoneStyles`[​](#MicrophoneStyles "MicrophoneStyles 的直接链接")
+
+```
+类型: { [`default?: ButtonStyles`](#ButtonStyles), [`active?: ButtonStyles`](#ButtonStyles), [`unsupported?: ButtonStyles`](#ButtonStyles), [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip) }
+```
+麦克风按钮的自定义样式。
+`default` 用于默认按钮状态。
+`active` 在麦克风激活时使用。
+`unsupported` 在用户浏览器不支持录音时使用。
+`position` 是输入区域内按钮的位置。
+`tooltip` 为按钮添加工具提示。
+
+*   示例代码
+*   完整代码
+
+```html
+<deep-chat
+  microphone='{
+    "button": {
+      "default": {
+        "container": {
+          "hover": {"backgroundColor": "#7fbded69"},
+          "click": {"backgroundColor": "#4babf669"}
+        },
+        "svg": {
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(49%) sepia(53%) saturate(6895%) hue-rotate(200deg) brightness(101%) contrast(101%)"
+            },
+            "hover": {
+              "filter":
+                "brightness(0) saturate(100%) invert(27%) sepia(59%) saturate(5655%) hue-rotate(203deg) brightness(101%) contrast(84%)"
+            }
+          }
+        }
+      },
+      "active": {
+        "container": {
+          "hover": {"backgroundColor": "#ffd07c70"},
+          "click": {"backgroundColor": "#ecb85c70"}
+        },
+        "svg": {
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(49%) sepia(99%) saturate(477%) hue-rotate(343deg) brightness(100%) contrast(101%)"
+            }
+          }
+        }
+      }
+    }
+  }'
+></deep-chat>
+
+```
+
+```html
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅“示例”） -->
+
+<deep-chat
+  microphone='{
+    "button": {
+      "default": {
+        "container": {
+          "hover": {"backgroundColor": "#7fbded69"},
+          "click": {"backgroundColor": "#4babf669"}
+        },
+        "svg": {
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(49%) sepia(53%) saturate(6895%) hue-rotate(200deg) brightness(101%) contrast(101%)"
+            },
+            "hover": {
+              "filter":
+                "brightness(0) saturate(100%) invert(27%) sepia(59%) saturate(5655%) hue-rotate(203deg) brightness(101%) contrast(84%)"
+            }
+          }
+        }
+      },
+      "active": {
+        "container": {
+          "hover": {"backgroundColor": "#ffd07c70"},
+          "click": {"backgroundColor": "#ecb85c70"}
+        },
+        "svg": {
+          "styles": {
+            "default": {
+              "filter":
+                "brightness(0) saturate(100%) invert(49%) sepia(99%) saturate(477%) hue-rotate(343deg) brightness(100%) contrast(101%)"
+            }
+          }
+        }
+      }
+    }
+  }'
+  demo="true"
+  style="border-radius: 8px"
+  introMessage='{"text": "Use the microphone button to record audio."}'
+></deep-chat>
+
+```
+
+tip
+
+您可以使用 [`CSSFilterConverter`](https://cssfilterconverter.com/) 工具为图标颜色生成滤镜值。
+
+```

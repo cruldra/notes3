@@ -1,0 +1,379 @@
+# 样式
+
+与聊天样式相关的属性。
+
+### `style` | `chatStyle`[​](#style "style的直接链接")
+
+* 类型：[`CustomStyle`](#CustomStyle)
+
+聊天容器元素的样式。
+它可以通过 [`style` 属性](https://www.w3schools.com/tags/att_style.asp) 定义，
+也可以通过接受对象的 `chatStyle` 属性定义。两者效果相同，
+可根据开发人员偏好或框架兼容性进行选择。
+
+#### 示例[​](#example "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat style="background-color: #f7f7f7; border-radius: 8px"></deep-chat>
+
+<deep-chat chatStyle='{"backgroundColor": "#f7f7f7", "borderRadius": "8px"}'></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat style="background-color: #f7f7f7; border-radius: 8px" demo="true"></deep-chat>
+
+<deep-chat chatStyle='{"backgroundColor": "#f7f7f7", "borderRadius": "8px"}' demo="true"></deep-chat>
+
+```
+
+### `attachmentContainerStyle`[​](#attachmentContainerStyle "attachmentContainerStyle的直接链接")
+
+* 类型：[`CustomStyle`](#CustomStyle)
+
+一个对象，包含用于存储准备随消息发送的文件附件的元素的 CSS 样式属性。
+
+#### 示例[​](#example-1 "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat attachmentContainerStyle='{"backgroundColor": "#b2e1ff57"}'></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  attachmentContainerStyle='{"backgroundColor": "#b2e1ff57"}'
+  demo='{"displayFileAttachmentContainer": true}'
+  style="border-radius: 8px"
+></deep-chat>
+
+```
+
+### `dropupStyles`[​](#dropupStyles "dropupStyles的直接链接")
+
+```
+类型：{
+    [`button?: Button`](#Button),
+    `menu?:` {
+        [`container?: CustomStyle`](#CustomStyle),
+        [`item?: StatefulStyles`](#StatefulStyles),
+        [`iconContainer?: CustomStyle`](#CustomStyle),
+        [`text?: CustomStyle`](#CustomStyle)
+  }}
+```
+
+下拉按钮及其菜单元素样式的配置。
+
+#### 示例[​](#example-2 "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat
+  dropupStyles='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "#eff8ff"},
+          "hover": {"backgroundColor": "#e4f3ff"},
+          "click": {"backgroundColor": "#d7edff"}
+        }
+      }
+    },
+    "menu": {
+      "container": {
+        "boxShadow": "#e2e2e2 0px 1px 3px 2px"
+      },
+      "item": {
+        "hover": {
+          "backgroundColor": "#e1f2ff"
+        },
+        "click": {
+          "backgroundColor": "#cfeaff"
+        }
+      },
+      "iconContainer": {
+        "width": "1.8em"
+      },
+      "text": {
+        "fontSize": "1.05em"
+      }
+    }
+  }'
+></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  dropupStyles='{
+    "button": {
+      "styles": {
+        "container": {
+          "default": {"backgroundColor": "#eff8ff"},
+          "hover": {"backgroundColor": "#e4f3ff"},
+          "click": {"backgroundColor": "#d7edff"}
+        }
+      }
+    },
+    "menu": {
+      "container": {
+        "boxShadow": "#e2e2e2 0px 1px 3px 2px"
+      },
+      "item": {
+        "hover": {
+          "backgroundColor": "#e1f2ff"
+        },
+        "click": {
+          "backgroundColor": "#cfeaff"
+        }
+      },
+      "iconContainer": {
+        "width": "1.8em"
+      },
+      "text": {
+        "fontSize": "1.05em"
+      }
+    }
+  }'
+  demo="true"
+  style="border-radius: 8px"
+  audio='{"button": {"position": "dropup-menu"}}'
+  images='{"button": {"position": "dropup-menu"}}'
+  introMessage='{"text": "通过点击输入框左下角的 + 按钮打开下拉菜单。"}'
+></deep-chat>
+
+```
+
+### `inputAreaStyle`[​](#inputAreaStyle "inputAreaStyle的直接链接")
+
+* 类型：[`CustomStyle`](#CustomStyle)
+
+聊天视图底部用于文本输入和文件按钮区域的样式。
+
+#### 示例[​](#example-3 "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat inputAreaStyle='{"backgroundColor": "#ebf5ff"}'></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat inputAreaStyle='{"backgroundColor": "#ebf5ff"}' style="border-radius: 8px" demo="true"></deep-chat>
+
+```
+
+### `textInput`[​](#textInput "textInput的直接链接")
+
+```
+类型：{
+    `styles?:` {[`text?: CustomStyle`](#CustomStyle), [`container?: CustomStyle`](#CustomStyle), [`focus?: CustomStyle`](#CustomStyle)},
+    `placeholder?:` {`text?: string`, [`style?: CustomStyle`](#CustomStyle)},
+    `characterLimit?: number`,
+    `disabled?: boolean`
+  }
+```
+
+聊天文本输入的自定义详细信息。
+`styles` 对象定义了 `text` 元素及其框 `container` 的样式。 `focus` 属性用于设置容器在聚焦时的样式。
+`placeholder` 对象的 `text` 属性是用户执行任何操作之前输入框中显示的初始文本，
+`style` 可用于自定义它。使用 [`setPlaceholderText`](/docs/methods#setPlaceholderText) 动态更改。
+`characterLimit` 是可以插入到文本输入中的最大字符数。
+`disabled` 用于阻止用户插入文本。这也带有一些自定义样式。
+
+#### 一般示例[​](#generic-example "一般示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat
+  textInput='{
+    "styles": {
+      "text": {"color": "black"},
+      "container": {"maxHeight": "50px", "backgroundColor": "#f5f9ff"},
+      "focus": {"border": "2px solid #a2a2ff"}
+    },
+    "placeholder": {"text": "在此插入文本...", "style": {"color": "#4459a4"}},
+    "characterLimit": 10
+  }'
+></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  textInput='{
+    "styles": {
+      "text": {"color": "black"},
+      "container": {"maxHeight": "50px", "backgroundColor": "#f5f9ff"},
+      "focus": {"border": "2px solid #a2a2ff"}
+    },
+    "placeholder": {"text": "在此插入文本...", "style": {"color": "#4459a4"}},
+    "characterLimit": 10
+  }'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+#### 禁用示例[​](#disabled-example "禁用示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat
+  textInput='{
+    "disabled": true,
+    "placeholder": {
+      "text": "不允许输入文本..."
+  }}'
+></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  textInput='{
+    "disabled": true,
+    "placeholder": {
+      "text": "不允许输入文本..."
+  }}'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+### `defaultInput`[​](#defaultInput "defaultInput的直接链接")
+
+* 类型：{`text?: string`, `files?: File[] | FileList`}
+
+聊天渲染时显示输入内容。
+`text` 显示在文本输入框中。
+`files` 显示在文件附件容器中。这可以是一个 [`File`](https://developer.mozilla.org/en-US/docs/Web/API/File_API/Using_files_from_web_applications) 对象数组，
+也可以是一个 [`FileList`](https://developer.mozilla.org/en-US/docs/Web/API/FileList)
+对象，通常来自 [文件输入](https://developer.mozilla.org/en-US/docs/Web/API/File_API/Using_files_from_web_applications)。
+
+#### 示例[​](#example-4 "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat defaultInput='{"text": "默认文本"}'></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat defaultInput='{"text": "默认文本"}' style="border-radius: 8px" demo="true"></deep-chat>
+
+```
+
+### `auxiliaryStyle`[​](#auxiliaryStyle "auxiliaryStyle的直接链接")
+
+* 类型：`string`
+
+此值使用 [CSS 语法](https://www.w3schools.com/css/css_syntax.ASP) 作为在 Deep Chat 中定义样式的替代方法。
+它可用于配置 [`Webkit CSS`](https://developer.mozilla.org/en-US/docs/Web/CSS/WebKit_Extensions)，
+而这些内容无法通过组件的 [`style`](/docs/styles#style) 属性添加。一个很好的例子是 [`::-webkit-scrollbar`](https://developer.mozilla.org/en-US/docs/Web/CSS/%3A%3A-webkit-scrollbar)
+伪元素，它影响组件滚动条的样式。
+它还可以用于向 [`html`](/docs/messages/#MessageContent) 消息添加自定义样式并覆盖 Deep Chat CSS。
+
+#### 示例[​](#example-5 "示例的直接链接")
+
+* 示例代码
+* 完整代码
+
+```
+<deep-chat
+  auxiliaryStyle="
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #54a7ff;
+      border-radius: 5px;
+    }"
+></deep-chat>
+
+```
+
+```
+<!-- 此示例适用于 Vanilla JS，应根据您的框架进行调整（请参阅示例） -->
+
+<deep-chat
+  auxiliaryStyle="
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #54a7ff;
+      border-radius: 5px;
+    }"
+  history='[
+    {"text": "Hey, how are you?", "role": "user"},
+    {"text": "I am doing great, how about you?", "role": "ai"},
+    {"text": "What is the meaning of life?", "role": "user"},
+    {
+      "text": "这最终取决于个人，但它可能是对幸福或满足的追求。",
+      "role": "ai"
+    },
+    {"text": "我只想整天睡觉...", "role": "user"},
+    {"text": "只要它让你快乐！", "role": "ai"}
+  ]'
+  style="border-radius: 8px"
+  demo="true"
+></deep-chat>
+
+```
+
+danger
+
+[`Webkit CSS`](https://developer.mozilla.org/en-US/docs/Web/CSS/WebKit_Extensions) 并未在所有浏览器中标准化，请务必检查您使用的属性的 [`浏览器支持`](https://caniuse.com/)。
+
+## 类型[​](#types "类型的直接链接")
+
+样式属性共享的类型：
+
+### `CustomStyle`[​](#CustomStyle "CustomStyle的直接链接")
+
+* 类型：[`CSSStyleDeclaration`](https://webplatform.github.io/docs/css/cssom/CSSStyleDeclaration/CSSStyleDeclaration/)
+
+一个对象，包含在 CSSStyleDeclaration [`规范`](https://webplatform.github.io/docs/css/cssom/CSSStyleDeclaration/CSSStyleDeclaration/) 中定义的属性作为可选属性。可以在此 [链接](https://github.com/microsoft/TypeScript-DOM-lib-generator/blob/bf671e99615b06404db7a89fa9ae05bf14a8e47c/baselines/dom.generated.d.ts#L2737) 中找到 TypeScript 示例。
+
+### `StatefulStyles`[​](#StatefulStyles "StatefulStyles的直接链接")
+
+```
+类型：{[`default?: CustomStyle`](#CustomStyle), [`hover?: CustomStyle`](#CustomStyle), [`click?: CustomStyle`](#CustomStyle)}
+```
+
+一个对象，定义了元素在不同鼠标状态下的样式属性。
