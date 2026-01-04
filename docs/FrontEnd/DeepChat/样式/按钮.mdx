@@ -2,13 +2,13 @@
 
 与按钮样式相关的属性。
 
-### `customButtons`[​](#customButtons "customButtons 的直接链接")
+### `customButtons`
 
 ```
-类型: { `styles?:` {[`button?: CustomButtonStyles`](#CustomButtonStyles), [`dropup?: CustomDropupItemStyles`](#CustomDropupItemStyles)}, [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip), [`initialState?: CustomButtonState`](#CustomButtonState), [`setState?: SetCustomButtonState`](#SetCustomButtonState), [`onClick?: OnClickCustomButton`](#OnClickCustomButton) }[]
+类型: { `styles?:` {`button?: CustomButtonStyles`, `dropup?: CustomDropupItemStyles`}, `position?: ButtonPosition`, `tooltip?: Tooltip`, `initialState?: CustomButtonState`, `setState?: SetCustomButtonState`, `onClick?: OnClickCustomButton` }[]
 ```
 用于定义自定义按钮对象配置的数组。
-`styles` 用于定义[按钮](#CustomButtonStyles)和[上拉菜单项](#CustomDropupItemStyles)的样式选项。
+`styles` 用于定义按钮和上拉菜单项的样式选项。
 `position` 用于设置按钮位置。
 `tooltip` 为按钮添加工具提示。
 `initialState` 是聊天加载时按钮的初始状态。
@@ -67,17 +67,17 @@ const onClick = (state) => (state === 'active' ? 'default' : 'active')
 
 ```
 
-### `submitButtonStyles`[​](#submitButtonStyles "submitButtonStyles 的直接链接")
+### `submitButtonStyles`
 
 ```
-类型: { [`submit?: ButtonStyles`](#ButtonStyles), [`loading?: ButtonStyles`](#ButtonStyles), [`stop?: ButtonStyles`](#ButtonStyles), [`disabled?: ButtonStyles`](#ButtonStyles), `alwaysEnabled?: boolean`, [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip) }
+类型: { `submit?: ButtonStyles`, `loading?: ButtonStyles`, `stop?: ButtonStyles`, `disabled?: ButtonStyles`, `alwaysEnabled?: boolean`, `position?: ButtonPosition`, `tooltip?: Tooltip` }
 ```
 提交按钮的自定义样式。
 `submit` 状态在用户输入有效且可以发送时显示。
 `loading` 在等待来自目标服务器的消息响应时使用。
-`stop` 在消息响应正在 [`流式传输`](/docs/connect#Stream)时使用。
-`disabled` 在用户输入无法发送（参见 [`validateInput`](/docs/interceptors#validateInput)）或 [websocket](/docs/connect#Websocket) 连接未激活时使用。
-您还可以通过调用 [`disableSubmitButton`](/docs/methods#disableSubmitButton) 方法手动设置此状态。
+`stop` 在消息响应正在流式传输时使用。
+`disabled` 在用户输入无法发送（参见 validateInput）或 websocket 连接未激活时使用。
+您还可以通过调用 disableSubmitButton 方法手动设置此状态。
 `alwaysEnabled` 可防止使用 `disabled` 按钮状态。
 `position` 设置输入区域内按钮的位置。
 `tooltip` 为按钮添加工具提示。
@@ -86,7 +86,7 @@ info
 
 `loading`、`stop` 和 `disabled` 样式将自动继承您的 `submit` 样式 `default` 状态值。
 
-#### SVG 示例[​](#svg-example "SVG 示例的直接链接")
+#### SVG 示例
 
 *   示例代码
 *   完整代码
@@ -145,7 +145,7 @@ info
 
 ```
 
-#### 文本示例[​](#text-example "文本示例的直接链接")
+#### 文本示例
 
 需要注意的是，`submit` 状态的 `default` 属性会自动复制到其他状态中，但是 `hover` 和 `submit` 需要单独定义。
 
@@ -224,7 +224,7 @@ info
 
 ```
 
-#### 禁用示例[​](#disabled-example "禁用示例的直接链接")
+#### 禁用示例
 
 *   示例代码
 *   完整代码
@@ -263,7 +263,7 @@ info
 
 ```
 
-#### 组合示例[​](#combination-example "组合示例的直接链接")
+#### 组合示例
 
 *   示例代码
 *   完整代码
@@ -362,24 +362,24 @@ info
 
 ```
 
-## 自定义按钮类型[​](#custom-button-types "自定义按钮类型的直接链接")
+## 自定义按钮类型
 
 自定义按钮属性共享的类型：
 
-### `CustomButtonState`[​](#CustomButtonState "CustomButtonState 的直接链接")
+### `CustomButtonState`
 
 *   类型: "default" | "active" | "disabled"
 
 自定义按钮的可用状态。
 
-### `CustomButtonStyles`[​](#CustomButtonStyles "CustomButtonStyles 的直接链接")
+### `CustomButtonStyles`
 
 ```
-类型: {[`default?: ButtonStyles`](#ButtonStyles), [`active?: ButtonStyles`](#ButtonStyles), [`disabled?: ButtonStyles`](#ButtonStyles)}
+类型: {`default?: ButtonStyles`, `active?: ButtonStyles`, `disabled?: ButtonStyles`}
 ```
 自定义按钮状态的样式。
 
-#### 示例[​](#example "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -445,24 +445,24 @@ info
 
 ```
 
-### `CustomDropupItemStyles`[​](#CustomDropupItemStyles "CustomDropupItemStyles 的直接链接")
+### `CustomDropupItemStyles`
 
 ```
-类型: { [`default?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles), [`active?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles), [`disabled?: CustomDropupItemStateStyles`](#CustomDropupItemStateStyles) }
+类型: { `default?: CustomDropupItemStateStyles`, `active?: CustomDropupItemStateStyles`, `disabled?: CustomDropupItemStateStyles` }
 ```
 自定义上拉菜单项状态的样式。
 
-### `CustomDropupItemStateStyles`[​](#CustomDropupItemStateStyles "CustomDropupItemStateStyles 的直接链接")
+### `CustomDropupItemStateStyles`
 
 ```
-类型: {[`item?: StatefulStyles`](/docs/styles#StatefulStyles), [`iconContainer?: CustomStyle`](/docs/styles#CustomStyle), [`text?: CustomStyle`](/docs/styles#CustomStyle)}
+类型: {item?: StatefulStyles, iconContainer?: CustomStyle, text?: CustomStyle}
 ```
 
 上拉菜单中自定义项的样式。
-上拉菜单项的 *svg 图标*和*文本*通过 [`CustomButtonStyles`](#CustomButtonStyles) 中的 `content` 属性定义。
-有关默认和其他上拉菜单样式，请参见 [`dropupStyles`](/docs/styles/#dropupStyles)。
+上拉菜单项的 *svg 图标*和*文本*通过 CustomButtonStyles 中的 `content` 属性定义。
+有关默认和其他上拉菜单样式，请参见 dropupStyles。
 
-#### 示例[​](#example-1 "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -524,13 +524,13 @@ info
 
 ```
 
-### `SetCustomButtonState`[​](#SetCustomButtonState "SetCustomButtonState 的直接链接")
+### `SetCustomButtonState`
 
-*   类型: ([`newState: CustomButtonState`](#CustomButtonState)) => `void`
+*   类型: (`newState: CustomButtonState`) => `void`
 
 以编程方式更改按钮状态。
 
-#### 示例[​](#example-2 "示例的直接链接")
+#### 示例
 
 调用方法
 
@@ -541,14 +541,14 @@ chatElementRef.customButtons[0].setState('active');
 
 ```
 
-### `OnClickCustomButton`[​](#OnClickCustomButton "OnClickCustomButton 的直接链接")
+### `OnClickCustomButton`
 
-*   类型: ([`currentState: CustomButtonState`](#CustomButtonState)) => [`CustomButtonState`](#CustomButtonState) | `void`
+*   类型: (`currentState: CustomButtonState`) => `CustomButtonState` | `void`
 
 分配一个在单击自定义按钮时触发的函数。
-您可以选择返回一个 [`CustomButtonState`](#CustomButtonState) 字符串来为按钮赋予新状态。
+您可以选择返回一个 `CustomButtonState` 字符串来为按钮赋予新状态。
 
-#### 示例[​](#example-3 "示例的直接链接")
+#### 示例
 
 *   函数
 *   命名函数
@@ -565,21 +565,21 @@ chatElementRef.customButtons[0].onClick = function (state) {
 
 ```
 
-## 类型[​](#types "类型的直接链接")
+## 类型
 
 按钮样式属性共享的类型。
 
-### `Button`[​](#Button "按钮的直接链接")
+### `Button`
 
 ```
-类型: {[`styles?: ButtonStyles`](#ButtonStyles), [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip)}
+类型: {`styles?: ButtonStyles`, `position?: ButtonPosition`, `tooltip?: Tooltip`}
 ```
 聊天视图中按钮的样式首选项。
 `styles` 定义按钮样式。
 `position` 用于设置按钮位置。
 `tooltip` 为按钮添加工具提示。
 
-#### 示例[​](#example-4 "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -624,10 +624,10 @@ chatElementRef.customButtons[0].onClick = function (state) {
 
 ```
 
-### `ButtonStyles`[​](#ButtonStyles "ButtonStyles 的直接链接")
+### `ButtonStyles`
 
 ```
-类型: { [`container?: StatefulStyles`](/docs/styles#StatefulStyles), [`svg?: ButtonInnerStyles`](#ButtonInnerStyles), [`text?: ButtonInnerStyles`](#ButtonInnerStyles) }
+类型: { container?: StatefulStyles, svg?: ButtonInnerStyles, text?: ButtonInnerStyles }
 ```
 
 聊天视图中按钮的样式。
@@ -635,7 +635,7 @@ chatElementRef.customButtons[0].onClick = function (state) {
 `svg` 用于在按钮内部设置 svg 图标（默认内部元素）的样式。
 `text` 用于在按钮内部创建和设置文本图标的样式。
 
-#### 示例[​](#example-5 "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -753,15 +753,15 @@ chatElementRef.customButtons[0].onClick = function (state) {
 
 tip
 
-您可以使用 [`CSSFilterConverter`](https://cssfilterconverter.com/) 工具为图标颜色生成滤镜值。
+您可以使用 CSSFilterConverter 工具为图标颜色生成滤镜值。
 
-### `ButtonPosition`[​](#ButtonPosition "ButtonPosition 的直接链接")
+### `ButtonPosition`
 
 *   类型: "inside-start" | "inside-end" | "outside-start" | "outside-end" | "dropup-menu"
 
-按钮的位置，可以在[文本输入容器](/docs/styles#textInput) *内部*，*外部*（*左*或*右*）或[`上拉菜单`](/docs/styles#dropupStyles)内部。
+按钮的位置，可以在文本输入容器 *内部*，*外部*（*左*或*右*）或上拉菜单内部。
 
-#### 示例[​](#example-6 "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -792,7 +792,7 @@ tip
 
 ```
 
-### `Tooltip`[​](#Tooltip "Tooltip 的直接链接")
+### `Tooltip`
 
 ```
 类型: `true` | {`text?: string`, `timeout?: number`, [`style?: CustomStyle`](/docs/styles#CustomStyle)}
@@ -804,9 +804,9 @@ tip
 按钮的工具提示。您可以通过将值设置为 *true* 或定义一个包含以下任意属性的对象来启用它：
 `text` 是工具提示文本。
 `timeout` 是工具提示出现所需的时间（毫秒）。
-`style` 用于添加自定义样式。
+style 用于添加自定义样式。
 
-#### 示例[​](#example-7 "示例的直接链接")
+#### 示例
 
 *   示例代码
 *   完整代码
@@ -827,10 +827,10 @@ tip
 
 ```
 
-### `MicrophoneStyles`[​](#MicrophoneStyles "MicrophoneStyles 的直接链接")
+### `MicrophoneStyles`
 
 ```
-类型: { [`default?: ButtonStyles`](#ButtonStyles), [`active?: ButtonStyles`](#ButtonStyles), [`unsupported?: ButtonStyles`](#ButtonStyles), [`position?: ButtonPosition`](#ButtonPosition), [`tooltip?: Tooltip`](#Tooltip) }
+类型: { `default?: ButtonStyles`, `active?: ButtonStyles`, `unsupported?: ButtonStyles`, `position?: ButtonPosition`, `tooltip?: Tooltip` }
 ```
 麦克风按钮的自定义样式。
 `default` 用于默认按钮状态。
@@ -933,6 +933,6 @@ tip
 
 tip
 
-您可以使用 [`CSSFilterConverter`](https://cssfilterconverter.com/) 工具为图标颜色生成滤镜值。
+您可以使用 CSSFilterConverter 工具为图标颜色生成滤镜值。
 
 ```
