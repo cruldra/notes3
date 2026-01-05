@@ -359,7 +359,7 @@ tp = dspy.MIPROv2(metric=dspy.evaluate.SemanticF1(decompositional=True), auto="m
 optimized_rag = tp.compile(RAG(), trainset=trainset, max_bootstrapped_demos=2, max_labeled_demos=2)
 ```
 
-有关可运行的完整 RAG 示例，请开始此 [教程](tutorials/rag/)。它将 RAG 系统在 StackExchange 社区子集上的质量提高了 10% 的相对增益。
+有关可运行的完整 RAG 示例，请参考 DSPy 官方文档。它将 RAG 系统在 StackExchange 社区子集上的质量提高了 10% 的相对增益。
 
 #### 优化分类的权重 (Optimizing weights for Classification)
 
@@ -427,4 +427,4 @@ DSPy 优化器之所以如此强大，原因之一是它们可以组合使用。
 
 DSPy 研究工作始于 2022 年 2 月的斯坦福 NLP，建立在我们从开发早期[复合 LM 系统](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/)（如 [ColBERT-QA](https://arxiv.org/abs/2007.00814)、[Baleen](https://arxiv.org/abs/2101.00436) 和 [Hindsight](https://arxiv.org/abs/2110.07752)）中学到的经验之上。第一个版本于 2022 年 12 月作为 [DSP](https://arxiv.org/abs/2212.14024) 发布，并于 2023 年 10 月演变为 [DSPy](https://arxiv.org/abs/2310.03714)。感谢 [250 位贡献者](https://github.com/stanfordnlp/dspy/graphs/contributors)，DSPy 已经向数万人介绍了构建和优化模块化 LM 程序。
 
-从那时起，DSPy 社区在优化器（如 [MIPROv2](https://arxiv.org/abs/2406.11695)、[BetterTogether](https://arxiv.org/abs/2407.10930) 和 [LeReT](https://arxiv.org/abs/2410.23214)）、程序架构（如 [STORM](https://arxiv.org/abs/2402.14207)、[IReRa](https://arxiv.org/abs/2401.12178) 和 [DSPy Assertions](https://arxiv.org/abs/2312.13382)）以及成功应用于新问题（如 [PAPILLON](https://arxiv.org/abs/2410.17127)、[PATH](https://arxiv.org/abs/2406.11706)、[WangLab@MEDIQA](https://arxiv.org/abs/2404.14544)、[UMD's Prompting Case Study](https://arxiv.org/abs/2406.06608) 和 [Haize's Red-Teaming Program](https://blog.haizelabs.com/posts/dspy/)）方面产生的大量工作，此外还有许多开源项目、生产应用程序和其他 [用例](community/use-cases/)。
+从那时起，DSPy 社区在优化器（如 [MIPROv2](https://arxiv.org/abs/2406.11695)、[BetterTogether](https://arxiv.org/abs/2407.10930) 和 [LeReT](https://arxiv.org/abs/2410.23214)）、程序架构（如 [STORM](https://arxiv.org/abs/2402.14207)、[IReRa](https://arxiv.org/abs/2401.12178) 和 [DSPy Assertions](https://arxiv.org/abs/2312.13382)）以及成功应用于新问题（如 [PAPILLON](https://arxiv.org/abs/2410.17127)、[PATH](https://arxiv.org/abs/2406.11706)、[WangLab@MEDIQA](https://arxiv.org/abs/2404.14544)、[UMD's Prompting Case Study](https://arxiv.org/abs/2406.06608) 和 [Haize's Red-Teaming Program](https://blog.haizelabs.com/posts/dspy/)）方面产生的大量工作，此外还有许多开源项目、生产应用程序和其他用例。

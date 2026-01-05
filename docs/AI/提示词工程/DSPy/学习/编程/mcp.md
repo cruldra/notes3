@@ -146,6 +146,6 @@ result = await dspy_tool.acall(param1="value", param2=123)
 - [MCP 官方文档](https://modelcontextprotocol.io/)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [DSPy MCP 教程](https://dspy.ai/tutorials/mcp/)
-- [DSPy 工具文档](./tools.md)
+- DSPy 工具文档
 
 DSPy 中的 MCP 集成使得使用来自任何 MCP 服务器的标准化工具变得容易，从而通过最少的设置实现强大的智能体功能。

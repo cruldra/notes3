@@ -21,6 +21,13 @@ const config: Config = {
     organizationName: 'cruldra', // Usually your GitHub org/user name.
     projectName: 'notes3', // Usually your repo name.
 
+    // 明确设置 URL 尾部斜杠行为，避免 GitHub Pages 部署时的不一致问题
+    // false: 所有 URL 都不带尾部斜杠 (例如: /docs/intro)
+    // true: 所有 URL 都带尾部斜杠 (例如: /docs/intro/)
+    // undefined: 保持原样，但会导致 GitHub Pages 在直接访问时自动添加斜杠并重定向
+    // 设置为 false 可以避免 SEO 问题和相对链接错误
+    trailingSlash: false,
+
     onBrokenLinks: 'throw',
     // onBrokenMarkdownLinks: 'warn',
 
