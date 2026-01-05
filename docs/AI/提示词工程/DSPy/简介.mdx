@@ -1,0 +1,430 @@
+*编程*—而非提示—*大语言模型*
+
+[更通俗的解释](./参考/2.md)
+
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/dspy?period=monthly)](https://pepy.tech/projects/dspy)
+
+DSPy 是一个用于构建模块化 AI 软件的声明式框架。它允许你**在结构化代码上快速迭代**，而不是在脆弱的字符串上纠缠，并提供算法将**AI 程序编译为有效的提示和权重**，供你的语言模型使用，无论你是构建简单的分类器、复杂的 RAG 管道还是智能体循环。
+
+DSPy（Declarative Self-improving Python，声明式自我改进 Python）不再通过手动调整提示或训练任务来解决问题，而是使你能够**从自然语言模块构建 AI 软件**，并将其与不同的模型、推理策略或学习算法*通用地组合*。这使得 AI 软件在不同模型和策略之间**更加可靠、可维护和可移植**。
+
+*简而言之*：将 DSPy 视为 AI 编程的高级语言（[讲座](https://www.youtube.com/watch?v=JEMYuzrKLUw)），就像从汇编语言到 C 语言或从指针运算到 SQL 的转变。欢迎通过 [GitHub](https://github.com/stanfordnlp/dspy) 和 [Discord](https://discord.gg/XCGy2WDCQB) 认识社区、寻求帮助或开始贡献。
+
+## 入门 I：安装 DSPy 并设置你的 LM
+
+```bash
+> pip install -U dspy
+```
+
+### OpenAI / Anthropic / Databricks / Gemini / 本地 LM（笔记本电脑） / 本地 LM（GPU 服务器） / 其他提供商
+
+你可以通过设置 `OPENAI_API_KEY` 环境变量进行身份验证，或在下方传递 `api_key`。
+
+```python
+import dspy
+lm = dspy.LM("openai/gpt-5-mini", api_key="YOUR_OPENAI_API_KEY")
+dspy.configure(lm=lm)
+```
+
+你可以通过设置 `ANTHROPIC_API_KEY` 环境变量进行身份验证，或在下方传递 `api_key`。
+
+```python
+import dspy
+lm = dspy.LM("anthropic/claude-sonnet-4-5-20250929", api_key="YOUR_ANTHROPIC_API_KEY")
+dspy.configure(lm=lm)
+```
+
+如果你在 Databricks 平台上，通过其 SDK 进行身份验证是自动的。如果不在，你可以设置环境变量 `DATABRICKS_API_KEY` 和 `DATABRICKS_API_BASE`，或在下方传递 `api_key` 和 `api_base`。
+
+```python
+import dspy
+lm = dspy.LM(
+    "databricks/databricks-llama-4-maverick",
+    api_key="YOUR_DATABRICKS_ACCESS_TOKEN",
+    api_base="YOUR_DATABRICKS_WORKSPACE_URL",  # 例如: https://dbc-64bf4923-e39e.cloud.databricks.com/serving-endpoints
+)
+dspy.configure(lm=lm)
+```
+
+你可以通过设置 `GEMINI_API_KEY` 环境变量进行身份验证，或在下方传递 `api_key`。
+
+```python
+import dspy
+lm = dspy.LM("gemini/gemini-2.5-flash", api_key="YOUR_GEMINI_API_KEY")
+dspy.configure(lm=lm)
+```
+
+首先，安装 [Ollama](https://github.com/ollama/ollama) 并使用你的 LM 启动其服务器。
+
+```bash
+> curl -fsSL https://ollama.ai/install.sh | sh
+> ollama run llama3.2:1b
+```
+
+然后，从你的 DSPy 代码连接到它。
+
+```python
+import dspy
+lm = dspy.LM("ollama_chat/llama3.2:1b", api_base="http://localhost:11434", api_key="")
+dspy.configure(lm=lm)
+```
+
+首先，安装 [SGLang](https://docs.sglang.ai/get_started/install.html) 并使用你的 LM 启动其服务器。
+
+```bash
+> pip install "sglang[all]"
+> pip install flashinfer -i https://flashinfer.ai/whl/cu121/torch2.4/
+
+> CUDA_VISIBLE_DEVICES=0 python -m sglang.launch_server --port 7501 --model-path meta-llama/Llama-3.1-8B-Instruct
+```
+
+如果你无法从 Meta 下载 `meta-llama/Llama-3.1-8B-Instruct`，例如可以使用 `Qwen/Qwen2.5-7B-Instruct`。
+
+接下来，从你的 DSPy 代码连接到你的本地 LM，作为一个兼容 `OpenAI` 的端点。
+
+```python
+lm = dspy.LM("openai/meta-llama/Llama-3.1-8B-Instruct",
+             api_base="http://localhost:7501/v1",  # 确保这里指向你的端口
+             api_key="local", model_type="chat")
+dspy.configure(lm=lm)
+```
+
+在 DSPy 中，你可以使用 [LiteLLM 支持的数十家 LLM 提供商](https://docs.litellm.ai/docs/providers)中的任何一家。只需按照他们的说明设置 `{PROVIDER}_API_KEY`，并将 `{provider_name}/{model_name}` 传递给构造函数即可。
+
+一些例子：
+
+*   `anyscale/mistralai/Mistral-7B-Instruct-v0.1`，使用 `ANYSCALE_API_KEY`
+*   `together_ai/togethercomputer/llama-2-70b-chat`，使用 `TOGETHERAI_API_KEY`
+*   `sagemaker/<your-endpoint-name>`，使用 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, 和 `AWS_REGION_NAME`
+*   `azure/<your_deployment_name>`，使用 `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION`，以及可选的 `AZURE_AD_TOKEN` 和 `AZURE_API_TYPE`
+
+如果你的提供商提供兼容 OpenAI 的端点，只需在你的完整模型名称前加上 `openai/` 前缀。
+
+```python
+import dspy
+lm = dspy.LM("openai/your-model-name", api_key="PROVIDER_API_KEY", api_base="YOUR_PROVIDER_URL")
+dspy.configure(lm=lm)
+```
+
+**直接调用 LM**
+
+地道的 DSPy 用法涉及使用*模块*，我们在本页的其余部分定义了模块。但是，直接调用上面配置的 `lm` 仍然很容易。这为你提供了一个统一的 API，并让你从自动缓存等实用程序中受益。
+
+```python
+lm("Say this is a test!", temperature=0.7)  # => ['This is a test!']
+lm(messages=[{"role": "user", "content": "Say this is a test!"}])  # => ['This is a test!']
+```
+
+## 1) **模块**帮助你将 AI 行为描述为*代码*，而不是字符串。
+
+要构建可靠的 AI 系统，你必须快速迭代。但是维护提示使得这变得困难：它迫使你*每次更改 LM、指标或管道时*都要修改字符串或数据。自 2020 年以来，我们构建了十几个一流的复合 LM 系统，我们吸取了惨痛的教训——因此构建了 DSPy，将 AI 系统设计与关于特定 LM 或提示策略的混乱偶然选择解耦。
+
+DSPy 将你的注意力从调整提示字符串转移到**使用结构化和声明性自然语言模块进行编程**。对于系统中的每个 AI 组件，你将其输入/输出行为指定为一个*签名（Signature）*，并选择一个*模块（Module）*来分配调用 LM 的策略。DSPy 将你的签名扩展为提示并解析你的类型化输出，以便你可以将不同的模块组合成符合人体工程学、可移植且可优化的 AI 系统。
+
+### 入门 II：为各种任务构建 DSPy 模块
+
+在上面配置好 `lm` 后，尝试下面的示例。调整字段以探索你的 LM 开箱即用地可以很好地完成哪些任务。下面的每个选项卡都设置了一个 DSPy 模块，如 `dspy.Predict`、`dspy.ChainOfThought` 或 `dspy.ReAct`，带有一个特定于任务的*签名*。例如，`question -> answer: float` 告诉模块接收一个问题并生成一个 `float` 答案。
+
+#### 数学 (Math)
+
+```python
+math = dspy.ChainOfThought("question -> answer: float")
+math(question="Two dice are tossed. What is the probability that the sum equals two?")
+```
+
+**可能的输出:**
+
+```python
+Prediction(
+    reasoning='When two dice are tossed, each die has 6 faces, resulting in a total of 6 x 6 = 36 possible outcomes. The sum of the numbers on the two dice equals two only when both dice show a 1. This is just one specific outcome: (1, 1). Therefore, there is only 1 favorable outcome. The probability of the sum being two is the number of favorable outcomes divided by the total number of possible outcomes, which is 1/36.',
+    answer=0.0277776
+)
+```
+
+#### RAG
+
+```python
+def search_wikipedia(query: str) -> list[str]:
+    results = dspy.ColBERTv2(url="http://20.102.90.50:2017/wiki17_abstracts")(query, k=3)
+    return [x["text"] for x in results]
+
+rag = dspy.ChainOfThought("context, question -> response")
+
+question = "What's the name of the castle that David Gregory inherited?"
+rag(context=search_wikipedia(question), question=question)
+```
+
+**可能的输出:**
+
+```python
+Prediction(
+    reasoning='The context provides information about David Gregory, a Scottish physician and inventor. It specifically mentions that he inherited Kinnairdy Castle in 1664. This detail directly answers the question about the name of the castle that David Gregory inherited.',
+    response='Kinnairdy Castle'
+)
+```
+
+#### 分类 (Classification)
+
+```python
+from typing import Literal
+
+class Classify(dspy.Signature):
+    """Classify sentiment of a given sentence."""
+
+    sentence: str = dspy.InputField()
+    sentiment: Literal["positive", "negative", "neutral"] = dspy.OutputField()
+    confidence: float = dspy.OutputField()
+
+classify = dspy.Predict(Classify)
+classify(sentence="This book was super fun to read, though not the last chapter.")
+```
+
+**可能的输出:**
+
+```python
+Prediction(
+    sentiment='positive',
+    confidence=0.75
+)
+```
+
+#### 信息提取 (Information Extraction)
+
+```python
+class ExtractInfo(dspy.Signature):
+    """Extract structured information from text."""
+
+    text: str = dspy.InputField()
+    title: str = dspy.OutputField()
+    headings: list[str] = dspy.OutputField()
+    entities: list[dict[str, str]] = dspy.OutputField(desc="a list of entities and their metadata")
+
+module = dspy.Predict(ExtractInfo)
+
+text = "Apple Inc. announced its latest iPhone 14 today." \
+    "The CEO, Tim Cook, highlighted its new features in a press release."
+response = module(text=text)
+
+print(response.title)
+print(response.headings)
+print(response.entities)
+```
+
+**可能的输出:**
+
+```
+Apple Inc. Announces iPhone 14
+['Introduction', "CEO's Statement", 'New Features']
+[{'name': 'Apple Inc.', 'type': 'Organization'}, {'name': 'iPhone 14', 'type': 'Product'}, {'name': 'Tim Cook', 'type': 'Person'}]
+```
+
+#### 智能体 (Agents)
+
+```python
+def evaluate_math(expression: str):
+    return dspy.PythonInterpreter({}).execute(expression)
+
+def search_wikipedia(query: str):
+    results = dspy.ColBERTv2(url="http://20.102.90.50:2017/wiki17_abstracts")(query, k=3)
+    return [x["text"] for x in results]
+
+react = dspy.ReAct("question -> answer: float", tools=[evaluate_math, search_wikipedia])
+
+pred = react(question="What is 9362158 divided by the year of birth of David Gregory of Kinnairdy castle?")
+print(pred.answer)
+```
+
+**可能的输出:**
+
+```
+5761.328
+```
+
+#### 多阶段管道 (Multi-Stage Pipelines)
+
+```python
+class Outline(dspy.Signature):
+    """Outline a thorough overview of a topic."""
+
+    topic: str = dspy.InputField()
+    title: str = dspy.OutputField()
+    sections: list[str] = dspy.OutputField()
+    section_subheadings: dict[str, list[str]] = dspy.OutputField(desc="mapping from section headings to subheadings")
+
+class DraftSection(dspy.Signature):
+    """Draft a top-level section of an article."""
+
+    topic: str = dspy.InputField()
+    section_heading: str = dspy.InputField()
+    section_subheadings: list[str] = dspy.InputField()
+    content: str = dspy.OutputField(desc="markdown-formatted section")
+
+class DraftArticle(dspy.Module):
+    def __init__(self):
+        self.build_outline = dspy.ChainOfThought(Outline)
+        self.draft_section = dspy.ChainOfThought(DraftSection)
+
+    def forward(self, topic):
+        outline = self.build_outline(topic=topic)
+        sections = []
+        for heading, subheadings in outline.section_subheadings.items():
+            section, subheadings = f"## {heading}", [f"### {subheading}" for subheading in subheadings]
+            section = self.draft_section(topic=outline.title, section_heading=section, section_subheadings=subheadings)
+            sections.append(section.content)
+        return dspy.Prediction(title=outline.title, sections=sections)
+
+draft_article = DraftArticle()
+article = draft_article(topic="World Cup 2002")
+```
+
+**可能的输出:**
+
+一篇关于该主题的 1500 字文章，例如：
+
+```markdown
+## Qualification Process
+
+The qualification process for the 2002 FIFA World Cup involved a series of..... [shortened here for presentation].
+
+### UEFA Qualifiers
+
+The UEFA qualifiers involved 50 teams competing for 13..... [shortened here for presentation].
+
+.... [rest of the article]
+```
+
+请注意，DSPy 使优化像这样多阶段模块变得简单直接。只要你能评估系统的*最终*输出，每个 DSPy 优化器都可以调整所有中间模块。
+
+**在实践中使用 DSPy：从快速脚本编写到构建复杂系统。**
+
+标准提示将接口（“LM 应该做什么？”）与实现（“我们如何告诉它这样做？”）混为一谈。DSPy 将前者作为*签名*分离出来，这样我们就可以在更大的程序上下文中推断后者或从数据中学习后者。
+
+即使在你开始使用优化器之前，DSPy 的模块也允许你将有效的 LM 系统脚本化为符合人体工程学、可移植的*代码*。在许多任务和 LM 中，我们维护着*签名测试套件*，用于评估内置 DSPy 适配器的可靠性。适配器是在优化之前将签名映射到提示的组件。如果你发现对于你的 LM，简单的提示始终优于地道的 DSPy，请将其视为一个 bug 并[提交 issue](https://github.com/stanfordnlp/dspy/issues)。我们将用它来改进内置适配器。
+
+## 2) **优化器**调整 AI 模块的提示和权重。
+
+DSPy 为你提供了工具，可以将带有自然语言注释的高级代码编译为低级计算、提示或权重更新，使你的 LM 与程序的结构和指标保持一致。如果你更改代码或指标，你可以简单地重新编译。
+
+给定任务的几十或几百个代表性*输入*以及可以衡量系统输出质量的*指标*，你就可以使用 DSPy 优化器。DSPy 中的不同优化器通过以下方式工作：**为每个模块合成良好的少样本示例**，如 `dspy.BootstrapRS`，[1](https://arxiv.org/abs/2310.03714) **为每个提示提出并智能地探索更好的自然语言指令**，如 [`dspy.GEPA`](https://dspy.ai/tutorials/gepa_ai_program/)[2](https://arxiv.org/abs/2507.19457), `dspy.MIPROv2`，[3](https://arxiv.org/abs/2406.11695) 以及**为你的模块构建数据集并使用它们来微调系统中的 LM 权重**，如 `dspy.BootstrapFinetune`。[4](https://arxiv.org/abs/2407.10930) 有关运行 `dspy.GEPA` 的详细教程，请查看 [dspy.GEPA 教程](https://dspy.ai/tutorials/gepa_ai_program/)。
+
+### 入门 III：优化 DSPy 程序中的 LM 提示或权重
+
+典型的简单优化运行成本约为 2 美元，大约需要 20 分钟，但在使用非常大的 LM 或非常大的数据集运行优化器时要小心。
+优化成本可能低至几美分，也可能高达几十美元，具体取决于你的 LM、数据集和配置。
+
+下面的示例依赖于 HuggingFace/datasets，你可以通过以下命令安装它。
+
+```bash
+> pip install -U datasets
+```
+
+#### 优化 ReAct 智能体的提示 (Optimizing prompts for a ReAct agent)
+
+这是一个最小但完全可运行的示例，设置了一个 `dspy.ReAct` 智能体，通过维基百科搜索回答问题，然后在 `HotPotQA` 数据集中采样的 500 个问答对上，使用廉价的 `light` 模式的 `dspy.MIPROv2` 对其进行优化。
+
+```python
+import dspy
+from dspy.datasets import HotPotQA
+
+dspy.configure(lm=dspy.LM("openai/gpt-4o-mini"))
+
+def search_wikipedia(query: str) -> list[str]:
+    results = dspy.ColBERTv2(url="http://20.102.90.50:2017/wiki17_abstracts")(query, k=3)
+    return [x["text"] for x in results]
+
+trainset = [x.with_inputs('question') for x in HotPotQA(train_seed=2024, train_size=500).train]
+react = dspy.ReAct("question -> answer", tools=[search_wikipedia])
+
+tp = dspy.MIPROv2(metric=dspy.evaluate.answer_exact_match, auto="light", num_threads=24)
+optimized_react = tp.compile(react, trainset=trainset)
+```
+
+像这样的非正式运行将 ReAct 的得分从 24% 提高到 51%，方法是教导 `gpt-4o-mini` 更多关于任务的具体细节。
+
+#### 优化 RAG 的提示 (Optimizing prompts for RAG)
+
+给定一个用于 `search` 的检索索引、你最喜欢的 `dspy.LM` 以及一小组问题和真实答案的 `trainset`，以下代码片段可以针对内置的 `SemanticF1` 指标（作为 DSPy 模块实现）优化具有长输出的 RAG 系统。
+
+```python
+class RAG(dspy.Module):
+    def __init__(self, num_docs=5):
+        self.num_docs = num_docs
+        self.respond = dspy.ChainOfThought("context, question -> response")
+
+    def forward(self, question):
+        context = search(question, k=self.num_docs)   # 在下面的教程中定义
+        return self.respond(context=context, question=question)
+
+tp = dspy.MIPROv2(metric=dspy.evaluate.SemanticF1(decompositional=True), auto="medium", num_threads=24)
+optimized_rag = tp.compile(RAG(), trainset=trainset, max_bootstrapped_demos=2, max_labeled_demos=2)
+```
+
+有关可运行的完整 RAG 示例，请开始此 [教程](tutorials/rag/)。它将 RAG 系统在 StackExchange 社区子集上的质量提高了 10% 的相对增益。
+
+#### 优化分类的权重 (Optimizing weights for Classification)
+
+点击显示数据集设置代码。
+
+```python
+import random
+from typing import Literal
+
+from datasets import load_dataset
+
+import dspy
+from dspy.datasets import DataLoader
+
+# Load the Banking77 dataset.
+CLASSES = load_dataset("PolyAI/banking77", split="train", trust_remote_code=True).features["label"].names
+kwargs = {"fields": ("text", "label"), "input_keys": ("text",), "split": "train", "trust_remote_code": True}
+
+# Load the first 2000 examples from the dataset, and assign a hint to each *training* example.
+trainset = [
+    dspy.Example(x, hint=CLASSES[x.label], label=CLASSES[x.label]).with_inputs("text", "hint")
+    for x in DataLoader().from_huggingface(dataset_name="PolyAI/banking77", **kwargs)[:2000]
+]
+random.Random(0).shuffle(trainset)
+```
+
+```python
+import dspy
+lm=dspy.LM('openai/gpt-4o-mini-2024-07-18')
+
+# Define the DSPy module for classification. It will use the hint at training time, if available.
+signature = dspy.Signature("text, hint -> label").with_updated_fields("label", type_=Literal[tuple(CLASSES)])
+classify = dspy.ChainOfThought(signature)
+classify.set_lm(lm)
+
+# Optimize via BootstrapFinetune.
+optimizer = dspy.BootstrapFinetune(metric=(lambda x, y, trace=None: x.label == y.label), num_threads=24)
+optimized = optimizer.compile(classify, trainset=trainset)
+
+optimized(text="What does a pending cash withdrawal mean?")
+
+# For a complete fine-tuning tutorial, see: https://dspy.ai/tutorials/classification_finetuning/
+```
+
+**可能的输出（来自最后一行）:**
+
+```python
+Prediction(
+    reasoning='A pending cash withdrawal indicates that a request to withdraw cash has been initiated but has not yet been completed or processed. This status means that the transaction is still in progress and the funds have not yet been deducted from the account or made available to the user.',
+    label='pending_cash_withdrawal'
+)
+```
+
+在 DSPy 2.5.29 上类似这样的非正式运行将 GPT-4o-mini 的得分从 66% 提高到 87%。
+
+**DSPy 优化器的例子是什么？不同的优化器是如何工作的？**
+
+以 `dspy.MIPROv2` 优化器为例。首先，MIPRO 从**引导（bootstrapping）阶段**开始。它接受你的程序（此时可能未优化），并在不同的输入上多次运行它，以收集每个模块的输入/输出行为轨迹。它过滤这些轨迹，只保留出现在你的指标得分较高的轨迹中的轨迹。其次，MIPRO 进入其**基础建议（grounded proposal）阶段**。它预览你的 DSPy 程序的代码、数据以及运行程序的轨迹，并利用它们为程序中的每个提示起草许多潜在的指令。第三，MIPRO 启动**离散搜索阶段**。它从你的训练集中采样 mini-batch，提出用于构建管道中每个提示的指令和轨迹组合，并在 mini-batch 上评估候选程序。利用由此产生的得分，MIPRO 更新一个代理模型，该模型有助于建议随时间变得更好。
+
+DSPy 优化器之所以如此强大，原因之一是它们可以组合使用。你可以运行 `dspy.MIPROv2` 并将生成的程序再次用作 `dspy.MIPROv2` 的输入，或者，比如说，用作 `dspy.BootstrapFinetune` 的输入以获得更好的结果。这在一定程度上是 `dspy.BetterTogether` 的精髓。或者，你可以运行优化器，然后提取前 5 个候选程序并构建它们的 `dspy.Ensemble`。这允许你以高度系统化的方式扩展*推理时计算*（例如，集成）以及 DSPy 独特的*预推理时计算*（即优化预算）。
+
+## 3) **DSPy 的生态系统** 推进开源 AI 研究。
+
+与单体 LM 相比，DSPy 的模块化范式使大型社区能够以开放、分布式的方式改进 LM 程序的组合架构、推理时策略和优化器。这为 DSPy 用户提供了更多控制权，帮助他们更快地迭代，并允许他们的程序通过应用最新的优化器或模块随时间变得更好。
+
+DSPy 研究工作始于 2022 年 2 月的斯坦福 NLP，建立在我们从开发早期[复合 LM 系统](https://bair.berkeley.edu/blog/2024/02/18/compound-ai-systems/)（如 [ColBERT-QA](https://arxiv.org/abs/2007.00814)、[Baleen](https://arxiv.org/abs/2101.00436) 和 [Hindsight](https://arxiv.org/abs/2110.07752)）中学到的经验之上。第一个版本于 2022 年 12 月作为 [DSP](https://arxiv.org/abs/2212.14024) 发布，并于 2023 年 10 月演变为 [DSPy](https://arxiv.org/abs/2310.03714)。感谢 [250 位贡献者](https://github.com/stanfordnlp/dspy/graphs/contributors)，DSPy 已经向数万人介绍了构建和优化模块化 LM 程序。
+
+从那时起，DSPy 社区在优化器（如 [MIPROv2](https://arxiv.org/abs/2406.11695)、[BetterTogether](https://arxiv.org/abs/2407.10930) 和 [LeReT](https://arxiv.org/abs/2410.23214)）、程序架构（如 [STORM](https://arxiv.org/abs/2402.14207)、[IReRa](https://arxiv.org/abs/2401.12178) 和 [DSPy Assertions](https://arxiv.org/abs/2312.13382)）以及成功应用于新问题（如 [PAPILLON](https://arxiv.org/abs/2410.17127)、[PATH](https://arxiv.org/abs/2406.11706)、[WangLab@MEDIQA](https://arxiv.org/abs/2404.14544)、[UMD's Prompting Case Study](https://arxiv.org/abs/2406.06608) 和 [Haize's Red-Teaming Program](https://blog.haizelabs.com/posts/dspy/)）方面产生的大量工作，此外还有许多开源项目、生产应用程序和其他 [用例](community/use-cases/)。

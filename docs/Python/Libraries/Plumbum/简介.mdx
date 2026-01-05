@@ -1,0 +1,149 @@
+# Plumbum：Shell 组合子
+
+是否曾希望将 Shell 脚本的简洁性带入**真正**的编程语言中？
+向 *Plumbum Shell Combinators* 问好。Plumbum（拉丁语中的*铅*，古时用于制造管道）是一个小巧但功能丰富的库，用于在 Python 中编写类似 Shell 脚本的程序。
+该库的座右铭是 **“不再编写 Shell 脚本”**，因此它在合理的情况下尝试模仿 **Shell 语法**（“Shell 组合子”），同时保持 **Python 风格和跨平台特性**。
+
+除了类 Shell 语法和便捷的快捷方式外，该库还提供本地和远程命令执行（通过 SSH）、本地和远程文件系统路径、简单的工作目录和环境变量操作，以及一套编程化的命令行界面（CLI）应用程序工具包。
+现在让我们看一些代码！
+
+*这只是一个预告；完整文档可以在*
+[Read the Docs](https://plumbum.readthedocs.io) *找到*
+
+## 速查表
+
+### 基础
+
+```python
+>>> from plumbum import local
+>>> local.cmd.ls
+LocalCommand(/bin/ls)
+>>> local.cmd.ls()
+'build.py\nCHANGELOG.rst\nconda.recipe\nCONTRIBUTING.rst\ndocs\nexamples\nexperiments\nLICENSE\nMANIFEST.in\nPipfile\nplumbum\nplumbum.egg-info\npytest.ini\nREADME.rst\nsetup.cfg\nsetup.py\ntests\ntranslations.py\n'
+>>> notepad = local["c:\\windows\\notepad.exe"]
+>>> notepad()                                   # 记事本窗口弹出
+''                                              # 用户关闭记事本窗口，命令返回
+```
+
+在上面的例子中，如果你有一个命名不寻常的可执行文件或可执行文件的完整路径，你可以使用 `local["ls"]`。`local` 对象代表你的本地机器。正如你将看到的，Plumbum 也提供了使用相同 API 的远程机器！
+你也可以使用 `from plumbum.cmd import ls` 来访问 `PATH` 中的程序。
+
+### 管道 (Piping)
+
+```python
+>>> from plumbum.cmd import ls, grep, wc
+>>> chain = ls["-a"] | grep["-v", r"\.py"] | wc["-l"]
+>>> print(chain)
+/bin/ls -a | /bin/grep -v '\.py' | /usr/bin/wc -l
+>>> chain()
+'27\n'
+```
+
+### 重定向 (Redirection)
+
+```python
+>>> from plumbum.cmd import cat, head
+>>> ((cat < "setup.py") | head["-n", 4])()
+'#!/usr/bin/env python3\nimport os\n\ntry:\n'
+>>> (ls["-a"] > "file.list")()
+''
+>>> (cat["file.list"] | wc["-l"] )()
+'31\n'
+```
+
+### 工作目录操作
+
+```python
+>>> local.cwd
+<LocalWorkdir /home/tomer/workspace/plumbum>
+>>> with local.cwd(local.cwd / "docs"):
+...     chain()
+...
+'22\n'
+```
+
+### 前台和后台执行
+
+```python
+>>> from plumbum import FG, BG
+>>> (ls["-a"] | grep[r"\.py"]) & FG         # 输出直接打印到 stdout
+build.py
+setup.py
+translations.py
+>>> (ls["-a"] | grep[r"\.py"]) & BG         # 进程“在后台”运行
+<Future ['/bin/grep', '\\.py'] (running)> 
+```
+
+### 命令嵌套
+
+```python
+>>> from plumbum.cmd import sudo, ifconfig
+>>> print(sudo[ifconfig["-a"]])
+/usr/bin/sudo /sbin/ifconfig -a
+>>> (sudo[ifconfig["-a"]] | grep["-i", "loop"]) & FG
+lo        Link encap:Local Loopback
+              UP LOOPBACK RUNNING  MTU:16436  Metric:1
+```
+
+### 远程命令（通过 SSH）
+
+支持 [openSSH](http://www.openssh.org/) 兼容客户端、
+[PuTTY](http://www.chiark.greenend.org.uk/~sgtatham/putty/)（Windows 上）
+和 [Paramiko](https://github.com/paramiko/paramiko/)（SSH2 的纯 Python 实现）。
+
+```python
+>>> from plumbum import SshMachine
+>>> remote = SshMachine("somehost", user = "john", keyfile = "/path/to/idrsa")
+>>> r_ls = remote["ls"]
+>>> with remote.cwd("/lib"):
+...     (r_ls | grep["0.so.0"])()
+...
+'libusb-1.0.so.0\nlibusb-1.0.so.0.0.0\n'
+```
+
+### CLI 应用程序
+
+```python
+import logging
+from plumbum import cli
+
+class MyCompiler(cli.Application):
+    verbose = cli.Flag(["-v", "--verbose"], help = "Enable verbose mode")
+    include_dirs = cli.SwitchAttr("-I", list = True, help = "Specify include directories")
+
+    @cli.switch("--loglevel", int)
+    def set_log_level(self, level):
+        """Sets the log-level of the logger"""
+        logging.root.setLevel(level)
+
+    def main(self, *srcfiles):
+        print("Verbose:", self.verbose)
+        print("Include dirs:", self.include_dirs)
+        print("Compiling:", srcfiles)
+
+if __name__ == "__main__":
+    MyCompiler.run()
+```
+
+#### 示例输出
+
+```bash
+$ python3 simple_cli.py -v -I foo/bar -Ispam/eggs x.cpp y.cpp z.cpp
+Verbose: True
+Include dirs: ['foo/bar', 'spam/eggs']
+Compiling: ('x.cpp', 'y.cpp', 'z.cpp')
+```
+
+## 颜色和样式
+
+```python
+from plumbum import colors
+with colors.red:
+    print("This library provides safe, flexible color access.")
+    print(colors.bold | "(and styles in general)", "are easy!")
+print("The simple 16 colors or",
+      colors.orchid & colors.underline | '256 named colors,',
+      colors.rgb(18, 146, 64) | "or full rgb colors",
+      'can be used.')
+print("Unsafe " + colors.bg.dark_khaki + "color access" + colors.bg.reset + " is available too.")
+```
