@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-Rust/为什么学习Rust" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">为什么要学习 Rust？ | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/Rust/为什么学习Rust"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="为什么要学习 Rust？ | Cruldra"><meta data-rh="true" name="description" content="🎯 核心理由"><meta data-rh="true" property="og:description" content="🎯 核心理由"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/Rust/为什么学习Rust"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Rust/为什么学习Rust" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Rust/为什么学习Rust" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"为什么要学习 Rust？","item":"https://your-docusaurus-site.example.com/notes3/docs/Rust/为什么学习Rust"}]}</script><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.8c4657fb.css">
+<script src="/notes3/assets/js/runtime~main.983b7776.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.424b1ecb.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>document.documentElement.setAttribute("data-theme",window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),document.documentElement.setAttribute("data-theme-choice","system"),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/notes3/img/logo.svg"><style data-mantine-styles="classes">@media (max-width: 35.99375em) {.mantine-visible-from-xs {display: none !important;}}@media (min-width: 36em) {.mantine-hidden-from-xs {display: none !important;}}@media (max-width: 47.99375em) {.mantine-visible-from-sm {display: none !important;}}@media (min-width: 48em) {.mantine-hidden-from-sm {display: none !important;}}@media (max-width: 61.99375em) {.mantine-visible-from-md {display: none !important;}}@media (min-width: 62em) {.mantine-hidden-from-md {display: none !important;}}@media (max-width: 74.99375em) {.mantine-visible-from-lg {display: none !important;}}@media (min-width: 75em) {.mantine-hidden-from-lg {display: none !important;}}@media (max-width: 87.99375em) {.mantine-visible-from-xl {display: none !important;}}@media (min-width: 88em) {.mantine-hidden-from-xl {display: none !important;}}</style><div role="region" aria-label="Skip to main content"><a class="skipToContent_aA1M" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/notes3/"><div class="navbar__logo"><img src="/notes3/img/logo.svg" alt="My Site Logo" class="themedComponent_E3Xm themedComponent--light_DVqC"><img src="/notes3/img/logo.svg" alt="My Site Logo" class="themedComponent_E3Xm themedComponent--dark_B_L3"></div><b class="navbar__title text--truncate">Cruldra</b></a><a class="navbar__item navbar__link" href="/notes3/docs/category/设计模式">JVM</a><a class="navbar__item navbar__link" href="/notes3/docs/category/css">前端</a><a class="navbar__item navbar__link" href="/notes3/docs/category/astrbot">工具</a><a class="navbar__item navbar__link" href="/notes3/docs/category/ai电竞酒店">个人</a><a class="navbar__item navbar__link" href="/notes3/docs/AI/Agno/介绍">AI</a><a class="navbar__item navbar__link" href="/notes3/docs/category/内置模块">Python</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/notes3/docs/category/actix-web">Rust</a><a class="navbar__item navbar__link" href="/notes3/docs/category/数据库系统">软件工程</a><a class="navbar__item navbar__link" href="/notes3/docs/category/上古卷轴5">游戏</a><a class="navbar__item navbar__link" href="/notes3/docs/Go/Go-Python-Java三语言全方位对比">Go</a><a class="navbar__item navbar__link" href="/notes3/docs/Hardware/intro">硬件</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><div class="navbarSearchContainer_PufJ"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_ctfR"><div class="docsWrapper_ByIB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_KwvU" type="button"></button><div class="docRoot_hD6z"><aside class="theme-doc-sidebar-container docSidebarContainer_KuHC"><div class="sidebarViewport_LCjr"><div class="sidebar_L77d"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_VYAF"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_NhDl menu__link menu__link--sublist" href="/notes3/docs/category/actix-web"><span title="Actix-web" class="categoryLinkLabel_FHN4">Actix-web</span></a><button aria-label="Expand sidebar category &#x27;Actix-web&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/结构体"><span title="结构体" class="linkLabel__RqX">结构体</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/所有权与借用"><span title="所有权与借用" class="linkLabel__RqX">所有权与借用</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/Rust GUI框架概览"><span title="Rust GUI 框架概览" class="linkLabel__RqX">Rust GUI 框架概览</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/Rust工具链"><span title="Rust 工具链：rustup、cargo、rustc" class="linkLabel__RqX">Rust 工具链：rustup、cargo、rustc</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/Rust数据与图表资源"><span title="Rust 数据与图表资源" class="linkLabel__RqX">Rust 数据与图表资源</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/Trait详解"><span title="Rust Trait 详解" class="linkLabel__RqX">Rust Trait 详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/Unsafe Rust详解"><span title="Unsafe Rust 详解" class="linkLabel__RqX">Unsafe Rust 详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/panic与异常的区别"><span title="panic! 与异常（throw）的区别" class="linkLabel__RqX">panic! 与异常（throw）的区别</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/notes3/docs/Rust/为什么学习Rust"><span title="为什么要学习 Rust？" class="linkLabel__RqX">为什么要学习 Rust？</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/值与引用详解"><span title="Rust 值与引用详解" class="linkLabel__RqX">Rust 值与引用详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/包装类型"><span title="包装类型" class="linkLabel__RqX">包装类型</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/学习路线"><span title="Rust 学习路线" class="linkLabel__RqX">Rust 学习路线</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/宏详解"><span title="Rust 宏详解" class="linkLabel__RqX">Rust 宏详解</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_NhDl menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/notes3/docs/Rust/常用库/Rig-Rust的AI Agent框架"><span title="常用库" class="categoryLinkLabel_FHN4">常用库</span></a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/并发与异步详解"><span title="Rust 并发与异步详解" class="linkLabel__RqX">Rust 并发与异步详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/智能指针详解"><span title="Rust 智能指针详解" class="linkLabel__RqX">Rust 智能指针详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/条件编译"><span title="条件编译" class="linkLabel__RqX">条件编译</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/模块系统详解"><span title="Rust 模块系统详解" class="linkLabel__RqX">Rust 模块系统详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/生命周期实战场景"><span title="Rust 生命周期实战场景" class="linkLabel__RqX">Rust 生命周期实战场景</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/生命周期详解"><span title="Rust 生命周期详解" class="linkLabel__RqX">Rust 生命周期详解</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/notes3/docs/Rust/闭包详解"><span title="Rust 闭包详解" class="linkLabel__RqX">Rust 闭包详解</span></a></li></ul></nav></div></div></aside><main class="docMainContainer_WxcZ"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_Zd2x"><div class="docItemContainer_EEW4"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_xL_w" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/notes3/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_zA1U"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">为什么要学习 Rust？</span></li></ul></nav><div class="tocCollapsible_aZGz theme-doc-toc-mobile tocMobile_ShCt"><button type="button" class="clean-btn tocCollapsibleButton_fxzH">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>为什么要学习 Rust？</h1></header>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-核心理由">🎯 核心理由<a href="#-核心理由" class="hash-link" aria-label="Direct link to 🎯 核心理由" title="Direct link to 🎯 核心理由" translate="no">​</a></h2>
+<p>Rust 被誉为&quot;最受开发者喜爱的编程语言&quot;（连续多年 Stack Overflow 调查第一），它不仅仅是一门新语言，更代表着系统编程的未来方向。</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-rust-的核心优势">💎 Rust 的核心优势<a href="#-rust-的核心优势" class="hash-link" aria-label="Direct link to 💎 Rust 的核心优势" title="Direct link to 💎 Rust 的核心优势" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="1-内存安全--高性能的完美结合">1. 内存安全 + 高性能的完美结合<a href="#1-内存安全--高性能的完美结合" class="hash-link" aria-label="Direct link to 1. 内存安全 + 高性能的完美结合" title="Direct link to 1. 内存安全 + 高性能的完美结合" translate="no">​</a></h3>
+<p><strong>传统困境：</strong></p>
+<ul>
+<li class=""><strong>C/C++</strong>：性能极致，但内存不安全（70% 的安全漏洞源于内存问题）</li>
+<li class=""><strong>Java/Go</strong>：内存安全，但有垃圾回收（GC）带来的性能损耗和不可预测的延迟</li>
+</ul>
+<p><strong>Rust 的突破：</strong></p>
+<ul>
+<li class="">✅ <strong>零成本抽象</strong>：性能媲美 C/C++</li>
+<li class="">✅ <strong>编译时内存安全</strong>：无需 GC，无运行时开销</li>
+<li class="">✅ <strong>所有权系统</strong>：在编译期就消除内存泄漏、数据竞争等问题</li>
+</ul>
+<blockquote>
+<p>&quot;Rust 让你可以编写像 C++ 一样快的代码，但不会在凌晨 3 点因为段错误被叫醒。&quot; —— 某资深开发者</p>
+</blockquote>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="2-并发安全无畏并发fearless-concurrency">2. 并发安全：无畏并发（Fearless Concurrency）<a href="#2-并发安全无畏并发fearless-concurrency" class="hash-link" aria-label="Direct link to 2. 并发安全：无畏并发（Fearless Concurrency）" title="Direct link to 2. 并发安全：无畏并发（Fearless Concurrency）" translate="no">​</a></h3>
+<p><strong>痛点：</strong></p>
+<ul>
+<li class="">多线程编程容易出现数据竞争、死锁等难以调试的问题</li>
+<li class="">传统语言需要开发者小心翼翼地处理并发</li>
+</ul>
+<p><strong>Rust 的解决方案：</strong></p>
+<ul>
+<li class="">🔒 <strong>编译期并发检查</strong>：Send 和 Sync trait 确保线程安全</li>
+<li class="">🚀 <strong>零成本并发</strong>：无需运行时锁检查</li>
+<li class="">💪 <strong>强大的异步支持</strong>：async/await + tokio 生态</li>
+</ul>
+<div class="language-rust codeBlockContainer_FVab theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_oMSL"><pre tabindex="0" class="prism-code language-rust codeBlock_MTmK thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_KEkQ"><span class="token-line" style="color:#393A34"><span class="token comment" style="color:#999988;font-style:italic">// 编译器会阻止这种不安全的代码</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token keyword" style="color:#00009f">let</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">mut</span><span class="token plain"> data </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> </span><span class="token macro property" style="color:#36acaa">vec!</span><span class="token punctuation" style="color:#393A34">[</span><span class="token number" style="color:#36acaa">1</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">2</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token number" style="color:#36acaa">3</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token namespace" style="opacity:0.7">thread</span><span class="token namespace punctuation" style="opacity:0.7;color:#393A34">::</span><span class="token function" style="color:#d73a49">spawn</span><span class="token punctuation" style="color:#393A34">(</span><span class="token closure-params closure-punctuation punctuation" style="color:#393A34">|</span><span class="token closure-params closure-punctuation punctuation" style="color:#393A34">|</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    data</span><span class="token punctuation" style="color:#393A34">.</span><span class="token function" style="color:#d73a49">push</span><span class="token punctuation" style="color:#393A34">(</span><span class="token number" style="color:#36acaa">4</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><span class="token plain"> </span><span class="token comment" style="color:#999988;font-style:italic">// 编译错误：不能在多线程中共享可变引用</span><span class="token plain"></span><br></span><span class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="3-现代化的语言设计">3. 现代化的语言设计<a href="#3-现代化的语言设计" class="hash-link" aria-label="Direct link to 3. 现代化的语言设计" title="Direct link to 3. 现代化的语言设计" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>强大的类型系统</strong>：泛型、trait、枚举、模式匹配</li>
+<li class=""><strong>优秀的错误处理</strong>：Result 和 Option 类型，告别空指针异常</li>
+<li class=""><strong>函数式编程特性</strong>：闭包、迭代器、高阶函数</li>
+<li class=""><strong>零成本抽象</strong>：高级特性不牺牲性能</li>
+<li class=""><strong>优秀的工具链</strong>：cargo（包管理）、rustfmt（格式化）、clippy（代码检查）</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-行业采用情况">🌍 行业采用情况<a href="#-行业采用情况" class="hash-link" aria-label="Direct link to 🌍 行业采用情况" title="Direct link to 🌍 行业采用情况" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="科技巨头的选择">科技巨头的选择<a href="#科技巨头的选择" class="hash-link" aria-label="Direct link to 科技巨头的选择" title="Direct link to 科技巨头的选择" translate="no">​</a></h3>
+<h4 class="anchor anchorTargetStickyNavbar_aDle" id="微软microsoft">微软（Microsoft）<a href="#微软microsoft" class="hash-link" aria-label="Direct link to 微软（Microsoft）" title="Direct link to 微软（Microsoft）" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>Windows 内核</strong>：正在用 Rust 重写部分组件</li>
+<li class=""><strong>Azure 云服务</strong>：大量使用 Rust 构建基础设施</li>
+<li class=""><strong>官方表态</strong>：&quot;70% 的安全漏洞是内存安全问题，Rust 是解决方案&quot;</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_aDle" id="谷歌google">谷歌（Google）<a href="#谷歌google" class="hash-link" aria-label="Direct link to 谷歌（Google）" title="Direct link to 谷歌（Google）" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>Android 系统</strong>：从 Android 13 开始支持 Rust</li>
+<li class=""><strong>Chromium</strong>：部分组件用 Rust 重写</li>
+<li class=""><strong>Fuchsia OS</strong>：新操作系统大量使用 Rust</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_aDle" id="metafacebook">Meta（Facebook）<a href="#metafacebook" class="hash-link" aria-label="Direct link to Meta（Facebook）" title="Direct link to Meta（Facebook）" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>选定为四大首选语言之一</strong>（与 C++、Python、Hack 并列）</li>
+<li class=""><strong>内部工具和服务</strong>：大量使用 Rust 开发</li>
+<li class=""><strong>Diem 区块链</strong>：核心用 Rust 编写</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_aDle" id="亚马逊amazon">亚马逊（Amazon）<a href="#亚马逊amazon" class="hash-link" aria-label="Direct link to 亚马逊（Amazon）" title="Direct link to 亚马逊（Amazon）" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>AWS</strong>：Firecracker（轻量级虚拟化）、Bottlerocket（容器操作系统）</li>
+<li class=""><strong>官方博客</strong>：&quot;Rust 是构建基础设施的理想选择&quot;</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_aDle" id="其他知名公司">其他知名公司<a href="#其他知名公司" class="hash-link" aria-label="Direct link to 其他知名公司" title="Direct link to 其他知名公司" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>苹果</strong>：正在探索 Rust 在系统开发中的应用</li>
+<li class=""><strong>Dropbox</strong>：文件同步引擎用 Rust 重写，性能提升显著</li>
+<li class=""><strong>Discord</strong>：用 Rust 重写服务后，延迟大幅降低</li>
+<li class=""><strong>Cloudflare</strong>：边缘计算服务大量使用 Rust</li>
+<li class=""><strong>华为</strong>：鸿蒙系统部分组件使用 Rust</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-应用领域">🚀 应用领域<a href="#-应用领域" class="hash-link" aria-label="Direct link to 🚀 应用领域" title="Direct link to 🚀 应用领域" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="1-系统编程">1. 系统编程<a href="#1-系统编程" class="hash-link" aria-label="Direct link to 1. 系统编程" title="Direct link to 1. 系统编程" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>操作系统内核</strong>：Linux 内核已支持 Rust（6.1 版本起）</li>
+<li class=""><strong>驱动程序</strong>：Windows、Linux 驱动开发</li>
+<li class=""><strong>嵌入式系统</strong>：物联网设备、单片机编程</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="2-web-后端开发">2. Web 后端开发<a href="#2-web-后端开发" class="hash-link" aria-label="Direct link to 2. Web 后端开发" title="Direct link to 2. Web 后端开发" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>高性能 Web 框架</strong>：actix-web、Rocket、axum</li>
+<li class=""><strong>微服务架构</strong>：低延迟、高并发场景</li>
+<li class=""><strong>API 服务</strong>：RESTful、GraphQL</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="3-区块链与-web3">3. 区块链与 Web3<a href="#3-区块链与-web3" class="hash-link" aria-label="Direct link to 3. 区块链与 Web3" title="Direct link to 3. 区块链与 Web3" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Solana</strong>：高性能公链，完全用 Rust 编写</li>
+<li class=""><strong>Polkadot</strong>：跨链协议，Substrate 框架基于 Rust</li>
+<li class=""><strong>Near Protocol</strong>：智能合约平台</li>
+<li class=""><strong>智能合约开发</strong>：成为 Web3 领域的主流语言</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="4-云原生与容器">4. 云原生与容器<a href="#4-云原生与容器" class="hash-link" aria-label="Direct link to 4. 云原生与容器" title="Direct link to 4. 云原生与容器" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>容器运行时</strong>：Krustlet（Kubernetes + Rust）</li>
+<li class=""><strong>WebAssembly</strong>：Rust 是 WASM 的首选语言</li>
+<li class=""><strong>边缘计算</strong>：Cloudflare Workers、Fastly Compute@Edge</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="5-命令行工具">5. 命令行工具<a href="#5-命令行工具" class="hash-link" aria-label="Direct link to 5. 命令行工具" title="Direct link to 5. 命令行工具" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>ripgrep</strong>：比 grep 快数倍的搜索工具</li>
+<li class=""><strong>bat</strong>：增强版 cat</li>
+<li class=""><strong>fd</strong>：现代化的 find 替代品</li>
+<li class=""><strong>exa</strong>：现代化的 ls 替代品</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="6-游戏开发">6. 游戏开发<a href="#6-游戏开发" class="hash-link" aria-label="Direct link to 6. 游戏开发" title="Direct link to 6. 游戏开发" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Bevy 引擎</strong>：数据驱动的游戏引擎</li>
+<li class=""><strong>Amethyst</strong>：模块化游戏引擎</li>
+<li class=""><strong>高性能图形渲染</strong></li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="7-数据库与存储">7. 数据库与存储<a href="#7-数据库与存储" class="hash-link" aria-label="Direct link to 7. 数据库与存储" title="Direct link to 7. 数据库与存储" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>TiKV</strong>：分布式 KV 存储（TiDB 的存储层）</li>
+<li class=""><strong>Databend</strong>：云原生数据仓库</li>
+<li class=""><strong>时序数据库</strong>：CnosDB</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-就业前景与薪资">📈 就业前景与薪资<a href="#-就业前景与薪资" class="hash-link" aria-label="Direct link to 📈 就业前景与薪资" title="Direct link to 📈 就业前景与薪资" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="市场需求">市场需求<a href="#市场需求" class="hash-link" aria-label="Direct link to 市场需求" title="Direct link to 市场需求" translate="no">​</a></h3>
+<p><strong>增长趋势：</strong></p>
+<ul>
+<li class="">📊 <strong>JetBrains 2024 调查</strong>：Rust 是增长最快的编程语言之一</li>
+<li class="">🔥 <strong>GitHub 统计</strong>：Rust 项目数量年增长率超过 50%</li>
+<li class="">💼 <strong>招聘需求</strong>：大厂 Rust 岗位逐年增加</li>
+</ul>
+<p><strong>人才稀缺：</strong></p>
+<ul>
+<li class="">供不应求的市场状态</li>
+<li class="">掌握 Rust 的开发者相对较少</li>
+<li class="">竞争压力小，机会多</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="薪资水平">薪资水平<a href="#薪资水平" class="hash-link" aria-label="Direct link to 薪资水平" title="Direct link to 薪资水平" translate="no">​</a></h3>
+<p><strong>全球薪资：</strong></p>
+<ul>
+<li class="">💰 <strong>Stack Overflow 2024</strong>：Rust 开发者平均薪资位居前三</li>
+<li class="">💵 <strong>北美市场</strong>：年薪普遍在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>120</mn><mo separator="true">,</mo><mn>000</mn><mo>−</mo></mrow><annotation encoding="application/x-tex">120,000 - </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em"></span><span class="mord">120</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord">000</span><span class="mord">−</span></span></span></span>180,000</li>
+<li class="">🌟 <strong>高级工程师</strong>：年薪可达 $200,000+</li>
+</ul>
+<p><strong>国内薪资：</strong></p>
+<ul>
+<li class="">💴 <strong>初级（1-3年）</strong>：20-35万/年</li>
+<li class="">💴 <strong>中级（3-5年）</strong>：35-60万/年</li>
+<li class="">💴 <strong>高级（5年+）</strong>：60-100万+/年</li>
+<li class="">💴 <strong>区块链方向</strong>：薪资普遍更高（30-50% 溢价）</li>
+</ul>
+<p><strong>薪资优势原因：</strong></p>
+<ol>
+<li class="">人才稀缺，供不应求</li>
+<li class="">多用于核心基础设施，技术要求高</li>
+<li class="">大厂重点投入，预算充足</li>
+<li class="">Web3/区块链等高薪领域的首选语言</li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-与其他语言对比">🆚 与其他语言对比<a href="#-与其他语言对比" class="hash-link" aria-label="Direct link to 🆚 与其他语言对比" title="Direct link to 🆚 与其他语言对比" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="rust-vs-c">Rust vs C++<a href="#rust-vs-c" class="hash-link" aria-label="Direct link to Rust vs C++" title="Direct link to Rust vs C++" translate="no">​</a></h3>
+<table><thead><tr><th>维度</th><th>Rust</th><th>C++</th></tr></thead><tbody><tr><td><strong>性能</strong></td><td>⭐⭐⭐⭐⭐ 相当</td><td>⭐⭐⭐⭐⭐</td></tr><tr><td><strong>内存安全</strong></td><td>⭐⭐⭐⭐⭐ 编译期保证</td><td>⭐⭐ 需手动管理</td></tr><tr><td><strong>并发安全</strong></td><td>⭐⭐⭐⭐⭐ 编译期保证</td><td>⭐⭐ 容易出错</td></tr><tr><td><strong>学习曲线</strong></td><td>⭐⭐⭐ 陡峭但值得</td><td>⭐⭐ 更陡峭</td></tr><tr><td><strong>现代化</strong></td><td>⭐⭐⭐⭐⭐ 2015年设计</td><td>⭐⭐⭐ 历史包袱重</td></tr><tr><td><strong>工具链</strong></td><td>⭐⭐⭐⭐⭐ cargo 优秀</td><td>⭐⭐⭐ 碎片化</td></tr></tbody></table>
+<p><strong>结论：</strong> Rust 是 C++ 的现代化替代品，适合新项目。</p>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="rust-vs-go">Rust vs Go<a href="#rust-vs-go" class="hash-link" aria-label="Direct link to Rust vs Go" title="Direct link to Rust vs Go" translate="no">​</a></h3>
+<table><thead><tr><th>维度</th><th>Rust</th><th>Go</th></tr></thead><tbody><tr><td><strong>性能</strong></td><td>⭐⭐⭐⭐⭐ 接近 C</td><td>⭐⭐⭐⭐ 有 GC 开销</td></tr><tr><td><strong>内存控制</strong></td><td>⭐⭐⭐⭐⭐ 精确控制</td><td>⭐⭐⭐ GC 管理</td></tr><tr><td><strong>开发效率</strong></td><td>⭐⭐⭐ 编译慢</td><td>⭐⭐⭐⭐⭐ 编译快</td></tr><tr><td><strong>并发模型</strong></td><td>⭐⭐⭐⭐⭐ 零成本</td><td>⭐⭐⭐⭐⭐ goroutine</td></tr><tr><td><strong>适用场景</strong></td><td>系统编程、高性能</td><td>微服务、云原生</td></tr><tr><td><strong>学习曲线</strong></td><td>⭐⭐⭐ 较陡</td><td>⭐⭐⭐⭐⭐ 简单</td></tr></tbody></table>
+<p><strong>结论：</strong></p>
+<ul>
+<li class=""><strong>选 Rust</strong>：追求极致性能、内存控制、系统编程</li>
+<li class=""><strong>选 Go</strong>：快速开发、微服务、团队协作</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="rust-vs-pythonjava">Rust vs Python/Java<a href="#rust-vs-pythonjava" class="hash-link" aria-label="Direct link to Rust vs Python/Java" title="Direct link to Rust vs Python/Java" translate="no">​</a></h3>
+<p><strong>性能对比：</strong></p>
+<ul>
+<li class="">Rust 比 Python 快 <strong>10-100 倍</strong></li>
+<li class="">Rust 比 Java 快 <strong>2-5 倍</strong>（无 GC 停顿）</li>
+</ul>
+<p><strong>适用场景：</strong></p>
+<ul>
+<li class=""><strong>Python</strong>：数据科学、脚本、快速原型</li>
+<li class=""><strong>Java</strong>：企业应用、Android 开发</li>
+<li class=""><strong>Rust</strong>：性能关键、系统底层、安全要求高</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-学习-rust-的理由总结">🎓 学习 Rust 的理由总结<a href="#-学习-rust-的理由总结" class="hash-link" aria-label="Direct link to 🎓 学习 Rust 的理由总结" title="Direct link to 🎓 学习 Rust 的理由总结" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="对个人发展">对个人发展<a href="#对个人发展" class="hash-link" aria-label="Direct link to 对个人发展" title="Direct link to 对个人发展" translate="no">​</a></h3>
+<ol>
+<li class="">✅ <strong>提升技术深度</strong>：深入理解内存管理、并发、系统编程</li>
+<li class="">✅ <strong>职业竞争力</strong>：掌握稀缺技能，薪资溢价明显</li>
+<li class="">✅ <strong>思维方式</strong>：所有权系统培养严谨的编程思维</li>
+<li class="">✅ <strong>未来趋势</strong>：抓住系统编程语言换代的机遇</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="对技术选型">对技术选型<a href="#对技术选型" class="hash-link" aria-label="Direct link to 对技术选型" title="Direct link to 对技术选型" translate="no">​</a></h3>
+<ol>
+<li class="">✅ <strong>性能要求高</strong>：游戏、数据库、操作系统</li>
+<li class="">✅ <strong>安全要求高</strong>：金融、医疗、区块链</li>
+<li class="">✅ <strong>资源受限</strong>：嵌入式、边缘计算</li>
+<li class="">✅ <strong>长期维护</strong>：大型项目，编译器帮你避坑</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="对行业趋势">对行业趋势<a href="#对行业趋势" class="hash-link" aria-label="Direct link to 对行业趋势" title="Direct link to 对行业趋势" translate="no">​</a></h3>
+<ol>
+<li class="">✅ <strong>Linux 内核支持</strong>：系统编程的官方认可</li>
+<li class="">✅ <strong>大厂投入</strong>：微软、谷歌、Meta 重金押注</li>
+<li class="">✅ <strong>Web3 首选</strong>：区块链领域的事实标准</li>
+<li class="">✅ <strong>云原生趋势</strong>：WASM、边缘计算的最佳选择</li>
+</ol>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="️-学习-rust-的挑战">⚠️ 学习 Rust 的挑战<a href="#️-学习-rust-的挑战" class="hash-link" aria-label="Direct link to ⚠️ 学习 Rust 的挑战" title="Direct link to ⚠️ 学习 Rust 的挑战" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="学习曲线陡峭">学习曲线陡峭<a href="#学习曲线陡峭" class="hash-link" aria-label="Direct link to 学习曲线陡峭" title="Direct link to 学习曲线陡峭" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>所有权系统</strong>：需要时间理解和适应</li>
+<li class=""><strong>生命周期</strong>：初学者的拦路虎</li>
+<li class=""><strong>编译器严格</strong>：一开始会频繁报错</li>
+</ul>
+<p><strong>应对策略：</strong></p>
+<ul>
+<li class="">循序渐进，不要急于求成</li>
+<li class="">理解编译器错误信息（非常友好）</li>
+<li class="">多写代码，多看优秀项目源码</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="编译速度较慢">编译速度较慢<a href="#编译速度较慢" class="hash-link" aria-label="Direct link to 编译速度较慢" title="Direct link to 编译速度较慢" translate="no">​</a></h3>
+<ul>
+<li class="">大型项目编译时间较长</li>
+<li class="">增量编译有所改善</li>
+</ul>
+<p><strong>应对策略：</strong></p>
+<ul>
+<li class="">使用 sccache 缓存编译结果</li>
+<li class="">模块化设计，减少重新编译</li>
+<li class="">使用 cargo check 快速检查</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="生态相对年轻">生态相对年轻<a href="#生态相对年轻" class="hash-link" aria-label="Direct link to 生态相对年轻" title="Direct link to 生态相对年轻" translate="no">​</a></h3>
+<ul>
+<li class="">某些领域库不如成熟语言丰富</li>
+<li class="">部分库文档不够完善</li>
+</ul>
+<p><strong>应对策略：</strong></p>
+<ul>
+<li class="">核心领域（Web、CLI、系统）生态已成熟</li>
+<li class="">社区活跃，问题响应快</li>
+<li class="">可以通过 FFI 调用 C/C++ 库</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-什么时候应该学-rust">🎯 什么时候应该学 Rust？<a href="#-什么时候应该学-rust" class="hash-link" aria-label="Direct link to 🎯 什么时候应该学 Rust？" title="Direct link to 🎯 什么时候应该学 Rust？" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="强烈推荐学习的情况">强烈推荐学习的情况<a href="#强烈推荐学习的情况" class="hash-link" aria-label="Direct link to 强烈推荐学习的情况" title="Direct link to 强烈推荐学习的情况" translate="no">​</a></h3>
+<p>✅ <strong>你是系统程序员</strong>：C/C++ 开发者的最佳升级路径<br>
+<!-- -->✅ <strong>你做性能优化</strong>：需要榨取硬件极限性能<br>
+<!-- -->✅ <strong>你做区块链/Web3</strong>：行业标配技能<br>
+<!-- -->✅ <strong>你做嵌入式开发</strong>：安全的底层编程<br>
+<!-- -->✅ <strong>你想深入理解计算机</strong>：最佳学习工具<br>
+<!-- -->✅ <strong>你追求技术前沿</strong>：把握未来趋势</p>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="可以考虑学习的情况">可以考虑学习的情况<a href="#可以考虑学习的情况" class="hash-link" aria-label="Direct link to 可以考虑学习的情况" title="Direct link to 可以考虑学习的情况" translate="no">​</a></h3>
+<p>🤔 <strong>你做 Web 后端</strong>：高性能场景下的选择<br>
+<!-- -->🤔 <strong>你做数据工程</strong>：替代 Python 的性能瓶颈部分<br>
+<!-- -->🤔 <strong>你做 CLI 工具</strong>：打造高性能命令行工具<br>
+<!-- -->🤔 <strong>你想提升竞争力</strong>：增加职业选择</p>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="暂时不建议学习的情况">暂时不建议学习的情况<a href="#暂时不建议学习的情况" class="hash-link" aria-label="Direct link to 暂时不建议学习的情况" title="Direct link to 暂时不建议学习的情况" translate="no">​</a></h3>
+<p>❌ <strong>纯前端开发</strong>：WASM 场景除外<br>
+<!-- -->❌ <strong>数据科学为主</strong>：Python 生态更成熟<br>
+<!-- -->❌ <strong>快速原型开发</strong>：Go/Python 更合适<br>
+<!-- -->❌ <strong>时间非常紧张</strong>：学习投入较大</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-学习资源推荐">📚 学习资源推荐<a href="#-学习资源推荐" class="hash-link" aria-label="Direct link to 📚 学习资源推荐" title="Direct link to 📚 学习资源推荐" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="官方资源">官方资源<a href="#官方资源" class="hash-link" aria-label="Direct link to 官方资源" title="Direct link to 官方资源" translate="no">​</a></h3>
+<ul>
+<li class=""><a href="https://doc.rust-lang.org/book/" target="_blank" rel="noopener noreferrer" class="">The Rust Book</a> - 官方教程（有中文版）</li>
+<li class=""><a href="https://doc.rust-lang.org/rust-by-example/" target="_blank" rel="noopener noreferrer" class="">Rust by Example</a> - 通过例子学习</li>
+<li class=""><a href="https://github.com/rust-lang/rustlings" target="_blank" rel="noopener noreferrer" class="">Rustlings</a> - 交互式练习</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="中文资源">中文资源<a href="#中文资源" class="hash-link" aria-label="Direct link to 中文资源" title="Direct link to 中文资源" translate="no">​</a></h3>
+<ul>
+<li class=""><a href="https://course.rs/" target="_blank" rel="noopener noreferrer" class="">Rust 语言圣经</a> - 最好的中文教程</li>
+<li class=""><a href="https://rustcc.cn/" target="_blank" rel="noopener noreferrer" class="">Rust 中文社区</a> - 活跃的中文社区</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_aDle" id="实践项目">实践项目<a href="#实践项目" class="hash-link" aria-label="Direct link to 实践项目" title="Direct link to 实践项目" translate="no">​</a></h3>
+<ul>
+<li class="">从小项目开始：CLI 工具、文件处理</li>
+<li class="">阅读优秀开源项目：ripgrep、tokio</li>
+<li class="">参与开源贡献</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_aDle" id="-结语">🎬 结语<a href="#-结语" class="hash-link" aria-label="Direct link to 🎬 结语" title="Direct link to 🎬 结语" translate="no">​</a></h2>
+<p>Rust 不仅仅是一门编程语言，它代表着：</p>
+<ul>
+<li class="">🔐 <strong>安全</strong>：让内存安全成为默认</li>
+<li class="">⚡ <strong>性能</strong>：零成本抽象的极致追求</li>
+<li class="">🚀 <strong>未来</strong>：系统编程的下一个十年</li>
+<li class="">💎 <strong>品质</strong>：编译器帮你写出更好的代码</li>
+</ul>
+<p><strong>学习 Rust 是一项投资</strong>，虽然学习曲线陡峭，但回报丰厚：</p>
+<ol>
+<li class="">💰 <strong>经济回报</strong>：高薪、稀缺、需求增长</li>
+<li class="">🧠 <strong>技术成长</strong>：深入理解计算机系统</li>
+<li class="">🌟 <strong>职业发展</strong>：把握技术趋势，增强竞争力</li>
+<li class="">😊 <strong>编程乐趣</strong>：享受类型系统和编译器的保护</li>
+</ol>
+<blockquote>
+<p>&quot;Rust 让我重新爱上了编程。&quot; —— 无数 Rust 开发者的心声</p>
+</blockquote>
+<p><strong>现在就开始你的 Rust 之旅吧！</strong> 🦀</p>
+<hr>
+<p><strong>相关文档：</strong></p>
+<ul>
+<li class=""><a class="" href="/notes3/docs/Rust/学习路线">Rust 学习路线</a></li>
+<li class=""><a class="" href="/notes3/docs/Rust/所有权与借用">所有权与借用</a></li>
+<li class=""><a class="" href="/notes3/docs/Rust/结构体">结构体</a></li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_iDCr"><a href="https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/docs/Rust/为什么学习Rust.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_c0mv" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_mxtt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/notes3/docs/Rust/panic与异常的区别"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">panic! 与异常（throw）的区别</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/notes3/docs/Rust/值与引用详解"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Rust 值与引用详解</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_r83r thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#-核心理由" class="table-of-contents__link toc-highlight">🎯 核心理由</a></li><li><a href="#-rust-的核心优势" class="table-of-contents__link toc-highlight">💎 Rust 的核心优势</a><ul><li><a href="#1-内存安全--高性能的完美结合" class="table-of-contents__link toc-highlight">1. 内存安全 + 高性能的完美结合</a></li><li><a href="#2-并发安全无畏并发fearless-concurrency" class="table-of-contents__link toc-highlight">2. 并发安全：无畏并发（Fearless Concurrency）</a></li><li><a href="#3-现代化的语言设计" class="table-of-contents__link toc-highlight">3. 现代化的语言设计</a></li></ul></li><li><a href="#-行业采用情况" class="table-of-contents__link toc-highlight">🌍 行业采用情况</a><ul><li><a href="#科技巨头的选择" class="table-of-contents__link toc-highlight">科技巨头的选择</a></li></ul></li><li><a href="#-应用领域" class="table-of-contents__link toc-highlight">🚀 应用领域</a><ul><li><a href="#1-系统编程" class="table-of-contents__link toc-highlight">1. 系统编程</a></li><li><a href="#2-web-后端开发" class="table-of-contents__link toc-highlight">2. Web 后端开发</a></li><li><a href="#3-区块链与-web3" class="table-of-contents__link toc-highlight">3. 区块链与 Web3</a></li><li><a href="#4-云原生与容器" class="table-of-contents__link toc-highlight">4. 云原生与容器</a></li><li><a href="#5-命令行工具" class="table-of-contents__link toc-highlight">5. 命令行工具</a></li><li><a href="#6-游戏开发" class="table-of-contents__link toc-highlight">6. 游戏开发</a></li><li><a href="#7-数据库与存储" class="table-of-contents__link toc-highlight">7. 数据库与存储</a></li></ul></li><li><a href="#-就业前景与薪资" class="table-of-contents__link toc-highlight">📈 就业前景与薪资</a><ul><li><a href="#市场需求" class="table-of-contents__link toc-highlight">市场需求</a></li><li><a href="#薪资水平" class="table-of-contents__link toc-highlight">薪资水平</a></li></ul></li><li><a href="#-与其他语言对比" class="table-of-contents__link toc-highlight">🆚 与其他语言对比</a><ul><li><a href="#rust-vs-c" class="table-of-contents__link toc-highlight">Rust vs C++</a></li><li><a href="#rust-vs-go" class="table-of-contents__link toc-highlight">Rust vs Go</a></li><li><a href="#rust-vs-pythonjava" class="table-of-contents__link toc-highlight">Rust vs Python/Java</a></li></ul></li><li><a href="#-学习-rust-的理由总结" class="table-of-contents__link toc-highlight">🎓 学习 Rust 的理由总结</a><ul><li><a href="#对个人发展" class="table-of-contents__link toc-highlight">对个人发展</a></li><li><a href="#对技术选型" class="table-of-contents__link toc-highlight">对技术选型</a></li><li><a href="#对行业趋势" class="table-of-contents__link toc-highlight">对行业趋势</a></li></ul></li><li><a href="#️-学习-rust-的挑战" class="table-of-contents__link toc-highlight">⚠️ 学习 Rust 的挑战</a><ul><li><a href="#学习曲线陡峭" class="table-of-contents__link toc-highlight">学习曲线陡峭</a></li><li><a href="#编译速度较慢" class="table-of-contents__link toc-highlight">编译速度较慢</a></li><li><a href="#生态相对年轻" class="table-of-contents__link toc-highlight">生态相对年轻</a></li></ul></li><li><a href="#-什么时候应该学-rust" class="table-of-contents__link toc-highlight">🎯 什么时候应该学 Rust？</a><ul><li><a href="#强烈推荐学习的情况" class="table-of-contents__link toc-highlight">强烈推荐学习的情况</a></li><li><a href="#可以考虑学习的情况" class="table-of-contents__link toc-highlight">可以考虑学习的情况</a></li><li><a href="#暂时不建议学习的情况" class="table-of-contents__link toc-highlight">暂时不建议学习的情况</a></li></ul></li><li><a href="#-学习资源推荐" class="table-of-contents__link toc-highlight">📚 学习资源推荐</a><ul><li><a href="#官方资源" class="table-of-contents__link toc-highlight">官方资源</a></li><li><a href="#中文资源" class="table-of-contents__link toc-highlight">中文资源</a></li><li><a href="#实践项目" class="table-of-contents__link toc-highlight">实践项目</a></li></ul></li><li><a href="#-结语" class="table-of-contents__link toc-highlight">🎬 结语</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_rhIP"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://discordapp.com/invite/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_rhIP"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://x.com/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">X<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_rhIP"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/notes3/blog">Blog</a></li><li class="footer__item"><a href="https://github.com/facebook/docusaurus" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_rhIP"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
