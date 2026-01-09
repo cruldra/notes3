@@ -48,7 +48,9 @@ const config: Config = {
                 docs: {
                     sidebarPath: './sidebars.ts',
                     remarkPlugins: [remarkMath],
-                    rehypePlugins: [rehypeKatex],
+                    rehypePlugins: [[rehypeKatex, {
+                        strict: false, // 关闭严格模式,允许在数学公式中使用中文等 Unicode 字符
+                    }]],
                     // Please change this to your repo.
                     // Remove this to remove the "edit this page" links.
                     editUrl:
@@ -167,6 +169,12 @@ const config: Config = {
                     sidebarId: 'Go',
                     position: 'left',
                     label: 'Go',
+                },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'hardware',
+                    position: 'left',
+                    label: '硬件',
                 },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
