@@ -257,7 +257,7 @@ GEPA 在 `pred_name` 中提供预测器的名称，在 `pred_trace` 中提供对
 
 ## 使用示例[¶](#usage-examples "永久链接")
 
-在 [GEPA 教程](../../../../tutorials/gepa_ai_program/) 中查看 GEPA 使用教程。
+查看 GEPA 教程了解使用方法。
 
 ### 推理时搜索[¶](#inference-time-search "永久链接")
 
@@ -322,14 +322,14 @@ GEPA 友好反馈的实用秘诀：
 
 当 `enable_tool_optimization=True` 时，GEPA 将 `dspy.ReAct` 模块与工具联合优化——GEPA 根据执行轨迹和反馈一起更新预测器指令和工具描述/参数描述，而不是保持工具行为固定。
 
-有关详细信息、示例和底层设计（工具发现、命名要求以及与自定义指令提议者的交互），请参阅 [工具优化](../GEPA_Advanced/#tool-optimization)。
+有关详细信息、示例和底层设计（工具发现、命名要求以及与自定义指令提议者的交互），请参阅工具优化文档。
 
 ## 自定义指令提议[¶](#custom-instruction-proposal "永久链接")
 
-有关 GEPA 指令提议机制的高级自定义，包括自定义指令提议者和组件选择器，请参阅 [高级功能](../GEPA_Advanced/)。
+有关 GEPA 指令提议机制的高级自定义，包括自定义指令提议者和组件选择器，请参阅高级功能文档。
 
 ## 延伸阅读[¶](#further-reading "永久链接")
 
 * [GEPA 论文: arxiv:2507.19457](https://arxiv.org/abs/2507.19457)
 * [GEPA Github](https://github.com/gepa-ai/gepa) - 此存储库提供了 `dspy.GEPA` 优化器使用的核心 GEPA 进化管道。
-* [DSPy 教程](../../../../tutorials/gepa_ai_program/)
+* DSPy 教程 - 查看相关教程了解更多
