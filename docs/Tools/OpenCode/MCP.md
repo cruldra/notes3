@@ -64,7 +64,7 @@ opencode.json
 }
 ```
 
-您的本地配置值会覆盖远程默认值。有关更多详细信息，请参阅 [配置优先级](/docs/config#precedence-order)。
+您的本地配置值会覆盖远程默认值。
 
 ---
 
@@ -373,7 +373,7 @@ opencode.json
 如果您有大量的 MCP 服务器，您可能希望仅针对每个智能体启用它们，而在全局范围内禁用它们。为此：
 
 1.  作为工具全局禁用它。
-2.  在您的 [智能体配置](/docs/agents#tools) 中，启用 MCP 服务器作为工具。
+2.  在您的智能体配置中，启用 MCP 服务器作为工具。
 
 opencode.json
 
@@ -508,7 +508,7 @@ opencode.json
 Configure a Cloudflare Worker script to cache JSON API responses for five minutes. use context7
 ```
 
-或者，您可以添加如下内容到您的 [AGENTS.md](/docs/rules/)。
+或者，您可以添加如下内容到您的 AGENTS.md。
 
 AGENTS.md
 
@@ -542,7 +542,7 @@ opencode.json
 What's the right way to set a custom domain in an SST Astro component? use the gh_grep tool
 ```
 
-或者，您可以添加如下内容到您的 [AGENTS.md](/docs/rules/)。
+或者，您可以添加如下内容到您的 AGENTS.md。
 
 AGENTS.md
 
