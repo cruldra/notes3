@@ -47,12 +47,12 @@ from llama_index.core import Settings
 Settings.llm = OpenAILike(
     model="openai/gpt-4o",
     api_base="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="",
     is_chat_model=True
 )
 Settings.embed_model = OpenAILikeEmbedding(
     model_name="openai/text-embedding-3-small",
-    api_key="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",
+    api_key="",
     api_base="https://openrouter.ai/api/v1"
 )
 ```

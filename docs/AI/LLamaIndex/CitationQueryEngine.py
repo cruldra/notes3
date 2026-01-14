@@ -77,12 +77,12 @@ def _(OpenAILike):
     Settings.llm = OpenAILike(
         model="openai/gpt-4o",
         api_base="https://openrouter.ai/api/v1",
-        api_key="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",
+        api_key="openrouter_key_from_.env",
         is_chat_model=True
     )
     Settings.embed_model = OpenAILikeEmbedding(
         model_name="openai/text-embedding-3-small",
-        api_key="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",
+        api_key="openrouter_key_from_.env",
         api_base="https://openrouter.ai/api/v1"
     )
     return
