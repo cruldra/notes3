@@ -1,4 +1,4 @@
-如果你还没做过，请在阅读本文之前 [安装 LlamaIndex](/python/framework/getting_started/installation) 并完成 [入门教程](/python/framework/getting_started/starter_example)。这将有助于你结合实际经验来理解这些步骤。
+如果你还没做过，请在阅读本文之前安装 LlamaIndex 并完成入门教程。这将有助于你结合实际经验来理解这些步骤。
 
 LLM（大语言模型）是在海量数据上训练的，但它们并没有在 **你的** 数据上进行训练。检索增强生成（Retrieval-Augmented Generation，简称 RAG）通过将你的数据添加到 LLM 已有访问权限的数据中来解决这个问题。你会在本文档中经常看到 RAG 的相关引用。查询引擎、聊天引擎和 Agent（智能体）通常使用 RAG 来完成它们的任务。
 
@@ -26,28 +26,28 @@ RAG 包含五个关键阶段，它们也将是你构建的大多数大型应用�
 
 #### Loading（加载）阶段
 
-[**Nodes and Documents（节点和文档）**](/python/framework/module_guides/loading/documents_and_nodes)：`Document` 是任何数据源的容器——例如 PDF、API 输出或从数据库检索的数据。`Node` 是 LlamaIndex 中数据的原子单位，代表源 `Document` 的一个“块”（chunk）。节点具有将其与所在文档以及其他节点相关联的元数据。
+**Nodes and Documents（节点和文档）**：`Document` 是任何数据源的容器——例如 PDF、API 输出或从数据库检索的数据。`Node` 是 LlamaIndex 中数据的原子单位，代表源 `Document` 的一个“块”（chunk）。节点具有将其与所在文档以及其他节点相关联的元数据。
 
-[**Connectors（连接器）**](/python/framework/module_guides/loading/connector)：
+**Connectors（连接器）**：
 数据连接器（通常称为 `Reader`）将来自不同数据源和数据格式的数据摄取为 `Documents` 和 `Nodes`。
 
 #### Indexing（索引）阶段
 
-[**Indexes（索引）**](/python/framework/module_guides/indexing)：
+**Indexes（索引）**：
 一旦你摄取了数据，LlamaIndex 将帮助你将数据索引为易于检索的结构。这通常涉及生成 `vector embeddings`，它们存储在称为 `vector store` 的专用数据库中。索引还可以存储关于你的数据的各种元数据。
 
-[**Embeddings（嵌入）**](/python/framework/module_guides/models/embeddings)：LLM 生成称为 `embeddings` 的数据的数值表示。在过滤数据的相关性时，LlamaIndex 将把查询转换为嵌入，你的向量存储将查找与查询的嵌入在数值上相似的数据。
+**Embeddings（嵌入）**：LLM 生成称为 `embeddings` 的数据的数值表示。在过滤数据的相关性时，LlamaIndex 将把查询转换为嵌入，你的向量存储将查找与查询的嵌入在数值上相似的数据。
 
 #### Querying（查询）阶段
 
-[**Retrievers（检索器）**](/python/framework/module_guides/querying/retriever)：
+**Retrievers（检索器）**：
 检索器定义了在给定查询时如何从索引中高效地检索相关上下文。你的检索策略是检索数据的相关性以及检索效率的关键。
 
-[**Routers（路由器）**](/python/framework/module_guides/querying/router)：
+**Routers（路由器）**：
 路由器确定将使用哪个检索器从知识库中检索相关上下文。更具体地说，`RouterRetriever` 类负责选择一个或多个候选检索器来执行查询。它们使用选择器根据每个候选者的元数据和查询来选择最佳选项。
 
-[**Node Postprocessors（节点后处理器）**](/python/framework/module_guides/querying/node_postprocessors)：
+**Node Postprocessors（节点后处理器）**：
 节点后处理器接收一组检索到的节点，并对它们应用转换、过滤或重排序逻辑。
 
-[**Response Synthesizers（响应合成器）**](/python/framework/module_guides/querying/response_synthesizers)：
+**Response Synthesizers（响应合成器）**：
 响应合成器利用用户查询和给定的一组检索到的文本块，通过 LLM 生成响应。

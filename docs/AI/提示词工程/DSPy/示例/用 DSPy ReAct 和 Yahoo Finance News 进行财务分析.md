@@ -152,7 +152,7 @@ Analysis: Given the current price of Apple (AAPL) at $196.58 and the slight incr
 
 ## 使用异步工具
 
-许多 Langchain 工具使用异步操作以获得更好的性能。有关异步工具的详细信息，请参阅 [工具文档](../../learn/programming/tools.md#async-tools)。
+许多 Langchain 工具使用异步操作以获得更好的性能。有关异步工具的详细信息，请参阅工具文档。
 
 ## 主要优势
 
