@@ -1,6 +1,6 @@
 ## 1. 概述 (Overview)
 
-`torch.nn.Linear` 是 PyTorch 中用于实现[**线性变换**（Linear Transformation，亦称全连接层、仿射层）](../../相关概念/线性变换.md)的核心模块。它对输入数据应用线性变换 $y = xA^T + b$，是深度神经网络中最基础的构建单元之一。
+`torch.nn.Linear` 是 PyTorch 中用于实现[**线性变换**（Linear Transformation，亦称全连接层、仿射层）](/AI/相关概念/线性变换.md)的核心模块。它对输入数据应用线性变换 $y = xA^T + b$，是深度神经网络中最基础的构建单元之一。
 
 ## 2. 数学原理 (Mathematical Principles)
 

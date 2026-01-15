@@ -1,6 +1,6 @@
 ## 1. 概述 (Overview)
 
-`torch.nn.Dropout` 是 PyTorch 中用于实现 [**Dropout (随机失活)**](../../相关概念/随机失活.md) 正则化技术的模块。它在训练过程中按概率 $p$ 随机将输入张量中的部分元素置零，旨在减少神经元之间的共适应关系 (co-adaptation)，从而有效防止模型过拟合。
+`torch.nn.Dropout` 是 PyTorch 中用于实现 [**Dropout (随机失活)**](/AI/相关概念/随机失活.md) 正则化技术的模块。它在训练过程中按概率 $p$ 随机将输入张量中的部分元素置零，旨在减少神经元之间的共适应关系 (co-adaptation)，从而有效防止模型过拟合。
 
 ## 2. 数学原理 (Mathematical Principles)
 

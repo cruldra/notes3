@@ -4,7 +4,7 @@
 
 ## 1. 核心设计理念 (Core Design Philosophy)
 
-`PretrainedConfig` 的设计遵循 **“配置即代码”（Configuration as Code）** 的原则。它不仅存储了构建[计算图（Computational Graph）](../相关概念/computational_graph.md)所需的[超参数（Hyperparameters）](../相关概念/超参数.md)，还负责处理模型在不同环境下的序列化与反序列化。
+`PretrainedConfig` 的设计遵循 **“配置即代码”（Configuration as Code）** 的原则。它不仅存储了构建[计算图（Computational Graph）](/AI/相关概念/computational_graph.md)所需的[超参数（Hyperparameters）](/AI/相关概念/超参数.md)，还负责处理模型在不同环境下的序列化与反序列化。
 
 其核心职责包括：
 1.  **定义架构参数**：如层数、隐藏单元数、注意力头数等。

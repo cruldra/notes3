@@ -1,6 +1,6 @@
 ## 1. 概述
 
-`PreTrainedTokenizer` 是 Hugging Face `transformers` 库中用于处理文本数据的核心组件之一。作为所有 Python 实现（"slow"）[分词器](../../相关概念/分词器的作用.md)的基类，它负责将原始文本转换为模型可理解的数值输入（Input IDs），并管理相关的辅助信息（如 Attention Mask、Token Type IDs）。
+`PreTrainedTokenizer` 是 Hugging Face `transformers` 库中用于处理文本数据的核心组件之一。作为所有 Python 实现（"slow"）[分词器](/AI/相关概念/分词器的作用.md)的基类，它负责将原始文本转换为模型可理解的数值输入（Input IDs），并管理相关的辅助信息（如 Attention Mask、Token Type IDs）。
 
 尽管目前 `transformers` 库大力推崇基于 Rust 的 `PreTrainedTokenizerFast` 以获得更高的性能，`PreTrainedTokenizer` 依然是理解分词机制、自定义特殊分词逻辑以及兼容旧版模型的基石。它实现了分词（Tokenization）、编码（Encoding）、解码（Decoding）以及词表管理（Vocabulary Management）等通用接口。
 

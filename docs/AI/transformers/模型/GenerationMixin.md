@@ -1,6 +1,6 @@
 ## 1. 概述
 
-`GenerationMixin` 是 Hugging Face `transformers` 库中用于[自回归文本生成](../../相关概念/自回归文本生成.md)的核心组件。作为一个混入类（Mixin Class），它为模型类提供了统一的生成接口，特别是核心的 `generate()` 方法。任何支持生成的模型（如 Causal LM、Encoder-Decoder 模型）都继承自该类，从而获得了灵活且强大的序列生成能力。
+`GenerationMixin` 是 Hugging Face `transformers` 库中用于[自回归文本生成](/AI/相关概念/自回归文本生成.md)的核心组件。作为一个混入类（Mixin Class），它为模型类提供了统一的生成接口，特别是核心的 `generate()` 方法。任何支持生成的模型（如 Causal LM、Encoder-Decoder 模型）都继承自该类，从而获得了灵活且强大的序列生成能力。
 
 该类不仅封装了多种解码策略（如 Beam Search、Sampling、Greedy Search），还处理了输入预处理、Logits 处理、停止条件判断以及输出后处理等复杂逻辑，使得用户可以通过简单的 API 调用实现高效的文本生成。
 
