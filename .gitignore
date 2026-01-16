@@ -22,3 +22,4 @@ yarn-error.log*
 pdf
 .venv
 /__marimo__/
+*.jsonl

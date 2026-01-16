@@ -57,9 +57,22 @@ graph LR
     PromptEng --> Model[加载模型]
     Model --> Generation[文本生成]
     Generation --> Optimization[推理优化]
+    
+    subgraph Serving [推理服务/引擎]
+        vLLM
+        SGLang
+    end
+    
+    Optimization -.-> Serving
 ```
 
+### 概念说明
+
+*   **vLLM**: 高吞吐量、内存高效的大语言模型推理和服务引擎，以其 PagedAttention 技术著称。
+*   **SGLang**: 一种用于大语言模型的高效执行引擎，通过结构化生成语言优化复杂提示工作流的推理性能。
+
 ### 参考链接
+- [vLLM 完整指南](./vllm/vLLM完整指南.md)
 
 ## 4. 应用 (Application)
 

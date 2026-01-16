@@ -1,7 +1,3 @@
-# torch.cat
-
-## 1. 概述 (Overview)
-
 `torch.cat` (concatenate) 是 PyTorch 中用于在**现有维度**上连接一系列[张量（Tensors）](/AI/相关概念/张量.md)的核心操作。它将多个张量的数据沿指定的轴（dimension）紧密拼接，形成一个新的连续张量。
 
 与 `torch.stack` 不同，`torch.cat` **不会创建新的维度**，而是扩展现有的维度。
