@@ -15,7 +15,7 @@ import torch
 - `torch.randn` - 生成标准正态分布随机数
 - `torch.randint` - 生成随机整数
 - `torch.unique` - 获取张量中的唯一值
-<!---->
+
 ## 1. torch.randn
 
 `torch.randn(*size)` 返回一个由**标准正态分布**（均值为0，方差为1）中抽取的随机数填充的张量。
