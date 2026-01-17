@@ -1,0 +1,815 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "97be7fa096ec96ef54209c7548b5c8a7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"hugging-face-datasets-api\">Hugging Face Datasets API \u6f14\u793a</h1>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u6f14\u793a Hugging Face <code>datasets</code> \u5e93\u7684\u6838\u5fc3 API \u7528\u6cd5\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "370c6ef5a0d2fe66cc58c45ea19d865e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "4e4e55f07a10e2f44d0148f9bcd646fe",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-hub\">1. \u4ece Hub \u52a0\u8f7d\u6570\u636e\u96c6</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>load_dataset</code> \u51fd\u6570\u4ece Hugging Face Hub \u52a0\u8f7d\u6570\u636e\u96c6\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "9ded70c10b7601d5d6bf0b55ef9a5dc5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>DatasetDict({\n    train: Dataset({\n        features: [&#x27;sentence1&#x27;, &#x27;sentence2&#x27;, &#x27;label&#x27;, &#x27;idx&#x27;],\n        num_rows: 3668\n    })\n    validation: Dataset({\n        features: [&#x27;sentence1&#x27;, &#x27;sentence2&#x27;, &#x27;label&#x27;, &#x27;idx&#x27;],\n        num_rows: 408\n    })\n    test: Dataset({\n        features: [&#x27;sentence1&#x27;, &#x27;sentence2&#x27;, &#x27;label&#x27;, &#x27;idx&#x27;],\n        num_rows: 1725\n    })\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "6dad739f9f3dd350ce79c731554674e5",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "35a2c6289a0816fdee1445dcae0f681e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>Dataset({\n    features: [&#x27;sentence1&#x27;, &#x27;sentence2&#x27;, &#x27;label&#x27;, &#x27;idx&#x27;],\n    num_rows: 3668\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "f0dd0400b86fb8144d3ee5a6e165adef",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "412ac96897b59b0ebffff68bf49aaf3b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "ad1ba71facc2ed6573f11215105fa3a3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "0685b7f0d00ab12ae2e74bc2fd7936a6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2\">2. \u6570\u636e\u8bbf\u95ee\u4e0e\u5207\u7247</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "591ec635950a42d5f42be4549568a960",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "ef003454fba4d9549f8ce37633ef5394",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "4f93365fb8c591598ce8ddb2c96ab0ac",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "7b5f1e05db2aa1035d30c0a04c2f4dda",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "{\"sentence1\": [\"Amrozi accused his brother , whom he called \\\" the witness \\\" , of deliberately distorting his evidence .\", \"Yucaipa owned Dominick 's before selling the chain to Safeway in 1998 for $ 2.5 billion .\", \"They had published an advertisement on the Internet on June 10 , offering the cargo for sale , he added .\", \"Around 0335 GMT , Tab shares were up 19 cents , or 4.4 % , at A $ 4.56 , having earlier set a record high of A $ 4.57 .\", \"The stock rose $ 2.11 , or about 11 percent , to close Friday at $ 21.51 on the New York Stock Exchange .\"], \"sentence2\": [\"Referring to him as only \\\" the witness \\\" , Amrozi accused his brother of deliberately distorting his evidence .\", \"Yucaipa bought Dominick 's in 1995 for $ 693 million and sold it to Safeway for $ 1.8 billion in 1998 .\", \"On June 10 , the ship 's owners had published an advertisement on the Internet , offering the explosives for sale .\", \"Tab shares jumped 20 cents , or 4.6 % , to set a record closing high at A $ 4.57 .\", \"PG & E Corp. shares jumped $ 1.63 or 8 percent to $ 21.03 on the New York Stock Exchange on Friday .\"]}"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "5839569436b5f4eafcbd563f17fa1590",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-map\">3. \u6570\u636e\u53d8\u6362 - map \u65b9\u6cd5</h2>\n<span class=\"paragraph\"><code>map</code> \u65b9\u6cd5\u53ef\u4ee5\u5bf9\u6570\u636e\u96c6\u8fdb\u884c\u6279\u91cf\u53d8\u6362\uff0c\u652f\u6301\u591a\u8fdb\u7a0b\u5904\u7406\u548c\u7f13\u5b58\u673a\u5236\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "d2237e90403ccaea552ae93a6c0d9257",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "8571c4f376ad4839dc6bc715f66ac43f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "d0922688d75164cd6ecdd8698e56f797",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "1630fd8573b15b5d973f21ff116050b9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "f5fcc1b698186c035134c093bf4230fa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4-filter\">4. \u6570\u636e\u8fc7\u6ee4 - filter \u65b9\u6cd5</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>filter</code> \u65b9\u6cd5\u6839\u636e\u6761\u4ef6\u8fc7\u6ee4\u6570\u636e\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "8ce93884b29b778a397798d16c00dee7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "86aa90e285b38b4dbeda46f129ff7d26",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "\rFilter:   0%|          | 0/3668 [00:00<?, ? examples/s]\rFilter: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 3668/3668 [00:00<00:00, 174657.51 examples/s]\n",
+          "mimetype": "text/plain"
+        },
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u6570\u636e\u96c6\u5927\u5c0f: 3668\n\u8fc7\u6ee4\u540e\u6570\u636e\u96c6\u5927\u5c0f: 3\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "efb88ada5006717c12c886839bb1b3b0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "{\"sentence1\": [\"Only Intel Corp. has a lower dividend yield .\", \"\\\" And about eight to 10 seconds down , I hit .\", \"Druce will face murder charges , Conte said .\"], \"sentence2\": [\"Only Intel 's 0.3 percent yield is lower .\", \"\\\" I was in the water for about eight seconds .\", \"Conte said Druce will be charged with murder .\"], \"label\": [1, 0, 1], \"idx\": [318, 1155, 3578]}"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "4bf152ab3f329bf8f1336ad488f7af4a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"5-sort\">5. \u6392\u5e8f - sort \u65b9\u6cd5</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>sort</code> \u65b9\u6cd5\u5bf9\u6570\u636e\u96c6\u8fdb\u884c\u6392\u5e8f\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "d016f9007909504c08811faee9f3c8bb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "a63fd4ffb5678e57ea11462609ec5e69",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "35dfb1a3c6752ccfe9cbacb4ee71a7c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"6-shuffle\">6. \u6253\u4e71\u6570\u636e - shuffle \u65b9\u6cd5</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>shuffle</code> \u65b9\u6cd5\u968f\u673a\u6253\u4e71\u6570\u636e\u96c6\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "1174879a8b628c0b5a5347ecfb200d87",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "{\"sentence1\": [\"\\\" The public is understandably losing patience with these unwanted phone calls , unwanted intrusions , \\\" he said at a White House ceremony .\", \"Federal agent Bill Polychronopoulos said it was not known if the man , 30 , would be charged .\", \"The companies uniformly declined to give specific numbers on customer turnover , saying they will release those figures only when they report overall company performance at year-end .\", \"Five more human cases of West Nile virus , were reported by the Mesa County Health Department on Wednesday .\", \"But the signal is designed to make it more difficult for consumers to then transfer those copies to the Internet and make them available to potentially millions of others .\"], \"sentence2\": [\"\\\" While many good people work in the telemarketing industry , the public is understandably losing patience with these unwanted phone calls , unwanted intrusions , \\\" Mr. Bush said .\", \"Federal Agent Bill Polychronopoulos said last night the man involved in the Melbourne incident had been unarmed .\", \"The companies , however , declined to give specifics on customer turnover , saying they would release figures only when they report their overall company performance .\", \"As of this week , 103 human West Nile cases in 45 counties had been reported to the health department .\", \"FCC officials said the embedded electronic signal is designed to make it more difficult for consumers to then transfer copies to the Internet .\"], \"label\": [0, 0, 1, 0, 0], \"idx\": [3946, 3683, 3919, 485, 2251]}"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "bc58d408f7d47f5cda3384d2f044dca4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "f895e10d4104538b355a43be811789b1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"7-set_format\">7. \u6570\u636e\u683c\u5f0f\u8f6c\u6362 - set_format</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>set_format</code> \u65b9\u6cd5\u96f6\u62f7\u8d1d\u5730\u8f6c\u6362\u6570\u636e\u683c\u5f0f\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "88c695bf6bec3e71d172c2f32d8cb15d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "a97d6a4df2653435e36d2a0696dab034",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[\"text/plain:[1 0 1 0 1]\", \"text/plain:<class 'numpy.ndarray'>\", \"text/plain:int64\"]"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "db7cb3e02a359938619b9d2fd6f7ac99",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "c06ca4dd0d102b2519b96f6df76919bd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"8\">8. \u4fdd\u5b58\u4e0e\u52a0\u8f7d\u672c\u5730\u6570\u636e\u96c6</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yCnT",
+      "code_hash": "0ce55ca75b79a60edf6ec17c240a28af",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='wlCL-0' random-id='1f670093-f57a-1966-cfbe-19cf10a08a18'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;text&#92;&quot;:&#92;&quot;hello world&#92;&quot;,&#92;&quot;label&#92;&quot;:0},{&#92;&quot;text&#92;&quot;:&#92;&quot;hello marimo&#92;&quot;,&#92;&quot;label&#92;&quot;:1},{&#92;&quot;text&#92;&quot;:&#92;&quot;marimo is awesome&#92;&quot;,&#92;&quot;label&#92;&quot;:1}]&quot;' data-total-rows='3' data-total-columns='2' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='true' data-page-size='10' data-field-types='[[&quot;text&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;label&quot;,[&quot;integer&quot;,&quot;int64&quot;]]]' data-show-filters='true' data-show-download='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wlCL",
+      "code_hash": "13e0a9d23b72473276511e781dc3d7fb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>Dataset({\n    features: [&#x27;text&#x27;, &#x27;label&#x27;],\n    num_rows: 3\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kqZH",
+      "code_hash": "4deb870c0bb2ab4f96f44c765534a175",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>Dataset({\n    features: [&#x27;name&#x27;, &#x27;age&#x27;, &#x27;city&#x27;],\n    num_rows: 3\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wAgl",
+      "code_hash": "2670467283cc2e2d28b75d10e8fbe815",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "\rSaving the dataset (0/1 shards):   0%|          | 0/3 [00:00<?, ? examples/s]\rSaving the dataset (1/1 shards): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 3/3 [00:00<00:00, 3013.87 examples/s]\rSaving the dataset (1/1 shards): 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 3/3 [00:00<00:00, 1504.23 examples/s]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "rEll",
+      "code_hash": "e38721bb448c2b99663ef8afcca84e60",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "dGlV",
+      "code_hash": "094801eb0b3b7b0b334f5b8215d4165e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>132</pre>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "\rCreating json from Arrow format:   0%|          | 0/1 [00:00<?, ?ba/s]\rCreating json from Arrow format: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1/1 [00:00<00:00, 500.10ba/s]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "SdmI",
+      "code_hash": "05ca55dca6dc7eb690fdcdfc9436fd55",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lgWD",
+      "code_hash": "27857a2eca2c188c374078c49056e90e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"9-datasetdict\">9. DatasetDict \u64cd\u4f5c</h2>\n<span class=\"paragraph\">DatasetDict \u7528\u4e8e\u7ba1\u7406\u6570\u636e\u96c6\u7684\u4e0d\u540c\u5212\u5206\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yOPj",
+      "code_hash": "cbc90e2d2c9b7a5635c020311b94655a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>DatasetDict({\n    train: Dataset({\n        features: [&#x27;x&#x27;, &#x27;y&#x27;],\n        num_rows: 3\n    })\n    validation: Dataset({\n        features: [&#x27;x&#x27;, &#x27;y&#x27;],\n        num_rows: 2\n    })\n    test: Dataset({\n        features: [&#x27;x&#x27;, &#x27;y&#x27;],\n        num_rows: 2\n    })\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "fwwy",
+      "code_hash": "381f98f2521e35021141a468c8d465cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>Dataset({\n    features: [&#x27;x&#x27;, &#x27;y&#x27;],\n    num_rows: 3\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "LJZf",
+      "code_hash": "ae9965becb62518bb8fdd7eba46abcf2",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "urSm",
+      "code_hash": "37d5b1435da3561ed167492cdd06977b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"10\">10. \u5217\u64cd\u4f5c</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "jxvo",
+      "code_hash": "aa851d7a1c08da5208c87d35c5df8530",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "{\"sentence1\": \"Amrozi accused his brother , whom he called \\\" the witness \\\" , of deliberately distorting his evidence .\", \"sentence2\": \"Referring to him as only \\\" the witness \\\" , Amrozi accused his brother of deliberately distorting his evidence .\", \"label\": 1, \"idx\": 0, \"sentence1_upper\": \"AMROZI ACCUSED HIS BROTHER , WHOM HE CALLED \\\" THE WITNESS \\\" , OF DELIBERATELY DISTORTING HIS EVIDENCE .\", \"sentence2_upper\": \"REFERRING TO HIM AS ONLY \\\" THE WITNESS \\\" , AMROZI ACCUSED HIS BROTHER OF DELIBERATELY DISTORTING HIS EVIDENCE .\"}"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "\rMap:   0%|          | 0/3668 [00:00<?, ? examples/s]\rMap: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 3668/3668 [00:00<00:00, 166771.89 examples/s]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "mWxS",
+      "code_hash": "df629c89966dbfc58dcc2ba83d4af70a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "CcZR",
+      "code_hash": "c77d0e9fd44cb6ec39fa39f7ce008d20",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "YWSi",
+      "code_hash": "61b9239cda5f76c2216635babdd7c4a8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"11-iterabledataset\">11. \u6d41\u5f0f\u6570\u636e\u96c6 - IterableDataset</h2>\n<span class=\"paragraph\">\u5bf9\u4e8e\u8d85\u5927\u6570\u636e\u96c6\uff0c\u4f7f\u7528 <code>streaming=True</code> \u53ef\u4ee5\u907f\u514d\u4e0b\u8f7d\u5b8c\u6574\u6570\u636e\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zlud",
+      "code_hash": "40853703eb194f6352b7c1818871f937",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>IterableDatasetDict({\n    train: IterableDataset({\n        features: [&#x27;text&#x27;, &#x27;label&#x27;],\n        num_shards: 1\n    })\n    test: IterableDataset({\n        features: [&#x27;text&#x27;, &#x27;label&#x27;],\n        num_shards: 1\n    })\n    unsupervised: IterableDataset({\n        features: [&#x27;text&#x27;, &#x27;label&#x27;],\n        num_shards: 1\n    })\n})</pre>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "D:\\Sources\\cn.dongjak\\notes3\\.venv\\Lib\\site-packages\\huggingface_hub\\file_download.py:143: UserWarning: `huggingface_hub` cache-system uses symlinks by default to efficiently store duplicated files but your machine does not support them in C:\\Users\\cruld\\.cache\\huggingface\\hub\\datasets--imdb. Caching files will still work but in a degraded version that might require more space on your disk. This warning can be disabled by setting the `HF_HUB_DISABLE_SYMLINKS_WARNING` environment variable. For more details, see https://huggingface.co/docs/huggingface_hub/how-to-cache#limitations.\nTo support symlinks on Windows, you either need to activate Developer Mode or to run Python as an administrator. In order to activate developer mode, see this article: https://docs.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development\n  warnings.warn(message)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "tZnO",
+      "code_hash": "c37df5f77394bfddfa8768fe169dc498",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>&lt;class &#x27;datasets.iterable_dataset.IterableDataset&#x27;&gt;</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xvXZ",
+      "code_hash": "513bfa90b70ea8788dd3c1f5ed694186",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Example 0: I rented I AM CURIOUS-YELLOW from my video store b...\nExample 1: \"I Am Curious: Yellow\" is a risible and pretentiou...\nExample 2: If only to avoid making this type of film in the f...\nExample 3: This film was probably inspired by Godard's Mascul...\nExample 4: Oh, brother...after hearing about this ridiculous ...\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "CLip",
+      "code_hash": "a0eb110bd082835cb0a911ad6187cb8d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"12-sharding\">12. \u6570\u636e\u96c6\u5206\u7247 - sharding</h2>\n<span class=\"paragraph\">\u4f7f\u7528 <code>shard</code> \u65b9\u6cd5\u5c06\u6570\u636e\u96c6\u5206\u6210\u591a\u4e2a\u5206\u7247\uff0c\u4fbf\u4e8e\u5206\u5e03\u5f0f\u5904\u7406\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "YECM",
+      "code_hash": "c4e87d54391d3bf7346c8fcfa1ea2593",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>917</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "cEAS",
+      "code_hash": "50bb4a7d2b771d7212017d81c0ecf57c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>917</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iXej",
+      "code_hash": "74a8762d6c40d85faac80f03d9a02932",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u6570\u636e\u96c6\u5927\u5c0f: 3668\n\u6240\u6709\u5206\u7247\u603b\u548c: 3668\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "EJmg",
+      "code_hash": "a371769abe150045ccfbb53b8602eb11",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"13\">13. \u6570\u636e\u96c6\u8fde\u63a5\u4e0e\u62c6\u5206</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "UmEG",
+      "code_hash": "805d6facdc36b77a767c9ceb39472428",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>Dataset({\n    features: [&#x27;a&#x27;, &#x27;b&#x27;],\n    num_rows: 4\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vEBW",
+      "code_hash": "ddcfecf1c112a8a98dffa3213ef16a58",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<pre class='text-xs'>DatasetDict({\n    train: Dataset({\n        features: [&#x27;x&#x27;, &#x27;y&#x27;],\n        num_rows: 8\n    })\n    test: Dataset({\n        features: [&#x27;x&#x27;, &#x27;y&#x27;],\n        num_rows: 2\n    })\n})</pre>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "kLmu",
+      "code_hash": "da93c1e3eb1a249cf6240c56f25dddd8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IpqN",
+      "code_hash": "3c8e90bff94a70777fc9539e8aa862cb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"14\">14. \u4f7f\u7528\u672c\u5730\u6587\u4ef6\u52a0\u8f7d\u6570\u636e</h2>\n<span class=\"paragraph\">\u53ef\u4ee5\u4ece\u5404\u79cd\u672c\u5730\u6587\u4ef6\u683c\u5f0f\u52a0\u8f7d\u6570\u636e\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dxZZ",
+      "code_hash": "a4c7075d55830c5f576df2272be694f6",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "dlnW",
+      "code_hash": "08d3225c26888f9e3bbba86abce6144b",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TTti",
+      "code_hash": "f3333adaf90767850e1f0076f5251874",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RKFZ",
+      "code_hash": "0fd7a30787b8dd997e2ed0d98cd6c527",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"15-transformers\">15. \u4e0e Transformers \u96c6\u6210</h2>\n<span class=\"paragraph\">\u6f14\u793a\u5982\u4f55\u4f7f\u7528 Transformers \u7684 tokenizer \u5904\u7406\u6570\u636e\u96c6\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "IaQp",
+      "code_hash": "e114bfcdb8abe5417ac1fd7dd83ff8c1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "IWgg",
+      "code_hash": "41bd0a6d65d5da2d57d192e101240ff2",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "fCoF",
+      "code_hash": "a91b758f21c002fc9b8e86aaa3108eda",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "LkGn",
+      "code_hash": "2629ecb500b1a4ee086901852e2d1508",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "zVRe",
+      "code_hash": "81e1a207bfc6c10f8a398ee667268e23",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "woaO",
+      "code_hash": "cac1f4bbc7d597c8699ddf7703892675",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"16\">16. \u6027\u80fd\u63d0\u793a</h2>\n<ol>\n<li><strong>\u4f7f\u7528 <code>batched=True</code></strong>: \u5728 map \u65b9\u6cd5\u4e2d\u542f\u7528\u6279\u5904\u7406\u53ef\u4ee5\u663e\u8457\u63d0\u9ad8\u901f\u5ea6</li>\n<li><strong>\u8bbe\u7f6e <code>num_proc</code></strong>: \u5229\u7528\u591a\u6838 CPU \u52a0\u901f\u5904\u7406</li>\n<li><strong>\u4fdd\u6301 Arrow \u683c\u5f0f</strong>: \u4e0d\u8981\u5c06\u5927\u578b Dataset \u8f6c\u6362\u4e3a\u5217\u8868\uff0c\u76f4\u63a5\u4f7f\u7528 Arrow \u683c\u5f0f</li>\n<li><strong>\u4f7f\u7528\u7f13\u5b58</strong>: map \u65b9\u6cd5\u4f1a\u81ea\u52a8\u7f13\u5b58\u7ed3\u679c\uff0c\u907f\u514d\u91cd\u590d\u8ba1\u7b97</li>\n<li><strong>\u6d41\u5f0f\u5904\u7406\u8d85\u5927\u6570\u636e</strong>: \u5bf9\u4e8e TB \u7ea7\u6570\u636e\uff0c\u4f7f\u7528 <code>streaming=True</code></li>\n</ol></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HnMC",
+      "code_hash": "9e7c304ed59d3e5adf9fa573e04f4000",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
