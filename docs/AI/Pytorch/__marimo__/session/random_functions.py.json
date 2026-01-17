@@ -1,0 +1,432 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "46572d3b4148ff5e2869053340615f5e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"pytorch\">PyTorch \u968f\u673a\u5f20\u91cf\u751f\u6210\u4e0e\u552f\u4e00\u503c\u64cd\u4f5c</h1>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u4ecb\u7ecd\u4e09\u4e2a\u5e38\u7528\u7684 PyTorch API\uff1a</span>\n<ul>\n<li><code>torch.randn</code> - \u751f\u6210\u6807\u51c6\u6b63\u6001\u5206\u5e03\u968f\u673a\u6570</li>\n<li><code>torch.randint</code> - \u751f\u6210\u968f\u673a\u6574\u6570</li>\n<li><code>torch.unique</code> - \u83b7\u53d6\u5f20\u91cf\u4e2d\u7684\u552f\u4e00\u503c</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "ced9d801340aab978bda42efe044598a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-torchrandn\">1. torch.randn</h2>\n<span class=\"paragraph\"><code>torch.randn(*size)</code> \u8fd4\u56de\u4e00\u4e2a\u7531<strong>\u6807\u51c6\u6b63\u6001\u5206\u5e03</strong>\uff08\u5747\u503c\u4e3a0\uff0c\u65b9\u5dee\u4e3a1\uff09\u4e2d\u62bd\u53d6\u7684\u968f\u673a\u6570\u586b\u5145\u7684\u5f20\u91cf\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">randn</span><span class=\"p\">(</span><span class=\"o\">*</span><span class=\"n\">size</span><span class=\"p\">,</span> <span class=\"n\">out</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">dtype</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">layout</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">strided</span><span class=\"p\">,</span>\n            <span class=\"n\">device</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">requires_grad</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>size</code>: \u5b9a\u4e49\u8f93\u51fa\u5f20\u91cf\u5f62\u72b6\u7684\u6574\u6570\u5e8f\u5217</li>\n<li><code>dtype</code>: \u8fd4\u56de\u5f20\u91cf\u7684\u6570\u636e\u7c7b\u578b\uff0c\u9ed8\u8ba4\u4e3a <code>torch.float32</code></li>\n<li><code>device</code>: \u8fd4\u56de\u5f20\u91cf\u6240\u5728\u7684\u8bbe\u5907</li>\n<li><code>requires_grad</code>: \u662f\u5426\u9700\u8981\u8ba1\u7b97\u68af\u5ea6</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "a9b67e8c19aca2e3cc5510743ef2dea0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-torchrandint\">2. torch.randint</h2>\n<span class=\"paragraph\"><code>torch.randint(low, high, size)</code> \u8fd4\u56de\u4e00\u4e2a\u5728 <code>[low, high)</code> \u533a\u95f4\u5185\u5747\u5300\u5206\u5e03\u7684\u968f\u673a\u6574\u6570\u5f20\u91cf\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">randint</span><span class=\"p\">(</span><span class=\"n\">low</span><span class=\"o\">=</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"n\">high</span><span class=\"p\">,</span> <span class=\"n\">size</span><span class=\"p\">,</span> <span class=\"o\">*</span><span class=\"p\">,</span> <span class=\"n\">generator</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">out</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span>\n              <span class=\"n\">dtype</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">layout</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">strided</span><span class=\"p\">,</span> <span class=\"n\">device</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span>\n              <span class=\"n\">requires_grad</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>low</code>: \u6700\u5c0f\u503c\uff08\u5305\u542b\uff09\uff0c\u9ed8\u8ba4\u4e3a 0</li>\n<li><code>high</code>: \u6700\u5927\u503c\uff08\u4e0d\u5305\u542b\uff09</li>\n<li><code>size</code>: \u8f93\u51fa\u5f20\u91cf\u7684\u5f62\u72b6\uff08\u5143\u7ec4\uff09</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "aa8fb78fb0cf8c6d6caa5da26bc22785",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-torchunique\">3. torch.unique</h2>\n<span class=\"paragraph\"><code>torch.unique(input)</code> \u8fd4\u56de\u8f93\u5165\u5f20\u91cf\u4e2d\u7684\u552f\u4e00\u5143\u7d20\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">unique</span><span class=\"p\">(</span><span class=\"nb\">input</span><span class=\"p\">,</span> <span class=\"nb\">sorted</span><span class=\"o\">=</span><span class=\"kc\">True</span><span class=\"p\">,</span> <span class=\"n\">return_inverse</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">,</span>\n             <span class=\"n\">return_counts</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">,</span> <span class=\"n\">dim</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>input</code>: \u8f93\u5165\u5f20\u91cf</li>\n<li><code>sorted</code>: \u662f\u5426\u5bf9\u552f\u4e00\u503c\u8fdb\u884c\u6392\u5e8f\uff0c\u9ed8\u8ba4 True</li>\n<li><code>return_inverse</code>: \u662f\u5426\u8fd4\u56de\u539f\u59cb\u5f20\u91cf\u5230\u552f\u4e00\u503c\u7684\u7d22\u5f15\u6620\u5c04</li>\n<li><code>return_counts</code>: \u662f\u5426\u8fd4\u56de\u6bcf\u4e2a\u552f\u4e00\u503c\u7684\u8ba1\u6570</li>\n<li><code>dim</code>: \u6cbf\u6307\u5b9a\u7ef4\u5ea6\u8ba1\u7b97\u552f\u4e00\u503c</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "def42b90bf8fa26dcf62719488bf7620",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"_1\">\u7efc\u5408\u793a\u4f8b\uff1a\u7ec4\u5408\u4f7f\u7528</h2>\n<span class=\"paragraph\">\u4e0b\u9762\u5c55\u793a\u5982\u4f55\u7ec4\u5408\u4f7f\u7528\u8fd9\u4e09\u4e2a\u51fd\u6570\u5b8c\u6210\u5b9e\u9645\u4efb\u52a1\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "a45ef667a8a3d126da6fc0b60fcb6d3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "57d49c7d047633bd9d7ec1290fe08af8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "2D \u968f\u673a\u5f20\u91cf (3x4):\ntensor([[ 1.9204,  2.1844,  1.2536,  0.2903],\n        [-0.5506,  0.1368, -1.7905,  0.1756],\n        [-0.4128, -0.0416, -1.0474, -1.3250]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "74f9658084493bb3898d3ad4eaff7021",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "3D \u968f\u673a\u5f20\u91cf (2x3x4):\ntensor([[[ 0.3310, -0.5947, -1.3866, -0.7486],\n         [-0.6053, -0.7101, -0.4391, -1.0502],\n         [ 0.4602, -0.4365,  0.8777, -0.7460]],\n\n        [[-0.7270,  0.1377,  0.0017,  0.2460],\n         [ 0.4488,  1.6944,  1.1202,  0.0025],\n         [ 1.6599, -0.8817, -0.5480, -1.6788]]])\n3\u7ef4\ntorch.Size([2, 3, 4])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "PKri",
+      "code_hash": "aa8075180bf0bdbfb3ee2803c27ade8c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u5747\u503c (\u671f\u671b\u63a5\u8fd1 0): 0.0038\n\u6807\u51c6\u5dee (\u671f\u671b\u63a5\u8fd1 1): 1.0021\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "dd6403266754f5a22682d109eb528133",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "float64 \u5f20\u91cf:\ntensor([[-0.1563,  0.5751, -0.8128],\n        [-0.1611, -1.8079,  2.0942]], dtype=torch.float64)\n\u6570\u636e\u7c7b\u578b: torch.float64\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "6c38ca953bd63908d5a2f288441ebcb4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "0-9 \u4e4b\u95f4\u7684\u968f\u673a\u6574\u6570 (3x4):\ntensor([[7, 9, 2, 1],\n        [6, 2, 8, 9],\n        [5, 1, 5, 1]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "21fe83696d8d182d58959f6496facdc6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "0-4 \u4e4b\u95f4\u7684\u968f\u673a\u6574\u6570 (2x3):\ntensor([[0, 3, 0],\n        [4, 0, 3]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "2040c798fe45b7ecfdbcdc9549a2f346",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "-5 \u5230 4 \u4e4b\u95f4\u7684\u968f\u673a\u6574\u6570:\ntensor([[ 3, -5, -1,  3],\n        [-4,  2, -3, -1]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "2ba8ba553a178d6319906e9a04590d73",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "10\u6b21\u9ab0\u5b50\u6295\u63b7\u7ed3\u679c: [1, 5, 5, 6, 2, 1, 6, 2, 3, 1]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "af764b030d2b3c1dad8b151af80c2bdc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "8eb7f698f6c3f2ab0173d29d85b27ceb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u5f20\u91cf: [1, 3, 2, 3, 1, 4, 2, 1]\n\u552f\u4e00\u503c: [1, 2, 3, 4]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "c54bc310f9b98d8e0e43edfb968f3fa8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u552f\u4e00\u503c: [1, 2, 3, 4]\n\u8ba1\u6570: [3, 2, 2, 1]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "9d5070340a23f97b92a203d0053bd3a8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u552f\u4e00\u503c: [1, 2, 3, 4]\n\u9006\u5411\u7d22\u5f15: [0, 2, 1, 2, 0, 3, 1, 0]\n\u91cd\u5efa\u539f\u59cb\u5f20\u91cf: [1, 3, 2, 3, 1, 4, 2, 1]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "f9da135e57c4547e029bec359f7e54c0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u6570\u636e: [5, 2, 8, 2, 5, 5, 8]\n\u552f\u4e00\u503c: [2, 5, 8]\n\u9006\u5411\u7d22\u5f15: [1, 0, 2, 0, 1, 1, 2]\n\u8ba1\u6570: [2, 3, 2]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "ec891edd8a316f641d344ff3e67798d1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "2D \u5f20\u91cf:\ntensor([[1, 2],\n        [3, 1],\n        [1, 2],\n        [4, 5]])\n\n\u552f\u4e00\u884c (dim=0):\ntensor([[1, 2],\n        [3, 1],\n        [4, 5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "ede1b674ce6ec59ac9bb94ab00f9cab3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u6d6e\u70b9\u6570\u5f20\u91cf: [1.100000023841858, 2.200000047683716, 1.100000023841858, 3.299999952316284, 2.200000047683716]\n\u552f\u4e00\u6d6e\u70b9\u503c: [1.100000023841858, 2.200000047683716, 3.299999952316284]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "6fadbf4389ae76f8b2d23d414fe6730f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u5206\u7c7b\u6807\u7b7e\u5206\u5e03\u7edf\u8ba1:\n  \u7c7b\u522b 0: 27 \u4e2a\u6837\u672c (27%)\n  \u7c7b\u522b 1: 19 \u4e2a\u6837\u672c (19%)\n  \u7c7b\u522b 2: 12 \u4e2a\u6837\u672c (12%)\n  \u7c7b\u522b 3: 20 \u4e2a\u6837\u672c (20%)\n  \u7c7b\u522b 4: 22 \u4e2a\u6837\u672c (22%)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "17685736d2b9db5f2bdc3f27f6285b3c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u7279\u5f81\u77e9\u9635:\ntensor([[-0.8072,  0.0689, -0.7617],\n        [ 0.8134,  0.5165, -0.9338],\n        [ 0.3424,  0.6595, -2.6460],\n        [ 0.0478,  0.2473,  0.6285],\n        [ 1.0480,  0.4466,  1.2059]])\n\n\u5f52\u4e00\u5316\u540e\u7684\u7279\u5f81\u77e9\u9635:\ntensor([[-0.7259,  0.0620, -0.6850],\n        [ 0.6062,  0.3849, -0.6959],\n        [ 0.1246,  0.2399, -0.9628],\n        [ 0.0706,  0.3652,  0.9282],\n        [ 0.6317,  0.2692,  0.7269]])\n\n\u6bcf\u884c\u7684\u8303\u6570: [0.9999999403953552, 1.0, 0.9999999403953552, 1.0, 1.0]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "1b6b300a375e06fbfa2a575833cbe212",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u968f\u673a\u91c7\u6837\u7684 10 \u4e2a\u7d22\u5f15: [41, 276, 282, 296, 299, 324, 397, 401, 521, 553]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    }
+  ]
+}

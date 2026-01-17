@@ -6,7 +6,7 @@
   "cells": [
     {
       "id": "MJUe",
-      "code_hash": "3f0b3cd1ac7b50e2cf98c9b2b7a4b370",
+      "code_hash": "02144878eed965c095c55964444aad88",
       "outputs": [
         {
           "type": "data",
@@ -19,7 +19,7 @@
     },
     {
       "id": "vblA",
-      "code_hash": "986faa803048909868c02850b5d3e101",
+      "code_hash": "839d41a26f1c9ff2c9cd223ed2578be8",
       "outputs": [
         {
           "type": "data",
@@ -32,7 +32,7 @@
     },
     {
       "id": "lEQa",
-      "code_hash": "fea3eff5e727c12319fb4d120f41e717",
+      "code_hash": "b17b73e575d24882b113b1439d93c005",
       "outputs": [
         {
           "type": "data",
@@ -45,7 +45,7 @@
     },
     {
       "id": "Xref",
-      "code_hash": "553f5bf8aa10468010a078686e0c6c66",
+      "code_hash": "594615f7b2c0636b475c078a05d14f77",
       "outputs": [
         {
           "type": "data",
@@ -58,7 +58,7 @@
     },
     {
       "id": "BYtC",
-      "code_hash": "2179c64b95d154961cdeea26df8fa04f",
+      "code_hash": "f7ca4cb8123449c0fddd1c421b30a6dc",
       "outputs": [
         {
           "type": "data",
@@ -71,7 +71,7 @@
     },
     {
       "id": "Kclp",
-      "code_hash": "d294ae6b7df1063054c5cca911959ade",
+      "code_hash": "bbc795f86105890986165bfc5421e83a",
       "outputs": [
         {
           "type": "data",
@@ -84,7 +84,7 @@
     },
     {
       "id": "Hstk",
-      "code_hash": "960782966d14c42cf84821432886092a",
+      "code_hash": "7b4aa3900ed8eeefa15e7c5e7d8cce2d",
       "outputs": [
         {
           "type": "data",
@@ -97,7 +97,7 @@
     },
     {
       "id": "iLit",
-      "code_hash": "7485ceb5384c2e60bd87e67b13c5377b",
+      "code_hash": "120dd442394b2fdddd0a4a0a0e2d4825",
       "outputs": [
         {
           "type": "data",
@@ -110,7 +110,7 @@
     },
     {
       "id": "ROlb",
-      "code_hash": "7f96c5b8bd27d6a0f0920112ca3f9bf7",
+      "code_hash": "012e71f453bd3fe228d081013ad017b1",
       "outputs": [
         {
           "type": "data",
@@ -123,7 +123,7 @@
     },
     {
       "id": "TqIu",
-      "code_hash": "14c3c034fcf0b5443cb750531b626976",
+      "code_hash": "547716c0877f47a22972f53dc59a8821",
       "outputs": [
         {
           "type": "data",
@@ -137,175 +137,56 @@
     {
       "id": "Hbol",
       "code_hash": "97ea987474cec69cd72d96e72718a0c3",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
+      "outputs": [],
       "console": []
     },
     {
       "id": "bkHC",
       "code_hash": "8a25828d158d62dc328dc588962ea083",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u6570\u636e\u96c6\u5927\u5c0f: 50\n\u7b2c\u4e00\u4e2a\u6837\u672c: (tensor([ 0.7569, -0.5680,  0.3804,  2.9023,  1.1953, -0.9820,  0.6442, -0.3612,\n        -1.8170, -0.6955]), tensor(1))\n\u7279\u5f81\u5f62\u72b6: torch.Size([10])\n\u6807\u7b7e: 1\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "PKri",
       "code_hash": "3732c61613758fcdfb840c8f3425e8b5",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "TensorDataset \u5927\u5c0f: 100\n\u7b2c\u4e00\u4e2a\u6837\u672c: (tensor([-1.0161, -1.2588, -0.8575, -1.0233, -0.3937]), tensor(0))\n\u53ef\u4ee5\u540c\u65f6\u5305\u88c5\u591a\u4e2a\u5f20\u91cf\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "SFPL",
       "code_hash": "689d62282787c1514dce7063135a60f9",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u539f\u59cb\u6570\u636e\u96c6\u5927\u5c0f: 100\n\u5b50\u96c6\u5927\u5c0f: 5\n\u5b50\u96c6\u7b2c\u4e00\u4e2a\u6837\u672c (\u539f\u59cb\u7d22\u5f150): (tensor([-1.0161, -1.2588, -0.8575, -1.0233, -0.3937]), tensor(0))\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "RGSE",
       "code_hash": "d6c2201b671199d50afc09ab727f2151",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u8bad\u7ec3\u96c6\u5927\u5c0f: 70\n\u9a8c\u8bc1\u96c6\u5927\u5c0f: 15\n\u6d4b\u8bd5\u96c6\u5927\u5c0f: 15\n\u603b\u5927\u5c0f: 100\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "emfo",
       "code_hash": "21b3dff60de068ecd517e80197b933e6",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u6570\u636e\u96c61\u5927\u5c0f: 30\n\u6570\u636e\u96c62\u5927\u5c0f: 20\n\u6570\u636e\u96c63\u5927\u5c0f: 50\n\u8fde\u63a5\u540e\u6570\u636e\u96c6\u5927\u5c0f: 100\n\u8bbf\u95ee\u7b2c35\u4e2a\u6837\u672c (\u6765\u81eadataset2): torch.Size([10])\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "nWHF",
       "code_hash": "975b5b39a77371e941647a101c706ce8",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u5355\u4e2a\u7d22\u5f15\u8bbf\u95ee:\n  \u6837\u672c5: \u7279\u5f81\u5f62\u72b6=torch.Size([10]), \u6807\u7b7e=1\n\n\u6279\u91cf\u7d22\u5f15\u8bbf\u95ee:\n  \u6837\u672c0: \u6807\u7b7e=1\n  \u6837\u672c1: \u6807\u7b7e=0\n  \u6837\u672c2: \u6807\u7b7e=1\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "ZHCJ",
       "code_hash": "ede806075bbea2e3119ef4f4218d7e6f",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u56fe\u50cf\u6570\u636e\u96c6\u5927\u5c0f: 500\n\u56fe\u50cf\u5f62\u72b6: torch.Size([3, 224, 224])\n\u7c7b\u522b\u5206\u5e03: {0: 107, 1: 89, 2: 105, 3: 100, 4: 99}\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "qnkX",
       "code_hash": "3d2883f196490a41f9432544bcfbce16",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\u6570\u636e\u96c6\u5212\u5206:\n  \u8bad\u7ec3\u96c6: 400 \u6837\u672c\n  \u9a8c\u8bc1\u96c6: 50 \u6837\u672c\n  \u6d4b\u8bd5\u96c6: 50 \u6837\u672c\n\n\u5c0f\u8bad\u7ec3\u96c6 (\u524d100\u4e2a\u6837\u672c): 100 \u6837\u672c\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     }
   ]
 }
