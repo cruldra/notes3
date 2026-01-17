@@ -20,15 +20,30 @@ graph TD
         Torch[PyTorch]
     end
     
+    subgraph DataManagement [数据管理]
+        Datasets[Datasets 库]
+    end
+    
+    subgraph Compute [云端算力]
+        Kaggle[Kaggle]
+        Colab[Google Colab]
+    end
+    
+    Data -.-> Datasets
     Framework -.-> Torch
+    Infrastructure -.-> Compute
 ```
 
 ### 概念说明
 
 *   **Torch (PyTorch)**: PyTorch 是一个开源的机器学习库，广泛用于计算机视觉和自然语言处理，是构建和训练大语言模型的主流底层框架。
+*   **Datasets (Datasets 库)**: Hugging Face 推出的轻量级 Python 库，用于高效访问和处理大规模数据集，支持内存映射和流式传输。
+*   **Kaggle**: 一个数据科学竞赛平台，提供免费的 GPU/TPU 算力环境（Notebooks），广泛用于模型训练、实验和分享。
+*   **Colab (Google Colab)**: Google 提供的托管 Jupyter Notebook 服务，提供免费的 GPU 算力，是快速实验和微调轻量级 LLM 的常用工具。
 
 ### 参考链接
 - [PyTorch 介绍](./Pytorch/介绍.md)
+- [Datasets 库简介](./datasets/简介.md)
 
 ## 2. 微调 (Fine-tuning)
 
@@ -41,9 +56,27 @@ graph TD
     PretrainedModel[预训练模型] --> SFT[有监督微调]
     PretrainedModel --> RLHF[人类反馈强化学习]
     SFT --> AlignedModel[对齐模型]
+    
+    subgraph Techniques [微调技术]
+        PEFT[参数高效微调]
+    end
+    
+    subgraph Tools [工具库]
+        Diffusers[Diffusers]
+    end
+    
+    SFT -.-> Techniques
+    Techniques -.-> Tools
 ```
 
+### 概念说明
+
+*   **Diffusers**: Hugging Face 推出的用于生成式 AI（特别是扩散模型）的库，虽然主要用于图像生成，但也常用于微调和推理相关的扩散模型任务。
+*   **PEFT (Parameter-Efficient Fine-Tuning)**: 一种微调技术集合（如 LoRA, Prefix Tuning），旨在通过仅训练少量参数来适应大型预训练模型，显著降低计算和存储成本。
+
 ### 参考链接
+- [Diffusers 官方文档](https://huggingface.co/docs/diffusers/index)
+- [PEFT 官方文档](https://huggingface.co/docs/peft/index)
 
 ## 3. 推理 (Inference)
 
@@ -86,9 +119,32 @@ graph TD
     LLM --> RAG[检索增强生成]
     LLM --> Chatbot[聊天机器人]
     Agent --> Tools[外部工具]
+    
+    subgraph AgentFrameworks [智能体框架]
+        CrewAI
+        Agno
+        OpenAutoGLM[Open-AutoGLM]
+    end
+    
+    subgraph RAGFrameworks [RAG 框架]
+        LlamaIndex
+    end
+    
+    Agent -.-> AgentFrameworks
+    RAG -.-> RAGFrameworks
 ```
 
+### 概念说明
+
+*   **LlamaIndex**: 一个专为 LLM 应用程序设计的数据框架，擅长连接私有数据与大模型，特别是在 RAG（检索增强生成）场景下表现出色。
+*   **Agno**: 一个轻量级的智能体开发框架，旨在简化多智能体系统的构建和编排（前身为 Phidata）。
+*   **CrewAI**: 一个用于编排角色扮演自主 AI 智能体的框架，通过让智能体像团队一样协作来处理复杂任务。
+*   **Open-AutoGLM**: 智谱AI开源的手机操作智能体框架，基于视觉语言模型（VLM）实现对Android设备的自然语言控制和自动化操作。
+
 ### 参考链接
+- [LlamaIndex 介绍](./LLamaIndex/介绍.md)
+- [Agno 介绍](./Agno/介绍.mdx)
+- [CrewAI 简介](./CrewAI/简介.mdx)
 
 ## 5. 评估 (Evaluation)
 
@@ -117,6 +173,17 @@ graph LR
     System --> Tracing[链路追踪]
     System --> Cost[成本监控]
     Logging --> Analysis[分析看板]
+    
+    subgraph Tools [监控工具]
+        WandB[Weights & Biases]
+    end
+    
+    Analysis -.-> Tools
 ```
 
+### 概念说明
+
+*   **WandB (Weights & Biases)**: 一个用于机器学习实验跟踪、数据集版本控制和模型可视化的开发者工具平台。
+
 ### 参考链接
+- [WandB 简介](./wandb/简介.md)
