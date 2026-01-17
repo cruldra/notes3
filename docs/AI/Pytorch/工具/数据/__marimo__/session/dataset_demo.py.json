@@ -1,0 +1,311 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "3f0b3cd1ac7b50e2cf98c9b2b7a4b370",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"torchutilsdatadataset\">torch.utils.data.Dataset \u6a21\u5757\u6f14\u793a</h1>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u6f14\u793a PyTorch \u4e2d Dataset \u76f8\u5173\u7684\u5404\u4e2a API \u7528\u6cd5\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "986faa803048909868c02850b5d3e101",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-dataset\">1. \u81ea\u5b9a\u4e49 Dataset</h2>\n<span class=\"paragraph\">\u6700\u57fa\u7840\u7684\u7528\u6cd5\u662f\u7ee7\u627f <code>Dataset</code> \u7c7b\u5e76\u5b9e\u73b0 <code>__len__</code> \u548c <code>__getitem__</code> \u65b9\u6cd5\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "fea3eff5e727c12319fb4d120f41e717",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-tensordataset\">2. TensorDataset</h2>\n<span class=\"paragraph\"><code>TensorDataset</code> \u662f\u6700\u7b80\u5355\u7684\u5185\u7f6e Dataset\uff0c\u7528\u4e8e\u5305\u88c5\u5f20\u91cf\u6570\u636e\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "553f5bf8aa10468010a078686e0c6c66",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-subset-\">3. Subset - \u6570\u636e\u96c6\u5b50\u96c6</h2>\n<span class=\"paragraph\"><code>Subset</code> \u7528\u4e8e\u521b\u5efa\u6570\u636e\u96c6\u7684\u5b50\u96c6\uff0c\u901a\u8fc7\u7d22\u5f15\u5217\u8868\u9009\u62e9\u7279\u5b9a\u6837\u672c\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "2179c64b95d154961cdeea26df8fa04f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4-random_split-\">4. random_split - \u968f\u673a\u5206\u5272\u6570\u636e\u96c6</h2>\n<span class=\"paragraph\"><code>random_split</code> \u7528\u4e8e\u5c06\u6570\u636e\u96c6\u968f\u673a\u5206\u5272\u6210\u591a\u4e2a\u5b50\u96c6\uff0c\u5e38\u7528\u4e8e\u8bad\u7ec3\u96c6/\u9a8c\u8bc1\u96c6/\u6d4b\u8bd5\u96c6\u5212\u5206\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "d294ae6b7df1063054c5cca911959ade",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"5-concatdataset-\">5. ConcatDataset - \u8fde\u63a5\u591a\u4e2a\u6570\u636e\u96c6</h2>\n<span class=\"paragraph\"><code>ConcatDataset</code> \u7528\u4e8e\u5c06\u591a\u4e2a\u6570\u636e\u96c6\u8fde\u63a5\u6210\u4e00\u4e2a\u5927\u6570\u636e\u96c6\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "960782966d14c42cf84821432886092a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"6\">6. \u6570\u636e\u96c6\u7d22\u5f15\u548c\u5207\u7247</h2>\n<span class=\"paragraph\">Dataset \u652f\u6301\u7d22\u5f15\u8bbf\u95ee\uff0c\u67d0\u4e9b\u5b9e\u73b0\u4e5f\u652f\u6301\u5207\u7247\u64cd\u4f5c\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "7485ceb5384c2e60bd87e67b13c5377b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"7-\">7. \u5b9e\u9645\u5e94\u7528\u793a\u4f8b - \u56fe\u50cf\u5206\u7c7b\u6570\u636e\u96c6</h2>\n<span class=\"paragraph\">\u521b\u5efa\u4e00\u4e2a\u6a21\u62df\u56fe\u50cf\u5206\u7c7b\u4efb\u52a1\u7684\u6570\u636e\u96c6\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "7f96c5b8bd27d6a0f0920112ca3f9bf7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"8\">8. \u6570\u636e\u96c6\u7ec4\u5408\u4f7f\u7528</h2>\n<span class=\"paragraph\">\u5c55\u793a\u5982\u4f55\u7ec4\u5408\u4f7f\u7528\u591a\u4e2a Dataset \u5de5\u5177\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "14c3c034fcf0b5443cb750531b626976",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"_1\">\u603b\u7ed3</h2>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u6f14\u793a\u4e86 <code>torch.utils.data.Dataset</code> \u6a21\u5757\u7684\u4e3b\u8981 API:</span>\n<ol>\n<li><strong>Dataset</strong> - \u57fa\u7840\u62bd\u8c61\u7c7b\uff0c\u9700\u8981\u5b9e\u73b0 <code>__len__</code> \u548c <code>__getitem__</code></li>\n<li><strong>TensorDataset</strong> - \u7b80\u5355\u5305\u88c5\u5f20\u91cf\u7684\u6570\u636e\u96c6</li>\n<li><strong>Subset</strong> - \u521b\u5efa\u6570\u636e\u96c6\u5b50\u96c6</li>\n<li><strong>random_split</strong> - \u968f\u673a\u5206\u5272\u6570\u636e\u96c6</li>\n<li><strong>ConcatDataset</strong> - \u8fde\u63a5\u591a\u4e2a\u6570\u636e\u96c6</li>\n</ol>\n<span class=\"paragraph\">\u8fd9\u4e9b\u5de5\u5177\u53ef\u4ee5\u7075\u6d3b\u7ec4\u5408\u4f7f\u7528\uff0c\u6ee1\u8db3\u5404\u79cd\u6570\u636e\u5904\u7406\u9700\u6c42\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "97ea987474cec69cd72d96e72718a0c3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "8a25828d158d62dc328dc588962ea083",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u6570\u636e\u96c6\u5927\u5c0f: 50\n\u7b2c\u4e00\u4e2a\u6837\u672c: (tensor([ 0.7569, -0.5680,  0.3804,  2.9023,  1.1953, -0.9820,  0.6442, -0.3612,\n        -1.8170, -0.6955]), tensor(1))\n\u7279\u5f81\u5f62\u72b6: torch.Size([10])\n\u6807\u7b7e: 1\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "PKri",
+      "code_hash": "3732c61613758fcdfb840c8f3425e8b5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "TensorDataset \u5927\u5c0f: 100\n\u7b2c\u4e00\u4e2a\u6837\u672c: (tensor([-1.0161, -1.2588, -0.8575, -1.0233, -0.3937]), tensor(0))\n\u53ef\u4ee5\u540c\u65f6\u5305\u88c5\u591a\u4e2a\u5f20\u91cf\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "689d62282787c1514dce7063135a60f9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u6570\u636e\u96c6\u5927\u5c0f: 100\n\u5b50\u96c6\u5927\u5c0f: 5\n\u5b50\u96c6\u7b2c\u4e00\u4e2a\u6837\u672c (\u539f\u59cb\u7d22\u5f150): (tensor([-1.0161, -1.2588, -0.8575, -1.0233, -0.3937]), tensor(0))\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "d6c2201b671199d50afc09ab727f2151",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u8bad\u7ec3\u96c6\u5927\u5c0f: 70\n\u9a8c\u8bc1\u96c6\u5927\u5c0f: 15\n\u6d4b\u8bd5\u96c6\u5927\u5c0f: 15\n\u603b\u5927\u5c0f: 100\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "21b3dff60de068ecd517e80197b933e6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u6570\u636e\u96c61\u5927\u5c0f: 30\n\u6570\u636e\u96c62\u5927\u5c0f: 20\n\u6570\u636e\u96c63\u5927\u5c0f: 50\n\u8fde\u63a5\u540e\u6570\u636e\u96c6\u5927\u5c0f: 100\n\u8bbf\u95ee\u7b2c35\u4e2a\u6837\u672c (\u6765\u81eadataset2): torch.Size([10])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "975b5b39a77371e941647a101c706ce8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u5355\u4e2a\u7d22\u5f15\u8bbf\u95ee:\n  \u6837\u672c5: \u7279\u5f81\u5f62\u72b6=torch.Size([10]), \u6807\u7b7e=1\n\n\u6279\u91cf\u7d22\u5f15\u8bbf\u95ee:\n  \u6837\u672c0: \u6807\u7b7e=1\n  \u6837\u672c1: \u6807\u7b7e=0\n  \u6837\u672c2: \u6807\u7b7e=1\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "ede806075bbea2e3119ef4f4218d7e6f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u56fe\u50cf\u6570\u636e\u96c6\u5927\u5c0f: 500\n\u56fe\u50cf\u5f62\u72b6: torch.Size([3, 224, 224])\n\u7c7b\u522b\u5206\u5e03: {0: 107, 1: 89, 2: 105, 3: 100, 4: 99}\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "3d2883f196490a41f9432544bcfbce16",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u6570\u636e\u96c6\u5212\u5206:\n  \u8bad\u7ec3\u96c6: 400 \u6837\u672c\n  \u9a8c\u8bc1\u96c6: 50 \u6837\u672c\n  \u6d4b\u8bd5\u96c6: 50 \u6837\u672c\n\n\u5c0f\u8bad\u7ec3\u96c6 (\u524d100\u4e2a\u6837\u672c): 100 \u6837\u672c\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    }
+  ]
+}
