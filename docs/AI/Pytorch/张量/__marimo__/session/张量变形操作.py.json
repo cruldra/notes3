@@ -1,0 +1,523 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "37a483e520a9a9cd3e22b8b51c59cb14",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"_1\">\u6838\u5fc3\u524d\u63d0\uff1a\u5143\u7d20\u603b\u91cf\u5b88\u6052</h1>\n<span class=\"paragraph\">\u65e0\u8bba\u4f60\u600e\u4e48\u53d8\u5f62\u72b6\uff0c<strong>\u5143\u7d20\u7684\u603b\u4e2a\u6570\u5fc5\u987b\u4fdd\u6301\u4e0d\u53d8</strong>\u3002\n\u5982\u679c\u4f60\u6709\u4e00\u4e2a\u5f62\u72b6\u4e3a<marimo-tex class=\"arithmatex\">||((2,3)||)</marimo-tex>\u7684\u5f20\u91cf\uff08\u603b\u5171 6 \u4e2a\u5143\u7d20\uff09\uff0c\u4f60\u53ef\u4ee5\u628a\u5b83\u53d8\u6210 <marimo-tex class=\"arithmatex\">||((1,6)||)</marimo-tex>\u6216<marimo-tex class=\"arithmatex\">||((6,1)||)</marimo-tex>\u6216 \uff0c\u4f46\u7edd\u5bf9\u4e0d\u80fd\u53d8\u6210<marimo-tex class=\"arithmatex\">||((2,4)||)</marimo-tex>\u3002</span>\n<span class=\"paragraph\">\u6570\u5b66\u8868\u8fbe\u5f0f\uff1a</span>\n<span class=\"paragraph\"><marimo-tex class=\"arithmatex\">||(A \\times B = A' \\times B'||)</marimo-tex></span>\n<h1 id=\"pytorch\">PyTorch \u5f20\u91cf\u53d8\u5f62\u64cd\u4f5c\u8be6\u89e3</h1>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u8be6\u7ec6\u4ecb\u7ecd PyTorch \u4e2d\u4e94\u4e2a\u6838\u5fc3\u7684\u5f20\u91cf\u53d8\u5f62 API\uff1a</span>\n<table>\n<thead>\n<tr>\n<th>API</th>\n<th>\u4f5c\u7528</th>\n<th>\u5173\u952e\u7279\u70b9</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>.view()</code></td>\n<td>\u6539\u53d8\u5f20\u91cf\u5f62\u72b6</td>\n<td>\u8981\u6c42\u5185\u5b58\u8fde\u7eed\uff0c\u8fd4\u56de\u89c6\u56fe</td>\n</tr>\n<tr>\n<td><code>.reshape()</code></td>\n<td>\u6539\u53d8\u5f20\u91cf\u5f62\u72b6</td>\n<td>\u81ea\u52a8\u5904\u7406\u975e\u8fde\u7eed\u60c5\u51b5</td>\n</tr>\n<tr>\n<td><code>.contiguous()</code></td>\n<td>\u786e\u4fdd\u5185\u5b58\u8fde\u7eed</td>\n<td>\u5fc5\u8981\u65f6\u521b\u5efa\u526f\u672c</td>\n</tr>\n<tr>\n<td><code>.transpose()</code></td>\n<td>\u4ea4\u6362\u4e24\u4e2a\u7ef4\u5ea6</td>\n<td>\u8fd4\u56de\u89c6\u56fe\uff0c\u4e0d\u8fde\u7eed</td>\n</tr>\n<tr>\n<td><code>.permute()</code></td>\n<td>\u4efb\u610f\u91cd\u6392\u6240\u6709\u7ef4\u5ea6</td>\n<td>\u8fd4\u56de\u89c6\u56fe\uff0c\u4e0d\u8fde\u7eed</td>\n</tr>\n</tbody>\n</table>\n<h2 id=\"view-vs-copy\">\u6838\u5fc3\u6982\u5ff5\uff1a\u89c6\u56fe(View) vs \u62f7\u8d1d(Copy)</h2>\n<ul>\n<li><strong>\u89c6\u56fe</strong>\uff1a\u4e0e\u539f\u5f20\u91cf\u5171\u4eab\u5185\u5b58\uff0c\u4fee\u6539\u4e00\u4e2a\u4f1a\u5f71\u54cd\u53e6\u4e00\u4e2a</li>\n<li><strong>\u62f7\u8d1d</strong>\uff1a\u72ec\u7acb\u7684\u5185\u5b58\u7a7a\u95f4\uff0c\u4e92\u4e0d\u5f71\u54cd</li>\n</ul>\n<span class=\"paragraph\">\u7406\u89e3\u8fd9\u4e2a\u6982\u5ff5\u5bf9\u6b63\u786e\u4f7f\u7528\u8fd9\u4e9b API \u81f3\u5173\u91cd\u8981\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "752da81937a39e09d43ce565b6f98ffc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-view-\">1. view() - \u6539\u53d8\u5f20\u91cf\u89c6\u56fe</h2>\n<span class=\"paragraph\"><code>view(*shape)</code> \u8fd4\u56de\u4e00\u4e2a\u5177\u6709\u65b0\u5f62\u72b6\u7684\u5f20\u91cf<strong>\u89c6\u56fe</strong>\uff0c\u4e0e\u539f\u5f20\u91cf\u5171\u4eab\u6570\u636e\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Tensor</span><span class=\"o\">.</span><span class=\"n\">view</span><span class=\"p\">(</span><span class=\"o\">*</span><span class=\"n\">shape</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"n\">Tensor</span>\n</code></pre></div>\n<h3 id=\"_2\">\u5173\u952e\u7279\u70b9</h3>\n<ul>\n<li>\u2705 \u8fd4\u56de\u89c6\u56fe\uff08\u5171\u4eab\u5185\u5b58\uff09</li>\n<li>\u2705 \u652f\u6301 <code>-1</code> \u81ea\u52a8\u63a8\u65ad\u7ef4\u5ea6</li>\n<li>\u26a0\ufe0f <strong>\u8981\u6c42\u5f20\u91cf\u5fc5\u987b\u5185\u5b58\u8fde\u7eed</strong></li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "b5c2097b2e5cd3ae3c1223e08a93c793",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-reshape-\">2. reshape() - \u91cd\u5851\u5f20\u91cf\u5f62\u72b6</h2>\n<span class=\"paragraph\"><code>reshape(*shape)</code> \u4e0e <code>view()</code> \u7c7b\u4f3c\uff0c\u4f46\u80fd\u81ea\u52a8\u5904\u7406\u975e\u8fde\u7eed\u5f20\u91cf\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Tensor</span><span class=\"o\">.</span><span class=\"n\">reshape</span><span class=\"p\">(</span><span class=\"o\">*</span><span class=\"n\">shape</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"n\">Tensor</span>\n</code></pre></div>\n<h3 id=\"view\">\u4e0e view() \u7684\u533a\u522b</h3>\n<table>\n<thead>\n<tr>\n<th>\u7279\u6027</th>\n<th>view()</th>\n<th>reshape()</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>\u5185\u5b58\u8fde\u7eed\u8981\u6c42</td>\n<td>\u5fc5\u987b\u8fde\u7eed</td>\n<td>\u81ea\u52a8\u5904\u7406</td>\n</tr>\n<tr>\n<td>\u8fd4\u56de\u7c7b\u578b</td>\n<td>\u59cb\u7ec8\u662f\u89c6\u56fe</td>\n<td>\u89c6\u56fe\u6216\u62f7\u8d1d</td>\n</tr>\n<tr>\n<td>\u6027\u80fd</td>\n<td>\u66f4\u5feb</td>\n<td>\u53ef\u80fd\u6d89\u53ca\u62f7\u8d1d</td>\n</tr>\n</tbody>\n</table>\n<h3 id=\"_2\">\u4f7f\u7528\u5efa\u8bae</h3>\n<ul>\n<li>\u786e\u5b9a\u8fde\u7eed\u65f6\u7528 <code>view()</code>\uff08\u66f4\u660e\u786e\uff09</li>\n<li>\u4e0d\u786e\u5b9a\u65f6\u7528 <code>reshape()</code>\uff08\u66f4\u5b89\u5168\uff09</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "ebba2835bf7afd95e4733d3aec40ebef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-contiguous-\">3. contiguous() - \u786e\u4fdd\u5185\u5b58\u8fde\u7eed</h2>\n<span class=\"paragraph\"><code>contiguous()</code> \u8fd4\u56de\u4e00\u4e2a\u5185\u5b58\u8fde\u7eed\u7684\u5f20\u91cf\u3002\u5982\u679c\u5df2\u8fde\u7eed\uff0c\u8fd4\u56de\u81ea\u8eab\uff1b\u5426\u5219\u521b\u5efa\u526f\u672c\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Tensor</span><span class=\"o\">.</span><span class=\"n\">contiguous</span><span class=\"p\">(</span><span class=\"n\">memory_format</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">contiguous_format</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"n\">Tensor</span>\n</code></pre></div>\n<h3 id=\"_2\">\u4ec0\u4e48\u662f\u5185\u5b58\u8fde\u7eed\uff1f</h3>\n<span class=\"paragraph\">\u5f20\u91cf\u5728\u5185\u5b58\u4e2d\u6309\u884c\u4f18\u5148\uff08C \u987a\u5e8f\uff09\u5b58\u50a8\u65f6\uff0c\u79f0\u4e3a<strong>\u8fde\u7eed\u7684</strong>\u3002</span>\n<ul>\n<li>\u521b\u5efa\u7684\u5f20\u91cf\u9ed8\u8ba4\u662f\u8fde\u7eed\u7684</li>\n<li><code>transpose</code>\u3001<code>permute</code> \u7b49\u64cd\u4f5c\u4f1a\u6539\u53d8\u5143\u7d20\u7684\u903b\u8f91\u987a\u5e8f\uff0c\u4f46\u4e0d\u79fb\u52a8\u5b9e\u9645\u6570\u636e\uff0c\u5bfc\u81f4\u4e0d\u8fde\u7eed</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "f6b01728eea9ac892529f21febeb8601",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4-transpose-\">4. transpose() - \u4ea4\u6362\u4e24\u4e2a\u7ef4\u5ea6</h2>\n<span class=\"paragraph\"><code>transpose(dim0, dim1)</code> \u4ea4\u6362\u5f20\u91cf\u7684\u4e24\u4e2a\u6307\u5b9a\u7ef4\u5ea6\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Tensor</span><span class=\"o\">.</span><span class=\"n\">transpose</span><span class=\"p\">(</span><span class=\"n\">dim0</span><span class=\"p\">,</span> <span class=\"n\">dim1</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"n\">Tensor</span>\n</code></pre></div>\n<h3 id=\"_2\">\u5173\u952e\u7279\u70b9</h3>\n<ul>\n<li>\u2705 \u8fd4\u56de\u89c6\u56fe\uff08\u5171\u4eab\u5185\u5b58\uff09</li>\n<li>\u26a0\ufe0f \u7ed3\u679c\u901a\u5e38<strong>\u4e0d\u8fde\u7eed</strong></li>\n<li>\ud83d\udcdd \u5bf9\u4e8e 2D \u5f20\u91cf\uff0c<code>.t()</code> \u662f <code>.transpose(0, 1)</code> \u7684\u7b80\u5199</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "328fefe4c13238f42789f88cf20608f6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"5-permute-\">5. permute() - \u4efb\u610f\u91cd\u6392\u6240\u6709\u7ef4\u5ea6</h2>\n<span class=\"paragraph\"><code>permute(*dims)</code> \u6309\u6307\u5b9a\u987a\u5e8f\u91cd\u65b0\u6392\u5217\u5f20\u91cf\u7684\u6240\u6709\u7ef4\u5ea6\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">Tensor</span><span class=\"o\">.</span><span class=\"n\">permute</span><span class=\"p\">(</span><span class=\"o\">*</span><span class=\"n\">dims</span><span class=\"p\">)</span> <span class=\"o\">-&gt;</span> <span class=\"n\">Tensor</span>\n</code></pre></div>\n<h3 id=\"transpose\">\u4e0e transpose \u7684\u533a\u522b</h3>\n<table>\n<thead>\n<tr>\n<th>\u7279\u6027</th>\n<th>transpose()</th>\n<th>permute()</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>\u64cd\u4f5c\u7ef4\u5ea6\u6570</td>\n<td>\u53ea\u80fd\u4ea4\u63622\u4e2a</td>\n<td>\u53ef\u91cd\u6392\u6240\u6709</td>\n</tr>\n<tr>\n<td>\u53c2\u6570</td>\n<td>\u4e24\u4e2a\u7ef4\u5ea6\u7d22\u5f15</td>\n<td>\u65b0\u7684\u7ef4\u5ea6\u987a\u5e8f</td>\n</tr>\n<tr>\n<td>\u5178\u578b\u573a\u666f</td>\n<td>\u7b80\u5355\u8f6c\u7f6e</td>\n<td>\u590d\u6742\u7ef4\u5ea6\u53d8\u6362</td>\n</tr>\n</tbody>\n</table>\n<h3 id=\"_2\">\u5178\u578b\u5e94\u7528</h3>\n<span class=\"paragraph\">\u56fe\u50cf\u6570\u636e\u683c\u5f0f\u8f6c\u6362\uff1a<code>(H, W, C)</code> \u2194 <code>(C, H, W)</code></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "517b81d90c559360d7d97a511ab2e71b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"6\">6. \u7efc\u5408\u5bf9\u6bd4\u4e0e\u9009\u62e9\u5efa\u8bae</h2>\n<h3 id=\"api\">API \u5bf9\u6bd4\u8868</h3>\n<table>\n<thead>\n<tr>\n<th>API</th>\n<th>\u8fd4\u56de\u7c7b\u578b</th>\n<th>\u5185\u5b58\u8fde\u7eed\u8981\u6c42</th>\n<th>\u5178\u578b\u7528\u9014</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>view()</code></td>\n<td>\u89c6\u56fe</td>\n<td>\u2705 \u5fc5\u987b\u8fde\u7eed</td>\n<td>\u660e\u786e\u77e5\u9053\u8fde\u7eed\u65f6\u7684\u5f62\u72b6\u53d8\u6362</td>\n</tr>\n<tr>\n<td><code>reshape()</code></td>\n<td>\u89c6\u56fe/\u62f7\u8d1d</td>\n<td>\u274c \u65e0\u8981\u6c42</td>\n<td>\u4e0d\u786e\u5b9a\u8fde\u7eed\u6027\u65f6\u7684\u5f62\u72b6\u53d8\u6362</td>\n</tr>\n<tr>\n<td><code>contiguous()</code></td>\n<td>\u81ea\u8eab/\u62f7\u8d1d</td>\n<td>-</td>\n<td>\u786e\u4fdd\u5185\u5b58\u8fde\u7eed</td>\n</tr>\n<tr>\n<td><code>transpose()</code></td>\n<td>\u89c6\u56fe</td>\n<td>\u274c \u65e0\u8981\u6c42</td>\n<td>\u4ea4\u6362\u4e24\u4e2a\u7ef4\u5ea6</td>\n</tr>\n<tr>\n<td><code>permute()</code></td>\n<td>\u89c6\u56fe</td>\n<td>\u274c \u65e0\u8981\u6c42</td>\n<td>\u4efb\u610f\u91cd\u6392\u6240\u6709\u7ef4\u5ea6</td>\n</tr>\n</tbody>\n</table>\n<h3 id=\"_1\">\u9009\u62e9\u51b3\u7b56\u6811</h3>\n<div class=\"language-text codehilite\"><pre><span></span><code>\u9700\u8981\u6539\u53d8\u5f62\u72b6\uff1f\n\u251c\u2500\u2500 \u662f \u2192 \u5f20\u91cf\u786e\u5b9a\u8fde\u7eed\uff1f\n\u2502       \u251c\u2500\u2500 \u662f \u2192 \u7528 view()\n\u2502       \u2514\u2500\u2500 \u5426/\u4e0d\u786e\u5b9a \u2192 \u7528 reshape()\n\u2514\u2500\u2500 \u5426 \u2192 \u9700\u8981\u8c03\u6574\u7ef4\u5ea6\u987a\u5e8f\uff1f\n        \u251c\u2500\u2500 \u53ea\u4ea4\u63622\u4e2a\u7ef4\u5ea6 \u2192 \u7528 transpose()\n        \u2514\u2500\u2500 \u91cd\u6392\u591a\u4e2a\u7ef4\u5ea6 \u2192 \u7528 permute()\n\n\u540e\u7eed\u9700\u8981 view()\uff1f\n\u2514\u2500\u2500 \u662f \u2192 \u5148\u8c03\u7528 contiguous()\n</code></pre></div></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "b2b7d6036bc1f99ba429f1f0c7b52de0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"7\">7. \u5e38\u89c1\u9519\u8bef\u4e0e\u89e3\u51b3\u65b9\u6848</h2>\n<table>\n<thead>\n<tr>\n<th>\u9519\u8bef</th>\n<th>\u539f\u56e0</th>\n<th>\u89e3\u51b3\u65b9\u6848</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>view size is not compatible</code></td>\n<td>\u5143\u7d20\u603b\u6570\u4e0d\u5339\u914d</td>\n<td>\u786e\u4fdd\u53d8\u5f62\u524d\u540e\u5143\u7d20\u6570\u91cf\u76f8\u540c</td>\n</tr>\n<tr>\n<td><code>cannot view as non-contiguous</code></td>\n<td>\u5bf9\u975e\u8fde\u7eed\u5f20\u91cf\u8c03\u7528 view</td>\n<td>\u5148 <code>.contiguous()</code> \u6216\u7528 <code>.reshape()</code></td>\n</tr>\n<tr>\n<td>\u4fee\u6539\u89c6\u56fe\u5f71\u54cd\u539f\u6570\u636e</td>\n<td>view/transpose/permute \u8fd4\u56de\u89c6\u56fe</td>\n<td>\u9700\u8981\u72ec\u7acb\u526f\u672c\u65f6\u7528 <code>.clone()</code></td>\n</tr>\n</tbody>\n</table></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "a45ef667a8a3d126da6fc0b60fcb6d3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "db8846423c2b0f959817d4b053ba6748",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "f5ec43d6e6ad8d9b619da63700a6e30f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "6740f8980fd32f9a5bc74dbed2e1298a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "view(2, -1): torch.Size([2, 12])\nview(-1, 6): torch.Size([4, 6])\nview(2, 3, -1): torch.Size([2, 3, 4])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "99cf279aadb64292e3bc662166380b99",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u5f20\u91cf:\ntensor([[0, 1, 2],\n        [3, 4, 5]])\n\u662f\u5426\u8fde\u7eed: True\n\n\u8f6c\u7f6e\u540e:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\n\u662f\u5426\u8fde\u7eed: False\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "b0513812003e8aea64291857d7477c0e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u274c \u9519\u8bef: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.\n\n\ud83d\udca1 \u89e3\u51b3\u65b9\u6848: \u5148\u8c03\u7528 .contiguous()\uff0c\u6216\u4f7f\u7528 .reshape()\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "af897fdc579c2b6b1689f6856b730217",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])\nreshape(3, 4):\ntensor([[ 0,  1,  2,  3],\n        [ 4,  5,  6,  7],\n        [ 8,  9, 10, 11]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "ece8de332cf0a82d167fcadc31eb755c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u8f6c\u7f6e\u540e\u7684\u5f20\u91cf:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\n\u662f\u5426\u8fde\u7eed: False\n\nreshape(6) \u6210\u529f: tensor([0, 3, 1, 4, 2, 5])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "cfc8a40e348b63f9bea576372537b94d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u8fde\u7eed\u5f20\u91cf reshape \u540e\u4fee\u6539:\nr3_reshaped:\ntensor([[999,   1],\n        [  2,   3],\n        [  4,   5]])\n\u539f\u59cb r3:\ntensor([[999,   1,   2],\n        [  3,   4,   5]])\n\n\u975e\u8fde\u7eed\u5f20\u91cf reshape \u540e\u4fee\u6539:\nr4_reshaped: tensor([888,   3,   1,   4,   2,   5])\n\u539f\u59cb r4:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "c6c36cc3dbaaabef90454b17c201bc8e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u5f20\u91cf:\ntensor([[0, 1, 2],\n        [3, 4, 5]])\n\u5f62\u72b6: torch.Size([2, 3])\n\u6b65\u957f stride: (3, 1)\n\u89e3\u91ca: \u6cbf\u7b2c0\u7ef4\u79fb\u52a81\u6b65\u9700\u8981\u8df3\u8fc73\u4e2a\u5143\u7d20\uff0c\u6cbf\u7b2c1\u7ef4\u79fb\u52a81\u6b65\u9700\u8981\u8df3\u8fc71\u4e2a\u5143\u7d20\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "66aab9a2b8b82ff0a14f4b4c326885a7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u5f20\u91cf:\ntensor([[0, 1, 2],\n        [3, 4, 5]])\nstride: (3, 1), \u8fde\u7eed: True\n\n\u8f6c\u7f6e\u540e:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\nstride: (1, 3), \u8fde\u7eed: False\n\u89e3\u91ca: \u8f6c\u7f6e\u540e\u6cbf\u7b2c0\u7ef4\u79fb\u52a81\u6b65\u53ea\u8df3\u8fc71\u4e2a\u5143\u7d20\uff0c\u4e0d\u7b26\u5408\u884c\u4f18\u5148\u987a\u5e8f\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "5354d7a54583adef3f2d566fa656736e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u975e\u8fde\u7eed\u5f20\u91cf:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\nstride: (1, 3), \u8fde\u7eed: False\n\n\u8c03\u7528 contiguous() \u540e:\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\nstride: (2, 1), \u8fde\u7eed: True\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "749b6565761863bee853e299642eac52",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "5f1cafe57f848d98ffab52da80cb7d98",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u77e9\u9635 (2x3):\ntensor([[0, 1, 2],\n        [3, 4, 5]])\n\ntranspose(0, 1) \u540e (3x2):\ntensor([[0, 3],\n        [1, 4],\n        [2, 5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "aa1243b6d137b8a6abf3cdcf29b3551c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u5f62\u72b6: torch.Size([2, 3, 4])\n\u539f\u59cb\u5f20\u91cf:\ntensor([[[ 0,  1,  2,  3],\n         [ 4,  5,  6,  7],\n         [ 8,  9, 10, 11]],\n\n        [[12, 13, 14, 15],\n         [16, 17, 18, 19],\n         [20, 21, 22, 23]]])\n\ntranspose(1, 2) \u540e\u5f62\u72b6: torch.Size([2, 4, 3])\n\u8f6c\u7f6e\u540e\u5f20\u91cf:\ntensor([[[ 0,  4,  8],\n         [ 1,  5,  9],\n         [ 2,  6, 10],\n         [ 3,  7, 11]],\n\n        [[12, 16, 20],\n         [13, 17, 21],\n         [14, 18, 22],\n         [15, 19, 23]]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "81e889139e2a95e73276c437cb0b1776",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u4fee\u6539 tr3_t[0, 0] = 999:\ntr3_t:\ntensor([[999,   3],\n        [  1,   4],\n        [  2,   5]])\n\u539f\u59cb tr3:\ntensor([[999,   1,   2],\n        [  3,   4,   5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "ba1285debef6e9ba024efd3250d9e435",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u539f\u59cb\u5f62\u72b6: torch.Size([2, 3, 4])\npermute(2, 0, 1) \u540e: torch.Size([4, 2, 3])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "d89b4dbef48245d0f7bf76297936e6ed",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "HWC \u683c\u5f0f (\u9ad8x\u5bbdx\u901a\u9053): torch.Size([4, 5, 3])\nCHW \u683c\u5f0f (\u901a\u9053x\u9ad8x\u5bbd): torch.Size([3, 4, 5])\n\n\u6279\u91cf\u8f6c\u6362: torch.Size([8, 224, 224, 3]) -> torch.Size([8, 3, 224, 224])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "77ffd497fa1a17d4eef212a0f433b7b7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u4fee\u6539 p2_permuted[0, 0] = 999:\np2_permuted:\ntensor([[999,   3],\n        [  1,   4],\n        [  2,   5]])\n\u539f\u59cb p2:\ntensor([[999,   1,   2],\n        [  3,   4,   5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "676a43be85518d45ed08992a489ef3bb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u8f93\u5165\u5f62\u72b6: torch.Size([2, 10, 512])\n\u62c6\u5206\u591a\u5934: torch.Size([2, 10, 8, 64])\n\u8f6c\u7f6e\u540e: torch.Size([2, 8, 10, 64])\npermute \u7ed3\u679c: torch.Size([2, 8, 10, 64])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "5d7c86956995161c3809be3789b2f478",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u5377\u79ef\u8f93\u51fa\u5f62\u72b6: torch.Size([4, 64, 7, 7])\nview \u5c55\u5e73: torch.Size([4, 3136])\nreshape \u5c55\u5e73: torch.Size([4, 3136])\nflatten \u5c55\u5e73: torch.Size([4, 3136])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "02f462f6b099dd71f26e095c4b428689",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u274c \u9519\u8bef: shape '[3, 5]' is invalid for input of size 12\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "1b166f4ec6503aa33647d1d955161ac3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u4fee\u6539\u526f\u672c\u540e:\n\u526f\u672c:\ntensor([[999,   1],\n        [  2,   3],\n        [  4,   5]])\n\u539f\u59cb:\ntensor([[0, 1, 2],\n        [3, 4, 5]])\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    }
+  ]
+}

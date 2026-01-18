@@ -8,6 +8,7 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
     import torch
+
     return mo, torch
 
 
@@ -16,9 +17,10 @@ def _(mo):
     mo.md(r"""
     # PyTorch 随机张量生成与唯一值操作
 
-    本笔记本介绍三个常用的 PyTorch API：
+本笔记本介绍四个常用的 PyTorch API：
     - `torch.randn` - 生成标准正态分布随机数
     - `torch.randint` - 生成随机整数
+    - `torch.arange` - 生成等差数列张量
     - `torch.unique` - 获取张量中的唯一值
     """)
     return
@@ -61,8 +63,8 @@ def _(torch):
     randn_3d = torch.randn(2, 3, 4)
     print("3D 随机张量 (2x3x4):")
     print(randn_3d)
-    print(f"{randn_3d.ndim}维")         # 输出维度数量：3
-    print(randn_3d.shape)        # 输出具体形状：torch.Size([2, 3, 4])
+    print(f"{randn_3d.ndim}维")  # 输出维度数量：3
+    print(randn_3d.shape)  # 输出具体形状：torch.Size([2, 3, 4])
     return
 
 
@@ -87,7 +89,7 @@ def _(torch):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. torch.randint
+## 2. torch.randint
 
     `torch.randint(low, high, size)` 返回一个在 `[low, high)` 区间内均匀分布的随机整数张量。
 
@@ -104,7 +106,6 @@ def _(mo):
     - `size`: 输出张量的形状（元组）
     """)
     return
-
 
 @app.cell
 def _(torch):
@@ -149,11 +150,59 @@ def _(torch):
     print(f"数据类型: {randint_int8.dtype}")
     return
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 3. torch.arange
+
+    `torch.arange(start, end, step)` 返回一个等差数列张量，区间为 `[start, end)`。
+
+    ### 函数签名
+    ```python
+    torch.arange(start=0, end, step=1, *, out=None, dtype=None,
+                 layout=torch.strided, device=None, requires_grad=False)
+    ```
+
+    ### 参数说明
+    - `start`: 起始值（包含），默认为 0
+    - `end`: 结束值（不包含）
+    - `step`: 步长，默认为 1
+    """)
+    return
+
+
+
+
+
+@app.cell
+def _(torch):
+    # 基础用法：生成从 0 到 4 的等差数列
+    arange_basic = torch.arange(5)
+    print(f"等差数列(0-4): {arange_basic.tolist()}")
+    return
+
+
+@app.cell
+def _(torch):
+    # 指定起止与步长
+    arange_step = torch.arange(2, 10, 2)
+    print(f"等差数列(2-8, step=2): {arange_step.tolist()}")
+    return
+
+
+@app.cell
+def _(torch):
+    # 指定数据类型和设备
+    arange_typed = torch.arange(0, 5, 0.5, dtype=torch.float64)
+    print(f"float64 等差数列:\n{arange_typed}")
+    print(f"数据类型: {arange_typed.dtype}")
+    return
+
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. torch.unique
+    ## 4. torch.unique
 
     `torch.unique(input)` 返回输入张量中的唯一元素。
 

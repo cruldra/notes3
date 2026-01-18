@@ -1,0 +1,253 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "ddce40016be9596628a66e41e721ae31",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"pytorch\">PyTorch \u968f\u673a\u5f20\u91cf\u751f\u6210\u4e0e\u552f\u4e00\u503c\u64cd\u4f5c</h1>\n<span class=\"paragraph\">\u672c\u7b14\u8bb0\u672c\u4ecb\u7ecd\u56db\u4e2a\u5e38\u7528\u7684 PyTorch API\uff1a</span>\n<ul>\n<li><code>torch.randn</code> - \u751f\u6210\u6807\u51c6\u6b63\u6001\u5206\u5e03\u968f\u673a\u6570</li>\n<li><code>torch.randint</code> - \u751f\u6210\u968f\u673a\u6574\u6570</li>\n<li><code>torch.arange</code> - \u751f\u6210\u7b49\u5dee\u6570\u5217\u5f20\u91cf</li>\n<li><code>torch.unique</code> - \u83b7\u53d6\u5f20\u91cf\u4e2d\u7684\u552f\u4e00\u503c</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "f2e4175947dd253fceb0d015564e4e06",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-torchrandn\">1. torch.randn</h2>\n<span class=\"paragraph\"><code>torch.randn(*size)</code> \u8fd4\u56de\u4e00\u4e2a\u7531<strong>\u6807\u51c6\u6b63\u6001\u5206\u5e03</strong>\uff08\u5747\u503c\u4e3a0\uff0c\u65b9\u5dee\u4e3a1\uff09\u4e2d\u62bd\u53d6\u7684\u968f\u673a\u6570\u586b\u5145\u7684\u5f20\u91cf\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">randn</span><span class=\"p\">(</span><span class=\"o\">*</span><span class=\"n\">size</span><span class=\"p\">,</span> <span class=\"n\">out</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">dtype</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">layout</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">strided</span><span class=\"p\">,</span>\n            <span class=\"n\">device</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">requires_grad</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>size</code>: \u5b9a\u4e49\u8f93\u51fa\u5f20\u91cf\u5f62\u72b6\u7684\u6574\u6570\u5e8f\u5217</li>\n<li><code>dtype</code>: \u8fd4\u56de\u5f20\u91cf\u7684\u6570\u636e\u7c7b\u578b\uff0c\u9ed8\u8ba4\u4e3a <code>torch.float32</code></li>\n<li><code>device</code>: \u8fd4\u56de\u5f20\u91cf\u6240\u5728\u7684\u8bbe\u5907</li>\n<li><code>requires_grad</code>: \u662f\u5426\u9700\u8981\u8ba1\u7b97\u68af\u5ea6</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "dc64f1e47272310460beccc02cd2055d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-torchrandint\">2. torch.randint</h2>\n<span class=\"paragraph\"><code>torch.randint(low, high, size)</code> \u8fd4\u56de\u4e00\u4e2a\u5728 <code>[low, high)</code> \u533a\u95f4\u5185\u5747\u5300\u5206\u5e03\u7684\u968f\u673a\u6574\u6570\u5f20\u91cf\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">randint</span><span class=\"p\">(</span><span class=\"n\">low</span><span class=\"o\">=</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"n\">high</span><span class=\"p\">,</span> <span class=\"n\">size</span><span class=\"p\">,</span> <span class=\"o\">*</span><span class=\"p\">,</span> <span class=\"n\">generator</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">out</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span>\n              <span class=\"n\">dtype</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">layout</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">strided</span><span class=\"p\">,</span> <span class=\"n\">device</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span>\n              <span class=\"n\">requires_grad</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>low</code>: \u6700\u5c0f\u503c\uff08\u5305\u542b\uff09\uff0c\u9ed8\u8ba4\u4e3a 0</li>\n<li><code>high</code>: \u6700\u5927\u503c\uff08\u4e0d\u5305\u542b\uff09</li>\n<li><code>size</code>: \u8f93\u51fa\u5f20\u91cf\u7684\u5f62\u72b6\uff08\u5143\u7ec4\uff09</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "0857f70fd4051221cfcfacd41f0f3315",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-torcharange\">3. torch.arange</h2>\n<span class=\"paragraph\"><code>torch.arange(start, end, step)</code> \u8fd4\u56de\u4e00\u4e2a\u7b49\u5dee\u6570\u5217\u5f20\u91cf\uff0c\u533a\u95f4\u4e3a <code>[start, end)</code>\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">arange</span><span class=\"p\">(</span><span class=\"n\">start</span><span class=\"o\">=</span><span class=\"mi\">0</span><span class=\"p\">,</span> <span class=\"n\">end</span><span class=\"p\">,</span> <span class=\"n\">step</span><span class=\"o\">=</span><span class=\"mi\">1</span><span class=\"p\">,</span> <span class=\"o\">*</span><span class=\"p\">,</span> <span class=\"n\">out</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">dtype</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span>\n             <span class=\"n\">layout</span><span class=\"o\">=</span><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">strided</span><span class=\"p\">,</span> <span class=\"n\">device</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">,</span> <span class=\"n\">requires_grad</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>start</code>: \u8d77\u59cb\u503c\uff08\u5305\u542b\uff09\uff0c\u9ed8\u8ba4\u4e3a 0</li>\n<li><code>end</code>: \u7ed3\u675f\u503c\uff08\u4e0d\u5305\u542b\uff09</li>\n<li><code>step</code>: \u6b65\u957f\uff0c\u9ed8\u8ba4\u4e3a 1</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "dd22abbb3ad59bccfecb8a2b439b8c15",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4-torchunique\">4. torch.unique</h2>\n<span class=\"paragraph\"><code>torch.unique(input)</code> \u8fd4\u56de\u8f93\u5165\u5f20\u91cf\u4e2d\u7684\u552f\u4e00\u5143\u7d20\u3002</span>\n<h3 id=\"_1\">\u51fd\u6570\u7b7e\u540d</h3>\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">torch</span><span class=\"o\">.</span><span class=\"n\">unique</span><span class=\"p\">(</span><span class=\"nb\">input</span><span class=\"p\">,</span> <span class=\"nb\">sorted</span><span class=\"o\">=</span><span class=\"kc\">True</span><span class=\"p\">,</span> <span class=\"n\">return_inverse</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">,</span>\n             <span class=\"n\">return_counts</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">,</span> <span class=\"n\">dim</span><span class=\"o\">=</span><span class=\"kc\">None</span><span class=\"p\">)</span>\n</code></pre></div>\n<h3 id=\"_2\">\u53c2\u6570\u8bf4\u660e</h3>\n<ul>\n<li><code>input</code>: \u8f93\u5165\u5f20\u91cf</li>\n<li><code>sorted</code>: \u662f\u5426\u5bf9\u552f\u4e00\u503c\u8fdb\u884c\u6392\u5e8f\uff0c\u9ed8\u8ba4 True</li>\n<li><code>return_inverse</code>: \u662f\u5426\u8fd4\u56de\u539f\u59cb\u5f20\u91cf\u5230\u552f\u4e00\u503c\u7684\u7d22\u5f15\u6620\u5c04</li>\n<li><code>return_counts</code>: \u662f\u5426\u8fd4\u56de\u6bcf\u4e2a\u552f\u4e00\u503c\u7684\u8ba1\u6570</li>\n<li><code>dim</code>: \u6cbf\u6307\u5b9a\u7ef4\u5ea6\u8ba1\u7b97\u552f\u4e00\u503c</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "9168b7a630dd2c3a9497c6343eb2fac4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"_1\">\u7efc\u5408\u793a\u4f8b\uff1a\u7ec4\u5408\u4f7f\u7528</h2>\n<span class=\"paragraph\">\u4e0b\u9762\u5c55\u793a\u5982\u4f55\u7ec4\u5408\u4f7f\u7528\u8fd9\u4e09\u4e2a\u51fd\u6570\u5b8c\u6210\u5b9e\u9645\u4efb\u52a1\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "a45ef667a8a3d126da6fc0b60fcb6d3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "57d49c7d047633bd9d7ec1290fe08af8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "90de72c6c5592d15dd34fc7b8d391cf3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "aa8075180bf0bdbfb3ee2803c27ade8c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "dd6403266754f5a22682d109eb528133",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "6c38ca953bd63908d5a2f288441ebcb4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "21fe83696d8d182d58959f6496facdc6",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "2040c798fe45b7ecfdbcdc9549a2f346",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "2ba8ba553a178d6319906e9a04590d73",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "af764b030d2b3c1dad8b151af80c2bdc",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "538aef970d1f661cd873c051758117b3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u7b49\u5dee\u6570\u5217(0-4): [0, 1, 2, 3, 4]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "d9d391bfb4c4f9d3ed863d7b7ef0d2d7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "\u7b49\u5dee\u6570\u5217(2-8, step=2): [2, 4, 6, 8]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "d01f930b5af447c47c93ef52f92d16d6",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "8eb7f698f6c3f2ab0173d29d85b27ceb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "c54bc310f9b98d8e0e43edfb968f3fa8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "9d5070340a23f97b92a203d0053bd3a8",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "f9da135e57c4547e029bec359f7e54c0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "ec891edd8a316f641d344ff3e67798d1",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "ede1b674ce6ec59ac9bb94ab00f9cab3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "6fadbf4389ae76f8b2d23d414fe6730f",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "17685736d2b9db5f2bdc3f27f6285b3c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "1b6b300a375e06fbfa2a575833cbe212",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
