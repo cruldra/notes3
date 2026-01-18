@@ -1,0 +1,151 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "a3ddd9806762300f7cb35737ae87a7c4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"linear\">Linear \u5c42\u7684\u4f5c\u7528\uff1a\u8bed\u4e49\u8ddd\u79bb\u8c03\u6574\u6f14\u793a</h1>\n<span class=\"paragraph\">\u8fd9\u662f\u4e00\u4e2a\u6700\u7b80\u77ed\u7684\u4f8b\u5b50\uff0c\u8bc1\u660e\u901a\u8fc7\u8bad\u7ec3\u4e00\u4e2a\u7b80\u5355\u7684 <strong>Linear \u5c42</strong>\uff08\u7ebf\u6027\u53d8\u6362\uff09\uff0c\u6211\u4eec\u53ef\u4ee5\u6539\u53d8\u5411\u91cf\u7a7a\u95f4\uff0c\u4f7f\u5f97\u8bed\u4e49\u76f8\u4f3c\u7684\u8bcd\uff08\u5982\"\u82f9\u679c\"\u548c\"\u68a8\u5b50\"\uff09\u5411\u91cf\u66f4\u63a5\u8fd1\uff0c\u800c\u8bed\u4e49\u65e0\u5173\u7684\u8bcd\uff08\u5982\"\u82f9\u679c\"\u548c\"\u732b\"\uff09\u8ddd\u79bb\u66f4\u8fdc\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "24385a225973db42eb3db0f5e6b757b1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1\">1. \u521d\u59cb\u968f\u673a\u5411\u91cf</h2>\n<span class=\"paragraph\">\u6211\u4eec\u9996\u5148\u521b\u5efa\u4e09\u4e2a\u7ef4\u5ea6\u7684\u968f\u673a\u5411\u91cf\u6765\u4ee3\u8868\uff1a\u82f9\u679c\u3001\u68a8\u5b50\u3001\u732b\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "3cb42a5fe8375f9ba3fd184459664468",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-linear\">2. \u5b9a\u4e49 Linear \u5c42\u548c\u4f18\u5316\u76ee\u6807</h2>\n<span class=\"paragraph\">\u6211\u4eec\u5b9a\u4e49\u4e00\u4e2a\u7b80\u5355\u7684\u7ebf\u6027\u5c42 <code>nn.Linear</code>\uff0c\u5e76\u8bbe\u5b9a\u8bad\u7ec3\u76ee\u6807\uff1a</span>\n<ol>\n<li>\u62c9\u8fd1(\u82f9\u679c, \u68a8\u5b50)\u7684\u8ddd\u79bb</li>\n<li>\u63a8\u8fdc(\u82f9\u679c, \u732b)\u7684\u8ddd\u79bb</li>\n</ol></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "a4625fd7a9bdd7921df71d18e5d276f2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3\">3. \u7ed3\u679c\u9a8c\u8bc1</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "086fb9d14f71957fc9824c0a645c8402",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"_1\">\u7ed3\u8bba</h3>\n<span class=\"paragraph\">\u901a\u8fc7\u4e00\u4e2a\u7b80\u5355\u7684 Linear \u5c42\uff08\u672c\u8d28\u662f\u77e9\u9635\u4e58\u6cd5\uff09\uff0c\u6211\u4eec\u5c06\u539f\u59cb\u5411\u91cf\u6620\u5c04\u5230\u4e86\u4e00\u4e2a\u65b0\u7684\u7a7a\u95f4\u3002</span>\n<span class=\"paragraph\">\u5728\u8fd9\u4e2a\u65b0\u7a7a\u95f4\u4e2d\uff0c\u5373\u4f7f\u8f93\u5165\u7684\u539f\u59cb\u5411\u91cf\u662f\u5b8c\u5168\u968f\u673a\u7684\uff0c\u7ecf\u8fc7\"\u5b66\u4e60\"\u540e\u7684\u53d8\u6362\u77e9\u9635\u4e5f\u80fd\u8ba9<strong>\u8bed\u4e49\u76f8\u4f3c</strong>\u7684\u5bf9\u8c61\uff08\u82f9\u679c\u548c\u68a8\u5b50\uff09\u805a\u96c6\u5728\u4e00\u8d77\uff0c\u540c\u65f6\u8ba9<strong>\u8bed\u4e49\u4e0d\u540c</strong>\u7684\u5bf9\u8c61\uff08\u82f9\u679c\u548c\u732b\uff09\u5206\u79bb\u5f00\u3002</span>\n<span class=\"paragraph\">\u8fd9\u5c31\u662f\u795e\u7ecf\u7f51\u7edc\u4e2d Linear \u5c42\u3001Embedding \u5c42\u4ee5\u53ca Attention \u673a\u5236\u4e2d\u5904\u7406\u8bed\u4e49\u5173\u7cfb\u7684\u6838\u5fc3\u76f4\u89c9\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "72b1de7585c5128408f45049cb496845",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: center;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-mermaid data-diagram='&quot;&#92;n    graph LR&#92;n        A[\u82f9\u679c] --&gt;|Linear| T_A[T_\u82f9\u679c]&#92;n        B[\u68a8\u5b50] --&gt;|Linear| T_B[T_\u68a8\u5b50]&#92;n        C[\u732b] --&gt;|Linear| T_C[T_\u732b]&#92;n&#92;n        T_A &lt;--&gt;|\u8ddd\u79bb\u53d8\u8fd1| T_B&#92;n        T_A &lt;--&gt;|\u8ddd\u79bb\u53d8\u8fdc| T_C&#92;n    &quot;'></marimo-mermaid></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "7c4583cdd58cf5ceeb04c82e5ceca40d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "5c7854abe3c78871656497a09739ed0e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>\u521d\u59cb\u8ddd\u79bb\uff08\u968f\u673a\u72b6\u6001\uff09\uff1a</strong></span>\n<ul>\n<li>\ud83c\udf4e \u82f9\u679c - \ud83c\udf50 \u68a8\u5b50: <code>3.4248</code></li>\n<li>\ud83c\udf4e \u82f9\u679c - \ud83d\udc31 \u732b: <code>2.7089</code></li>\n</ul>\n<span class=\"paragraph\"><em>(\u6ce8\u610f\uff1a\u5728\u968f\u673a\u521d\u59cb\u5316\u7684\u60c5\u51b5\u4e0b\uff0c\u5b83\u4eec\u7684\u8ddd\u79bb\u5e76\u6ca1\u6709\u7279\u5b9a\u7684\u8bed\u4e49\u89c4\u5f8b)</em></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "26f6337c549c035cd96e331f805f93e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">\u2705 \u8bad\u7ec3\u5b8c\u6210\uff01\u7ecf\u8fc7 100 \u6b65\u8fed\u4ee3\uff0cLinear \u5c42\u7684\u53c2\u6570\u5df2\u66f4\u65b0\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "5b1b89ac950e1c733425db58c3e75e37",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='RGSE-0' random-id='6ad840f9-a68b-e1c5-fcfb-2bbbe0a066ba'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;\u5173\u7cfb&#92;&quot;:&#92;&quot;\ud83c\udf4e \u82f9\u679c - \ud83c\udf50 \u68a8\u5b50 (\u540c\u7c7b)&#92;&quot;,&#92;&quot;\u521d\u59cb\u8ddd\u79bb&#92;&quot;:&#92;&quot;3.4248&#92;&quot;,&#92;&quot;\u53d8\u6362\u540e\u8ddd\u79bb&#92;&quot;:&#92;&quot;0.3390&#92;&quot;,&#92;&quot;\u7ed3\u679c&#92;&quot;:&#92;&quot;\u2705 \u66f4\u8fd1\u4e86&#92;&quot;},{&#92;&quot;\u5173\u7cfb&#92;&quot;:&#92;&quot;\ud83c\udf4e \u82f9\u679c - \ud83d\udc31 \u732b (\u5f02\u7c7b)&#92;&quot;,&#92;&quot;\u521d\u59cb\u8ddd\u79bb&#92;&quot;:&#92;&quot;2.7089&#92;&quot;,&#92;&quot;\u53d8\u6362\u540e\u8ddd\u79bb&#92;&quot;:&#92;&quot;36.2190&#92;&quot;,&#92;&quot;\u7ed3\u679c&#92;&quot;:&#92;&quot;\u2705 \u66f4\u8fdc\u4e86&#92;&quot;}]&quot;' data-total-rows='2' data-total-columns='4' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;multi&quot;' data-show-filters='false' data-show-download='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

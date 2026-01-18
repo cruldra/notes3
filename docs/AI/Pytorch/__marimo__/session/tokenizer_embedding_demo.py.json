@@ -176,14 +176,7 @@
     {
       "id": "Hbol",
       "code_hash": "ef4aa68db4bd14348bee73032bfb1728",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
+      "outputs": [],
       "console": []
     },
     {
@@ -195,142 +188,44 @@
     {
       "id": "lEQa",
       "code_hash": "5aaf10e8191908c1ec044cb832752fc3",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83d\udce5 \u6b63\u5728\u52a0\u8f7d\u5206\u8bcd\u5668: Qwen/Qwen2.5-7B-Instruct\n\u23f3 \u9996\u6b21\u8fd0\u884c\u4f1a\u4ece HuggingFace \u4e0b\u8f7d,\u8bf7\u7a0d\u5019...\n\u2705 \u5206\u8bcd\u5668\u52a0\u8f7d\u6210\u529f!\n\ud83d\udcca \u8bcd\u6c47\u8868\u5927\u5c0f: 151,643\n\ud83d\udd24 \u7279\u6b8a Token:\n   BOS (\u5f00\u59cb): 'None' (ID: None)\n   EOS (\u7ed3\u675f): '<|im_end|>' (ID: 151645)\n   PAD (\u586b\u5145): '<|endoftext|>' (ID: 151643)\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "BYtC",
       "code_hash": "1539ec467be0569c039dcec215e3d07f",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83d\udd24 \u539f\u59cb\u6587\u672c: \u5c0f\u7ea2\u5e3d\u53bb\u68ee\u6797\n\ud83d\udccb Tokens: ['\u00e5\u00b0\u0131', '\u00e7\u00ba\u00a2', '\u00e5\u00b8\u00bd', '\u00e5\u0130\u00bb', '\u00e6\u00a3\u00ae\u00e6\u0140\u0139']\n\ud83d\udd22 Token IDs: [30709, 99425, 102663, 85336, 102258]\n\n\ud83d\udcca Token <-> ID \u6620\u5c04:\n  '\u00e5\u00b0\u0131' -> 30709\n  '\u00e7\u00ba\u00a2' -> 99425\n  '\u00e5\u00b8\u00bd' -> 102663\n  '\u00e5\u0130\u00bb' -> 85336\n  '\u00e6\u00a3\u00ae\u00e6\u0140\u0139' -> 102258\n\n\ud83d\udd04 \u89e3\u7801\u7ed3\u679c: \u5c0f\u7ea2\u5e3d\u53bb\u68ee\u6797\n\u2705 \u89e3\u7801\u6b63\u786e: True\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "emfo",
       "code_hash": "7953d44341ea94aabd553962059b5599",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83d\udcd0 Embedding \u5c42\u5f62\u72b6: torch.Size([151643, 512])\n   = 151,643 \u4e2a\u8bcd \u00d7 512 \u7ef4\u5411\u91cf\n   = \u603b\u5171 77,641,216 \u4e2a\u53c2\u6570\n   \u2248 296.18 MB (float32)\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "nWHF",
       "code_hash": "e17586a5667be0a153e29ff08ed33633",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83d\udce5 \u8f93\u5165 Token IDs: torch.Size([1, 5]) = [batch_size, seq_len]\n   \u5b9e\u9645\u503c: [[30709, 99425, 102663, 85336, 102258]]\n\n\ud83d\udce4 \u8f93\u51fa Embeddings: torch.Size([1, 5, 512]) = [batch_size, seq_len, hidden_size]\n\n\ud83d\udd0d \u7b2c\u4e00\u4e2a Token ('\u00e5\u00b0\u0131', ID=30709) \u7684\u5d4c\u5165\u5411\u91cf (\u524d10\u7ef4):\n   [ 0.00360518  0.03140415  0.00138456 -0.03815063  0.01927611 -0.00250717\n  0.01166456 -0.01065446  0.0096289  -0.04223869]\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "ZHCJ",
       "code_hash": "6aa67abce5fc6081940b4ceee8128849",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83c\udfaf Token: '\u5c0f\u7ea2\u5e3d'\n\ud83d\udd22 ID: 30709\n\ud83d\udcd0 \u5d4c\u5165\u5411\u91cf\u5f62\u72b6: torch.Size([1, 512])\n\n\ud83d\udd0d \u5411\u91cf\u5185\u5bb9 (\u524d20\u7ef4):\n[ 0.00360518  0.03140415  0.00138456 -0.03815063  0.01927611 -0.00250717\n  0.01166456 -0.01065446  0.0096289  -0.04223869 -0.01993148  0.00056614\n  0.00711477 -0.01893364 -0.0096721  -0.02113753 -0.03890432 -0.00839991\n  0.00738116 -0.0170809 ]\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "qnkX",
       "code_hash": "053c361b789f4a430c51b5c371bd2c2e",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "============================================================\n\ud83c\udfaf \u5b8c\u6574\u6d41\u7a0b\u6f14\u793a\n============================================================\n\ud83d\udcdd \u539f\u59cb\u6587\u672c: \u5c0f\u7ea2\u5e3d\u53bb\u68ee\u6797\n\ud83d\udd24 Tokens: ['\u00e5\u00b0\u0131', '\u00e7\u00ba\u00a2', '\u00e5\u00b8\u00bd', '\u00e5\u0130\u00bb', '\u00e6\u00a3\u00ae\u00e6\u0140\u0139']\n\ud83d\udd22 Token IDs: [30709, 99425, 102663, 85336, 102258]\n\ud83d\udce5 \u8f93\u5165\u5f62\u72b6: torch.Size([1, 5])\n\ud83d\udce4 \u5d4c\u5165\u5f62\u72b6: torch.Size([1, 5, 512])\n\n\u2705 \u6b64\u65f6\u5d4c\u5165\u5411\u91cf\u5df2\u51c6\u5907\u597d\u9001\u5165 Transformer \u8fdb\u884c\u5904\u7406!\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     },
     {
       "id": "DnEU",
       "code_hash": "c7ab7e46ffc02c1416c70ae2d68902f8",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": [
-        {
-          "type": "stream",
-          "name": "stdout",
-          "text": "\ud83d\udcda \u6279\u5904\u7406 2 \u4e2a\u53e5\u5b50\n\ud83d\udce5 \u8f93\u5165\u5f62\u72b6: torch.Size([2, 5]) = [batch_size, max_seq_len]\n\ud83d\udce4 \u8f93\u51fa\u5f62\u72b6: torch.Size([2, 5, 512]) = [batch_size, max_seq_len, hidden_size]\n\n\ud83d\udd0d \u6bcf\u4e2a\u53e5\u5b50\u7684 IDs (\u5df2\u81ea\u52a8 Padding):\n  [0] '\u5c0f\u7ea2\u5e3d\u53bb\u68ee\u6797'\n      IDs: [30709, 99425, 102663, 85336, 102258]\n      Mask: [1, 1, 1, 1, 1]\n  [1] '\u5c0f\u7ea2\u5e3d\u7231\u5b66\u4e60'\n      IDs: [30709, 99425, 102663, 99242, 100134]\n      Mask: [1, 1, 1, 1, 1]\n",
-          "mimetype": "text/plain"
-        }
-      ]
+      "outputs": [],
+      "console": []
     }
   ]
 }

@@ -8,7 +8,9 @@ from typing import Tuple, Optional, List, Union
 import numpy as np
 import torch
 import torch.distributed as dist
-from datasets import  load_dataset
+import torch.nn.functional as F
+import torch.nn.init as init
+from datasets import load_dataset
 from torch import nn, optim
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import Dataset, DistributedSampler, Sampler, DataLoader
@@ -19,8 +21,6 @@ from transformers import (
     AutoTokenizer,
 )
 from transformers.activations import ACT2FN
-import torch.nn.functional as F
-import torch.nn.init as init
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 
@@ -28,35 +28,35 @@ class MiniMindConfig(PretrainedConfig):
     model_type = "minimind"
 
     def __init__(
-        self,
-        dropout: float = 0.0,
-        bos_token_id: int = 1,
-        eos_token_id: int = 2,
-        hidden_act: str = "silu",
-        hidden_size: int = 512,
-        intermediate_size: int = None,
-        max_position_embeddings: int = 32768,
-        num_attention_heads: int = 8,
-        num_hidden_layers: int = 8,
-        num_key_value_heads: int = 2,
-        vocab_size: int = 6400,
-        rms_norm_eps: float = 1e-05,
-        rope_theta: int = 1000000.0,
-        inference_rope_scaling: bool = False,
-        flash_attn: bool = True,
-        ####################################################
-        # Here are the specific configurations of MOE
-        # When use_moe is false, the following is invalid
-        ####################################################
-        use_moe: bool = False,
-        num_experts_per_tok: int = 2,
-        n_routed_experts: int = 4,
-        n_shared_experts: int = 1,
-        scoring_func: str = "softmax",
-        aux_loss_alpha: float = 0.01,
-        seq_aux: bool = True,
-        norm_topk_prob: bool = True,
-        **kwargs,
+            self,
+            dropout: float = 0.0,  # Dropout概率，用于防止过拟合
+            bos_token_id: int = 1,  # 句子开始token的ID (Begin of Sentence)
+            eos_token_id: int = 2,  # 句子结束token的ID (End of Sentence)
+            hidden_act: str = "silu",  # 隐藏层激活函数，如 'silu', 'gelu' 等
+            hidden_size: int = 512,  # 模型的隐藏层维度 (Embedding维度)
+            intermediate_size: int = None,  # FFN中间层的维度，如果为None则默认为 hidden_size * 8/3
+            max_position_embeddings: int = 32768,  # 模型支持的最大序列长度
+            num_attention_heads: int = 8,  # 注意力头的数量 (Query heads)
+            num_hidden_layers: int = 8,  # Transformer解码器层的数量
+            num_key_value_heads: int = 2,  # Key/Value头的数量 (用于GQA)，如果为None则等于num_attention_heads
+            vocab_size: int = 6400,  # 词表大小
+            rms_norm_eps: float = 1e-05,  # RMSNorm层的epsilon值，防止除零
+            rope_theta: int = 1000000.0,  # RoPE旋转位置编码的基数 (Theta)
+            inference_rope_scaling: bool = False,  # 推理时是否使用RoPE插值扩展上下文
+            flash_attn: bool = True,  # 是否启用Flash Attention加速
+            ####################################################
+            # Here are the specific configurations of MOE
+            # When use_moe is false, the following is invalid
+            ####################################################
+            use_moe: bool = False,  # 是否启用混合专家模型 (MoE)
+            num_experts_per_tok: int = 2,  # 每个Token选择的专家数量 (Top-K)
+            n_routed_experts: int = 4,  # 总的路由专家数量
+            n_shared_experts: int = 1,  # 共享专家数量 (始终激活)
+            scoring_func: str = "softmax",  # 门控评分函数，通常为 'softmax'
+            aux_loss_alpha: float = 0.01,  # 辅助损失系数，用于平衡专家负载
+            seq_aux: bool = True,  # 是否在序列级别计算辅助损失
+            norm_topk_prob: bool = True,  # 是否对Top-K专家的概率进行归一化
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self.dropout = dropout
@@ -122,15 +122,15 @@ def setup_seed(seed: int):
 
 
 def lm_checkpoint(
-    lm_config,
-    weight="full_sft",
-    model=None,
-    optimizer=None,
-    epoch=0,
-    step=0,
-    wandb=None,
-    save_dir="../checkpoints",
-    **kwargs,
+        lm_config,
+        weight="full_sft",
+        model=None,
+        optimizer=None,
+        epoch=0,
+        step=0,
+        wandb=None,
+        save_dir="../checkpoints",
+        **kwargs,
 ):
     """
     模型检查点保存与加载函数。
@@ -324,7 +324,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
         # 将向量 x 沿最后一个维度 (head_dim) 切分为前半部分 x1 和后半部分 x2
         # 例如 x = [x1, x2]
         x1 = x[..., : x.shape[-1] // 2]
-        x2 = x[..., x.shape[-1] // 2 :]
+        x2 = x[..., x.shape[-1] // 2:]
         # 返回 [-x2, x1]
         return torch.cat((-x2, x1), dim=-1)
 
@@ -344,10 +344,10 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     # unsqueeze(unsqueeze_dim) 是为了在 num_heads 维度上广播
     # cos shape: [seq_len, head_dim] -> [seq_len, 1, head_dim] -> 广播适配 q: [batch, seq_len, n_heads, head_dim]
     q_embed = (q * cos.unsqueeze(unsqueeze_dim)) + (
-        rotate_half(q) * sin.unsqueeze(unsqueeze_dim)
+            rotate_half(q) * sin.unsqueeze(unsqueeze_dim)
     )
     k_embed = (k * cos.unsqueeze(unsqueeze_dim)) + (
-        rotate_half(k) * sin.unsqueeze(unsqueeze_dim)
+            rotate_half(k) * sin.unsqueeze(unsqueeze_dim)
     )
     return q_embed, k_embed
 
@@ -438,24 +438,24 @@ class Attention(nn.Module):
         self.dropout = args.dropout
         # 检查是否支持 Flash Attention (PyTorch 2.0+ 特性)
         self.flash = (
-            hasattr(torch.nn.functional, "scaled_dot_product_attention")
-            and args.flash_attn
+                hasattr(torch.nn.functional, "scaled_dot_product_attention")
+                and args.flash_attn
         )
         # print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
 
     def forward(
-        self,
-        x: torch.Tensor,
-        position_embeddings: Tuple[
-            torch.Tensor, torch.Tensor
-        ],  # 接收预计算好的 cos, sin
-        past_key_value: Optional[
-            Tuple[torch.Tensor, torch.Tensor]
-        ] = None,  # 历史 KV 缓存
-        use_cache=False,  # 是否使用 KV Cache
-        attention_mask: Optional[
-            torch.Tensor
-        ] = None,  # 外部传入的 mask (如 padding mask)
+            self,
+            x: torch.Tensor,
+            position_embeddings: Tuple[
+                torch.Tensor, torch.Tensor
+            ],  # 接收预计算好的 cos, sin
+            past_key_value: Optional[
+                Tuple[torch.Tensor, torch.Tensor]
+            ] = None,  # 历史 KV 缓存
+            use_cache=False,  # 是否使用 KV Cache
+            attention_mask: Optional[
+                torch.Tensor
+            ] = None,  # 外部传入的 mask (如 padding mask)
     ):
         bsz, seq_len, _ = x.shape
 
@@ -497,10 +497,10 @@ class Attention(nn.Module):
 
         # 6. 计算注意力 (Attention Calculation)
         if (
-            self.flash
-            and (seq_len > 1)
-            and (past_key_value is None)
-            and (attention_mask is None or torch.all(attention_mask == 1))
+                self.flash
+                and (seq_len > 1)
+                and (past_key_value is None)
+                and (attention_mask is None or torch.all(attention_mask == 1))
         ):
             # 6a. Flash Attention (快速路径)
             # PyTorch 内置的高效实现，自动处理 Mask 和 Softmax，大幅减少显存占用和计算时间
@@ -606,10 +606,10 @@ class RMSNorm(torch.nn.Module):
 
 
 def precompute_freqs_cis(
-    dim: int,
-    end: int = int(32 * 1024),
-    rope_base: float = 1e6,
-    rope_scaling: Optional[dict] = None,
+        dim: int,
+        end: int = int(32 * 1024),
+        rope_base: float = 1e6,
+        rope_scaling: Optional[dict] = None,
 ):
     """
     预计算旋转位置编码 (RoPE) 的复数频率 (Cis) 值，即 cos 和 sin。
@@ -651,7 +651,7 @@ def precompute_freqs_cis(
             # 计算频率对应的波长，并反推出维度索引边界
             def inv_dim(b):
                 return (dim * math.log(orig_max / (b * 2 * math.pi))) / (
-                    2 * math.log(rope_base)
+                        2 * math.log(rope_base)
                 )
 
             # 确定混合区间的上下界
@@ -1019,12 +1019,12 @@ class MiniMindBlock(nn.Module):
         self.mlp = FeedForward(config) if not config.use_moe else MOEFeedForward(config)
 
     def forward(
-        self,
-        hidden_states,
-        position_embeddings,
-        past_key_value=None,
-        use_cache=False,
-        attention_mask=None,
+            self,
+            hidden_states,
+            position_embeddings,
+            past_key_value=None,
+            use_cache=False,
+            attention_mask=None,
     ):
         """
         前向传播函数。
@@ -1121,12 +1121,12 @@ class MiniMindModel(nn.Module):
         self.register_buffer("freqs_sin", freqs_sin, persistent=False)
 
     def forward(
-        self,
-        input_ids: Optional[torch.Tensor] = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
-        use_cache: bool = False,
-        **kwargs,
+            self,
+            input_ids: Optional[torch.Tensor] = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
+            use_cache: bool = False,
+            **kwargs,
     ):
         """
         前向传播函数。
@@ -1162,15 +1162,15 @@ class MiniMindModel(nn.Module):
         # 2. 截取当前序列对应的 RoPE 编码
         # 根据绝对位置索引，从预计算好的 buffer 中切片出对应的 cos/sin
         position_embeddings = (
-            self.freqs_cos[start_pos : start_pos + seq_length],
-            self.freqs_sin[start_pos : start_pos + seq_length],
+            self.freqs_cos[start_pos: start_pos + seq_length],
+            self.freqs_sin[start_pos: start_pos + seq_length],
         )
 
         presents = []  # 用于收集每一层新的 KV Cache
 
         # 3. 逐层前向传播
         for layer_idx, (layer, past_key_value) in enumerate(
-            zip(self.layers, past_key_values)
+                zip(self.layers, past_key_values)
         ):
             hidden_states, present = layer(
                 hidden_states,
@@ -1232,14 +1232,14 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         self.model.embed_tokens.weight = self.lm_head.weight
 
     def forward(
-        self,
-        input_ids: Optional[torch.Tensor] = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        labels: Optional[torch.Tensor] = None,
-        past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
-        use_cache: bool = False,
-        logits_to_keep: Union[int, torch.Tensor] = 0,
-        **args,
+            self,
+            input_ids: Optional[torch.Tensor] = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            labels: Optional[torch.Tensor] = None,
+            past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
+            use_cache: bool = False,
+            logits_to_keep: Union[int, torch.Tensor] = 0,
+            **args,
     ):
         """
         前向传播函数。
@@ -1333,19 +1333,19 @@ def get_model_params(model, config):
     # 这里通过遍历 named_parameters 并匹配名字来估算
     # 'mlp.experts.0.' 是路由专家列表中第一个专家的参数前缀
     expert = (
-        sum(p.numel() for n, p in model.named_parameters() if "mlp.experts.0." in n)
-        / 1e6
+            sum(p.numel() for n, p in model.named_parameters() if "mlp.experts.0." in n)
+            / 1e6
     )
 
     # 4. 计算单个共享专家的参数量
     # 'mlp.shared_experts.0.' 是共享专家列表中第一个专家的参数前缀
     shared_expert = (
-        sum(
-            p.numel()
-            for n, p in model.named_parameters()
-            if "mlp.shared_experts.0." in n
-        )
-        / 1e6
+            sum(
+                p.numel()
+                for n, p in model.named_parameters()
+                if "mlp.shared_experts.0." in n
+            )
+            / 1e6
     )
 
     # 5. 计算非专家部分的参数量 (Base Params)
@@ -1369,11 +1369,11 @@ def get_model_params(model, config):
 
 
 def init_model(
-    lm_config,
-    from_weight="pretrain",
-    tokenizer_path=".",
-    save_dir="./dist",
-    device="cuda",
+        lm_config,
+        from_weight="pretrain",
+        tokenizer_path=".",
+        save_dir="./dist",
+        device="cuda",
 ):
     """
     初始化模型和分词器，并选择性地加载预训练权重。
@@ -1427,12 +1427,13 @@ def init_model(
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+
 class PretrainDataset(Dataset):
     def __init__(self, data_path, tokenizer, max_length=512):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.samples = load_dataset('json', data_files=data_path, split='train')
+        self.samples = load_dataset("json", data_files=data_path, split="train")
 
     def __len__(self):
         return len(self.samples)
@@ -1440,11 +1441,11 @@ class PretrainDataset(Dataset):
     def __getitem__(self, index):
         sample = self.samples[index]
         encoding = self.tokenizer(
-            str(sample['text']),
+            str(sample["text"]),
             max_length=self.max_length,
-            padding='max_length',
+            padding="max_length",
             truncation=True,
-            return_tensors='pt'
+            return_tensors="pt",
         )
         input_ids = encoding.input_ids.squeeze()
         labels = input_ids.clone()
@@ -1476,11 +1477,16 @@ class SkipBatchSampler(Sampler):
     def __len__(self):
         total_batches = (len(self.sampler) + self.batch_size - 1) // self.batch_size
         return max(0, total_batches - self.skip_batches)
+
+
 def get_lr(current_step, total_steps, lr):
-    return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
+    return lr * (0.1 + 0.45 * (1 + math.cos(math.pi * current_step / total_steps)))
+
 
 def is_main_process():
     return not dist.is_initialized() or dist.get_rank() == 0
+
+
 def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
@@ -1488,7 +1494,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
         labels = labels.to("cuda:0")
         lr = get_lr(epoch * iters + step, 1 * iters, 5e-4)
         for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
+            param_group["lr"] = lr
 
         with autocast_ctx:
             res = model(input_ids, labels=labels)
@@ -1511,31 +1517,53 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             current_loss = loss.item() * 8
             current_aux_loss = res.aux_loss.item() if res.aux_loss is not None else 0.0
             current_logits_loss = current_loss - current_aux_loss
-            current_lr = optimizer.param_groups[-1]['lr']
+            current_lr = optimizer.param_groups[-1]["lr"]
             eta_min = spend_time / (step + 1) * iters // 60 - spend_time // 60
-            print(f'Epoch:[{epoch + 1}/{1}]({step}/{iters}), loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min')
-            if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
+            print(
+                f"Epoch:[{epoch + 1}/{1}]({step}/{iters}), loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min"
+            )
+            if wandb:
+                wandb.log(
+                    {
+                        "loss": current_loss,
+                        "logits_loss": current_logits_loss,
+                        "aux_loss": current_aux_loss,
+                        "learning_rate": current_lr,
+                        "epoch_time": eta_min,
+                    }
+                )
 
         if (step % 1000 == 0 or step == iters - 1) and is_main_process():
             model.eval()
-            moe_suffix = '_moe' if lm_config.use_moe else ''
-            ckp = f'./dist/pretrain_{lm_config.hidden_size}{moe_suffix}.pth'
-            raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-            raw_model = getattr(raw_model, '_orig_mod', raw_model)
+            moe_suffix = "_moe" if lm_config.use_moe else ""
+            ckp = f"./dist/pretrain_{lm_config.hidden_size}{moe_suffix}.pth"
+            raw_model = (
+                model.module if isinstance(model, DistributedDataParallel) else model
+            )
+            raw_model = getattr(raw_model, "_orig_mod", raw_model)
             state_dict = raw_model.state_dict()
             torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
-            lm_checkpoint(lm_config, weight="pretrain", model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='./checkpoints')
+            lm_checkpoint(
+                lm_config,
+                weight="pretrain",
+                model=model,
+                optimizer=optimizer,
+                scaler=scaler,
+                epoch=epoch,
+                step=step,
+                wandb=wandb,
+                save_dir="./checkpoints",
+            )
             model.train()
             del state_dict
 
         del input_ids, labels, res, loss
 
 
-
 if __name__ == "__main__":
     device = None
     # 初始化分布式训练环境
-    #local_rank = init_distributed_mode()
+    # local_rank = init_distributed_mode()
     # if dist.is_initialized():
     #     device = f"cuda:{local_rank}"
     # 设置随机种子
@@ -1553,17 +1581,17 @@ if __name__ == "__main__":
     model, tokenizer = init_model(lm_config, "none", device="cuda:0")
     train_ds = PretrainDataset("./pretrain_hq.jsonl", tokenizer, max_length=340)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
-    scaler = torch.cuda.amp.GradScaler(enabled=("bfloat16" == 'float16'))
+    scaler = torch.cuda.amp.GradScaler(enabled=("bfloat16" == "float16"))
     optimizer = optim.AdamW(model.parameters(), lr=5e-4)
 
     # ========== 6. 从ckp恢复状态 ==========
     start_epoch, start_step = 0, 0
     if ckp_data:
-        model.load_state_dict(ckp_data['model'])
-        optimizer.load_state_dict(ckp_data['optimizer'])
-        scaler.load_state_dict(ckp_data['scaler'])
-        start_epoch = ckp_data['epoch']
-        start_step = ckp_data.get('step', 0)
+        model.load_state_dict(ckp_data["model"])
+        optimizer.load_state_dict(ckp_data["optimizer"])
+        scaler.load_state_dict(ckp_data["scaler"])
+        start_epoch = ckp_data["epoch"]
+        start_step = ckp_data.get("step", 0)
 
     # ========== 7. DDP包模型 ==========
     # if dist.is_initialized():
@@ -1571,20 +1599,36 @@ if __name__ == "__main__":
     #     model = DistributedDataParallel(model, device_ids=[local_rank])
 
     # ========== 8. 开始训练 ==========
-    epochs= 1
-    batch_size=32
-    num_workers=8
-    for epoch in range(start_epoch,  epochs):
+    epochs = 1
+    batch_size = 32
+    num_workers = 8
+    for epoch in range(start_epoch, epochs):
         train_sampler and train_sampler.set_epoch(epoch)
         if epoch == start_epoch and start_step > 0:  # 第一个epoch且存在检查点
-            batch_sampler = SkipBatchSampler(train_sampler or range(len(train_ds)),  batch_size, start_step + 1)
-            loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers= num_workers, pin_memory=True)
-            print(f'Epoch [{epoch + 1}/{ epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
+            batch_sampler = SkipBatchSampler(
+                train_sampler or range(len(train_ds)), batch_size, start_step + 1
+            )
+            loader = DataLoader(
+                train_ds,
+                batch_sampler=batch_sampler,
+                num_workers=num_workers,
+                pin_memory=True,
+            )
+            print(
+                f"Epoch [{epoch + 1}/{epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始"
+            )
             train_epoch(epoch, loader, len(loader) + start_step + 1, start_step, None)
         else:  # 默认从头开始
-            loader = DataLoader(train_ds, batch_size= batch_size, shuffle=(train_sampler is None),
-                                sampler=train_sampler, num_workers= num_workers, pin_memory=True)
+            loader = DataLoader(
+                train_ds,
+                batch_size=batch_size,
+                shuffle=(train_sampler is None),
+                sampler=train_sampler,
+                num_workers=num_workers,
+                pin_memory=True,
+            )
             train_epoch(epoch, loader, len(loader), 0, None)
 
     # ========== 9. 清理分布进程 ==========
-    if dist.is_initialized(): dist.destroy_process_group()
+    if dist.is_initialized():
+        dist.destroy_process_group()
