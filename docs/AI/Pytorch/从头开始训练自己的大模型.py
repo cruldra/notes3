@@ -1535,9 +1535,9 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 if __name__ == "__main__":
     device = None
     # 初始化分布式训练环境
-    local_rank = init_distributed_mode()
-    if dist.is_initialized():
-        device = f"cuda:{local_rank}"
+    #local_rank = init_distributed_mode()
+    # if dist.is_initialized():
+    #     device = f"cuda:{local_rank}"
     # 设置随机种子
     setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
     # 定义模型配置
@@ -1566,9 +1566,9 @@ if __name__ == "__main__":
         start_step = ckp_data.get('step', 0)
 
     # ========== 7. DDP包模型 ==========
-    if dist.is_initialized():
-        model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
-        model = DistributedDataParallel(model, device_ids=[local_rank])
+    # if dist.is_initialized():
+    #     model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
+    #     model = DistributedDataParallel(model, device_ids=[local_rank])
 
     # ========== 8. 开始训练 ==========
     epochs= 1

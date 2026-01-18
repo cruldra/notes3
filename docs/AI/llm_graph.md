@@ -73,6 +73,8 @@ graph TD
     
     subgraph Tools [工具库]
         Diffusers[Diffusers]
+        Accelerate[Accelerate]
+        DeepSpeed[DeepSpeed]
     end
     
     SFT -.-> Techniques
@@ -82,10 +84,14 @@ graph TD
 ### 概念说明
 
 *   **Diffusers**: Hugging Face 推出的用于生成式 AI（特别是扩散模型）的库，虽然主要用于图像生成，但也常用于微调和推理相关的扩散模型任务。
+*   **Accelerate**: Hugging Face 提供的训练加速库，用于简化多 GPU/TPU/多机训练与混合精度配置，常用于 LLM 的微调流程。
+*   **DeepSpeed**: Microsoft 开源的分布式训练与内存优化库，提供 ZeRO 等技术以支持超大模型的高效微调与训练。
 *   **PEFT (Parameter-Efficient Fine-Tuning)**: 一种微调技术集合（如 LoRA, Prefix Tuning），旨在通过仅训练少量参数来适应大型预训练模型，显著降低计算和存储成本。
 
 ### 参考链接
 - [Diffusers 官方文档](https://huggingface.co/docs/diffusers/index)
+- [Accelerate 官方文档](https://huggingface.co/docs/accelerate/index)
+- [DeepSpeed 官方文档](https://www.deepspeed.ai/)
 - [PEFT 官方文档](https://huggingface.co/docs/peft/index)
 
 ## 3. 推理 (Inference)
