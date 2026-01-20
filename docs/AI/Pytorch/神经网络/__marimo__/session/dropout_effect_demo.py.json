@@ -1,0 +1,103 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "9783515039bec956365e1de19f3ae8c7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"dropout\">\u76f4\u89c2\u7406\u89e3 Dropout\uff1a\u9632\u6b62\u8fc7\u62df\u5408\u7684\u5229\u5668</h1>\n<span class=\"paragraph\">Dropout \u662f\u6df1\u5ea6\u5b66\u4e60\u4e2d\u4e00\u79cd\u5f3a\u5927\u7684\u6b63\u5219\u5316\u6280\u672f\u3002</span>\n<span class=\"paragraph\"><strong>\u901a\u4fd7\u7684\u4f8b\u5b50</strong>\uff1a\n\u60f3\u8c61\u4f60\u5728\u5b66\u4e60\u4e00\u4e2a\u590d\u6742\u7684\u77e5\u8bc6\uff08\u6bd4\u5982\u505a\u9ad8\u6570\u9898\uff09\u3002</span>\n<ul>\n<li><strong>\u6ca1\u6709 Dropout\uff08\u8fc7\u62df\u5408\uff09</strong>\uff1a\u4f60\u6b7b\u8bb0\u786c\u80cc\u4e86\u6bcf\u4e00\u9053\u7ec3\u4e60\u9898\u7684\u7b54\u6848\u3002\u9047\u5230\u505a\u8fc7\u7684\u9898\u4f60\u4f1a\u505a\uff0c\u4f46\u9047\u5230\u7a0d\u5fae\u53d8\u4e00\u70b9\u7684\u9898\uff08\u6d4b\u8bd5\u96c6\uff09\uff0c\u4f60\u5c31\u61f5\u4e86\u3002</li>\n<li><strong>\u6709 Dropout</strong>\uff1a\u5b66\u4e60\u65f6\uff0c\u4f60\u7684\u8111\u5b50\u5076\u5c14\u4f1a\u201c\u65ad\u7247\u201d\uff0c\u5fd8\u6389\u4e00\u90e8\u5206\u795e\u7ecf\u5143\u7684\u8fde\u63a5\u3002\u8fd9\u8feb\u4f7f\u4f60\u4e0d\u80fd\u4f9d\u8d56\u67d0\u4e00\u6761\u7279\u5b9a\u7684\u8def\u5f84\u6765\u89e3\u9898\uff0c\u5fc5\u987b\u5b66\u4f1a\u901a\u8fc7\u591a\u79cd\u7ebf\u7d22\u63a8\u5bfc\u7b54\u6848\u3002\u8fd9\u6837\u5b66\u51fa\u6765\u7684\u77e5\u8bc6\u66f4\u9c81\u68d2\uff0c\u9047\u5230\u65b0\u9898\u4e5f\u80fd\u4e3e\u4e00\u53cd\u4e09\u3002</li>\n</ul>\n<span class=\"paragraph\">\u4e0b\u9762\u6211\u4eec\u7528\u4e00\u4e2a\u6781\u5176\u7b80\u5355\u7684<strong>\u56de\u5f52\u4efb\u52a1</strong>\u6765\u6f14\u793a\u8fd9\u4e00\u73b0\u8c61\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "fea8333a010902d1e940bb0ebb4d1ca8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1\">1. \u5236\u9020\u4e00\u4e2a\u5bb9\u6613\"\u6b7b\u8bb0\u786c\u80cc\"\u7684\u6570\u636e\u96c6</h2>\n<span class=\"paragraph\">\u6211\u4eec\u751f\u6210\u4ec5\u4ec5 20 \u4e2a\u6570\u636e\u70b9\uff0c\u4f46\u662f\u7528\u4e00\u4e2a\u5f88\u590d\u6742\u7684\u795e\u7ecf\u7f51\u7edc\uff08300\u4e2a\u9690\u85cf\u795e\u7ecf\u5143\uff09\u53bb\u62df\u5408\u5b83\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "845f9c5ddf0e1f1d7b9cc31a6faa55c4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-vs-dropout\">2. \u5b9a\u4e49\u6a21\u578b\uff1a\u8fc7\u5927 vs \u9002\u4e2d\uff08\u52a0Dropout\uff09</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "8627dd37d3e83b17c8940a8ed35b56b3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3\">3. \u8bad\u7ec3\u5bf9\u6bd4</h2>\n<span class=\"paragraph\">\u6211\u4eec\u8981\u8bad\u7ec3\u4e24\u4e2a\u7f51\u7edc\uff1a</span>\n<ol>\n<li><strong>Overfit Net</strong>: \u4e0d\u4f7f\u7528 Dropout (<code>p=0</code>)</li>\n<li><strong>Dropout Net</strong>: \u4f7f\u7528 50% \u7684 Dropout (<code>p=0.5</code>)</li>\n</ol>\n<span class=\"paragraph\">\u89c2\u5bdf\u5b83\u4eec\u5728\u8bad\u7ec3\u96c6\uff08\u7ea2\u70b9\uff09\u4e0a\u7684\u62df\u5408\u60c5\u51b5\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "d70b8987eb471aaa2c0345ffe0f799cd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4\">4. \u7ed3\u679c\u53ef\u89c6\u5316</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "f7ce01b62b8d8857e85453c10d6111fd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "c889d838d9ae96a002c9eb0ecb95ee26",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "e72d8b08a0cc516e0a92e993a32ee149",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "e8cd7da45018246ac4761fde5ccd55ab",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

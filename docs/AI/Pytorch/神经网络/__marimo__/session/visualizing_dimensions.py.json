@@ -1,0 +1,148 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "488ddecc06b50a165e3c9cc26709685a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"_1\">\u53ef\u89c6\u5316\u7406\u89e3\uff1a\u4ec0\u4e48\u662f\u201c\u7ef4\u5ea6\u201d\uff1f</h1>\n<span class=\"paragraph\">\u5728\u6df1\u5ea6\u5b66\u4e60\u548c\u7ebf\u6027\u4ee3\u6570\u4e2d\uff0c\u6211\u4eec\u7ecf\u5e38\u542c\u5230\"\u9ad8\u7ef4\u7a7a\u95f4\"\u3001\"\u964d\u7ef4\u6253\u51fb\"\u7b49\u8bcd\u6c47\u3002</span>\n<span class=\"paragraph\"><strong>\u7ef4\u5ea6 (Dimension)</strong> \u5176\u5b9e\u5c31\u662f\u6211\u4eec\u4e3a\u4e86\u786e\u5b9a\u4e00\u4e2a\u70b9\u7684\u4f4d\u7f6e\uff0c\u6240\u9700\u8981\u7684\u6700\u5c11<strong>\u5750\u6807\u6570\u91cf</strong>\u3002</span>\n<ul>\n<li><strong>0\u7ef4</strong>: \u4e00\u4e2a\u70b9\u3002\u4e0d\u9700\u8981\u5750\u6807\uff0c\u5b83\u5c31\u5728\u90a3\u91cc\u3002</li>\n<li><strong>1\u7ef4</strong>: \u4e00\u6761\u7ebf\u3002\u53ea\u9700\u8981 1 \u4e2a\u6570 (<marimo-tex class=\"arithmatex\">||(x||)</marimo-tex>) \u5c31\u80fd\u5b9a\u4f4d\u3002</li>\n<li><strong>2\u7ef4</strong>: \u4e00\u4e2a\u9762\u3002\u9700\u8981 2 \u4e2a\u6570 (<marimo-tex class=\"arithmatex\">||(x, y||)</marimo-tex>) \u5c31\u80fd\u5b9a\u4f4d\u3002</li>\n<li><strong>3\u7ef4</strong>: \u4e00\u4e2a\u4f53\u3002\u9700\u8981 3 \u4e2a\u6570 (<marimo-tex class=\"arithmatex\">||(x, y, z||)</marimo-tex>) \u5c31\u80fd\u5b9a\u4f4d\u3002</li>\n<li><strong>N\u7ef4</strong>: \u9700\u8981 <marimo-tex class=\"arithmatex\">||(N||)</marimo-tex> \u4e2a\u7279\u5f81\u624d\u80fd\u63cf\u8ff0\u6e05\u695a\u7684\u4e8b\u7269\u3002</li>\n</ul>\n<span class=\"paragraph\">\u8ba9\u6211\u4eec\u901a\u8fc7\u4ea4\u4e92\u6765\u4f53\u9a8c\u4e00\u4e0b\u7ef4\u5ea6\u7684\u589e\u52a0\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "96da680daa04268f5df4e54af7034475",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"1-1d\">1\u7ef4\u7a7a\u95f4 (1D): \u53ea\u6709\u5de6\u53f3</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "c08c1db07aac4ccdb281b2767a174796",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-2d\">2\u7ef4\u7a7a\u95f4 (2D): \u52a0\u4e0a\u524d\u540e</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "1b840ad5991e0562735ad315fa6e12ee",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-3d\">3\u7ef4\u7a7a\u95f4 (3D): \u52a0\u4e0a\u4e0a\u4e0b</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "f27c691b282c1a2f929e217275466446",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4\">4. \u9ad8\u7ef4\u7a7a\u95f4\uff1a\u6570\u636e\u7684\u89c6\u89d2</h2>\n<span class=\"paragraph\">\u8d85\u8fc7 3 \u7ef4\uff0c\u6211\u4eec\u7684\u773c\u775b\u5c31\u5f88\u96be\u753b\u51fa\u6765\u4e86\u3002\u4f46\u662f\u5bf9\u4e8e\u8ba1\u7b97\u673a\u6765\u8bf4\uff0c<strong>\u7ef4\u5ea6\u53ea\u662f\u5217\u8868\u7684\u957f\u5ea6</strong>\u3002</span>\n<span class=\"paragraph\">\u6bd4\u5982\u63cf\u8ff0\u4e00\u4e2a\u4eba\uff1a\n<code>[\u8eab\u9ad8, \u4f53\u91cd, \u5e74\u9f84, \u6536\u5165, \u8840\u538b]</code> -&gt; \u8fd9\u5c31\u662f\u4e00\u4e2a <strong>5\u7ef4</strong> \u5411\u91cf\u3002</span>\n<span class=\"paragraph\">\u5728 PyTorch \u4e2d\uff0c\u8fd9\u53ea\u662f\u4e00\u4e2a\u5f62\u72b6\u4e3a <code>(5,)</code> \u7684\u5f20\u91cf\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "c34b45d0378ff3c97ef81fb41848214e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "48c44b67852aa5fcb1f30e1a059cdabf",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "78b17aff5c35445f81a46da38b252fa0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "31eb3ca04f556ca3ccdcf2e9ae10c457",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "9476bb3672ebd98d6c4e1ec84cec6dc4",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "a9cafe0b9a0f85f5df5565602c3e2628",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "3155a18f9c57f3c38152dca67627b4e5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "6e2bd2d9e8e62352b02d85d122aed6d6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Hstk-0' random-id='0f83355a-5cf7-d39a-2f67-cc70521b20a9'><marimo-text data-initial-value='&quot;175, 70, 25, 5000&quot;' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;\u8f93\u5165\u7279\u5f81 (\u9017\u53f7\u5206\u9694):&lt;/span&gt;&lt;/span&gt;&quot;' data-placeholder='&quot;&quot;' data-kind='&quot;text&quot;' data-full-width='false' data-disabled='false' data-debounce='true'></marimo-text></marimo-ui-element><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>\u8f93\u5165\u7279\u5f81</strong>: [175.0, 70.0, 25.0, 5000.0]</span>\n<span class=\"paragraph\"><strong>\u7ef4\u5ea6 (Dimension)</strong>: 4</span>\n<span class=\"paragraph\"><strong>PyTorch Tensor</strong>: \n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">tensor</span><span class=\"p\">([</span> <span class=\"mf\">175.</span><span class=\"p\">,</span>   <span class=\"mf\">70.</span><span class=\"p\">,</span>   <span class=\"mf\">25.</span><span class=\"p\">,</span> <span class=\"mf\">5000.</span><span class=\"p\">])</span>\n<span class=\"c1\"># Shape: torch.Size([4])</span>\n</code></pre></div></span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
