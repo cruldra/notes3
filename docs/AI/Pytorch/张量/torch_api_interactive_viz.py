@@ -273,11 +273,12 @@ def _(exp_slider, mo, plt, torch):
 
     fig_pow, ax_pow = plt.subplots(figsize=(8, 4))
     ax_pow.plot(base_pow.numpy(), result_pow.numpy(), 'r-', linewidth=2, label=f'y = x^{_p:.1f}')
-
+    plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
     # 对比参照线
-    ax_pow.plot(base_pow.numpy(), base_pow.numpy(), 'k--', alpha=0.3, label='y = x (线性)')
+    ax_pow.plot(base_pow.numpy(), base_pow.numpy(), 'k--', alpha=0.3, label=u'y = x (线性)')
     if _p != 2:
-        ax_pow.plot(base_pow.numpy(), torch.pow(base_pow, 2).numpy(), 'b--', alpha=0.3, label='y = x^2 (平方)')
+        ax_pow.plot(base_pow.numpy(), torch.pow(base_pow, 2).numpy(), 'b--', alpha=0.3, label=u'y = x^2 (平方)')
 
     ax_pow.set_title(f"幂函数可视化: exponent={_p}")
     ax_pow.set_xlabel("Input (Base)")
