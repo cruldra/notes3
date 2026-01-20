@@ -1,0 +1,54 @@
+graph TB
+    subgraph Edge["L2 边缘端"]
+        Camera["摄像头"]
+        Sensor["传感器"]
+        EdgeAI["边缘AI推理"]
+    end
+    
+    subgraph DataLake["L4 数据湖"]
+        Kafka["Kafka<br/>消息队列"]
+        ODS["ODS<br/>原始数据层<br/>MinIO+Kafka"]
+        Flink["Flink<br/>流式计算"]
+        DWD["DWD<br/>明细数据层<br/>PostgreSQL+MinIO"]
+        DWS["DWS<br/>汇总数据层<br/>PostgreSQL+InfluxDB"]
+        ADS["ADS<br/>应用数据层<br/>Redis+PostgreSQL"]
+    end
+    
+    subgraph Storage["存储组件"]
+        MinIO["MinIO<br/>对象存储"]
+        PostgreSQL["PostgreSQL<br/>关系数据库"]
+        InfluxDB["InfluxDB<br/>时序数据库"]
+        Milvus["Milvus<br/>向量数据库"]
+        Neo4j["Neo4j<br/>图数据库"]
+    end
+    
+    subgraph L3["L3 云端应用"]
+        Dashboard["大屏展示"]
+        KnowledgeBase["组织记忆<br/>知识库"]
+        Reports["业务报表"]
+    end
+    
+    Camera --> EdgeAI
+    Sensor --> EdgeAI
+    EdgeAI --> Kafka
+    Kafka --> ODS
+    ODS --> Flink
+    Flink --> DWD
+    DWD --> DWS
+    DWS --> ADS
+    
+    ODS -.-> MinIO
+    DWD -.-> PostgreSQL
+    DWD -.-> MinIO
+    DWS -.-> PostgreSQL
+    DWS -.-> InfluxDB
+    ADS -.-> Redis["Redis<br/>缓存"]
+    ADS -.-> PostgreSQL
+    
+    PostgreSQL -.-> Milvus
+    PostgreSQL -.-> Neo4j
+    
+    ADS --> Dashboard
+    Milvus --> KnowledgeBase
+    Neo4j --> KnowledgeBase
+    ADS --> Reports
