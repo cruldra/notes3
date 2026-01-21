@@ -1,0 +1,98 @@
+---
+title: Textual 简介
+sidebar_label: 简介
+---
+
+# Textual 简介
+
+Textual 是一个为 Python 构建的快速、现代化的 **TUI (Terminal User Interface)** 框架。它允许开发者使用类似于现代 Web 开发的体验（如 CSS 样式和事件驱动架构）来构建功能丰富的终端应用程序。
+
+## 什么是 Textual？
+
+Textual 是由 [Rich](https://github.com/Textualize/rich) 的作者开发的。它的核心理念是将现代 UI 开发的最佳实践带入终端：
+
+- **异步优先**：基于 Python 的 `asyncio` 构建，能够处理复杂的并发操作而不阻塞 UI。
+- **CSS 渲染**：使用专门的 CSS 方言来定义样式（布局、颜色、边距等），实现 UI 与逻辑的分离。
+- **响应式设计**：支持多种布局模式（Grid, Horizontal, Vertical），并能根据终端窗口大小自动调整。
+
+## 安装
+
+你可以通过 `pip` 轻松安装 Textual：
+
+```bash
+pip install textual
+```
+
+### 开发工具
+
+为了获得更好的开发体验（如实时预览和调试），建议安装 `textual-dev`：
+
+```bash
+pip install textual-dev
+```
+
+## Textual 与 Rich 的关系
+
+Textual 和 [Rich](https://github.com/Textualize/rich) 都出自同一个团队，但它们的定位不同：
+
+- **Rich**：专注于**输出**。它用于在终端中渲染美观的文本、表格、进度条等。它是静态的。
+- **Textual**：专注于**交互**。它使用 Rich 作为其渲染引擎，并添加了事件处理、小部件（Widgets）和布局系统。
+
+简单来说：**Rich 是绘图笔，Textual 是整个交互式画布。**
+
+## 核心特性
+
+- **CSS 样式系统**：这是 Textual 最大的特色。你可以编写独立的 `.tcss` 文件来控制组件的外观，支持伪类（如 `:hover`）、层叠和变量。
+- **丰富的内置组件 (Widgets)**：提供了 `Button`、`Input`、`Header`、`Footer`、`DataTable`、`Tree` 等多种常用控件。
+- **布局系统**：支持强大的 Grid 布局、垂直（Vertical）和水平（Horizontal）布局容器。
+- **热重载 (Live Reload)**：配合 `textual-dev` 工具，可以在保存代码时自动刷新终端界面，无需重新手动运行。
+
+## 代码示例
+
+下面是一个简单的 Textual 应用程序，包含一个标题、一个标签、一个按钮以及底部栏：
+
+```python
+from textual.app import App, ComposeResult
+from textual.widgets import Header, Footer, Button, Label
+
+class HelloApp(App):
+    """一个简单的 Textual 应用程序"""
+    
+    # 定义快捷键绑定
+    BINDINGS = [("d", "toggle_dark", "切换深色模式")]
+
+    def compose(self) -> ComposeResult:
+        """在这里定义 UI 结构"""
+        yield Header()
+        yield Label("Hello, Textual!", id="welcome-label")
+        yield Button("点我退出", variant="primary")
+        yield Footer()
+        
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """处理按钮点击事件"""
+        self.exit()
+            
+if __name__ == "__main__":
+    app = HelloApp()
+    app.run()
+```
+
+## 运行程序
+
+### 普通运行
+像普通的 Python 脚本一样运行即可：
+```bash
+python app.py
+```
+
+### 开发模式运行
+如果你安装了 `textual-dev`，可以使用以下命令开启开发模式（支持控制台日志查看和热重载）：
+```bash
+textual run --dev app.py
+```
+
+## 相关资源
+
+- **官方文档**: [textual.textualize.io](https://textual.textualize.io/)
+- **GitHub 仓库**: [Textualize/textual](https://github.com/Textualize/textual)
+- **Rich 官方文档**: [rich.textualize.io](https://rich.textualize.io/)

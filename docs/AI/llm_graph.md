@@ -22,6 +22,7 @@ graph TD
     
     subgraph DataManagement [数据管理]
         Datasets[Datasets 库]
+        MinerU[MinerU]
     end
 
     subgraph Tokenizers [分词工具]
@@ -35,6 +36,7 @@ graph TD
     end
     
     Data -.-> Datasets
+    Data -.-> MinerU
     Tokenization -.-> Tokenizers
     Framework -.-> Torch
     Infrastructure -.-> Compute
@@ -44,6 +46,7 @@ graph TD
 
 *   **Torch (PyTorch)**: PyTorch 是一个开源的机器学习库，广泛用于计算机视觉和自然语言处理，是构建和训练大语言模型的主流底层框架。
 *   **Datasets (Datasets 库)**: Hugging Face 推出的轻量级 Python 库，用于高效访问和处理大规模数据集，支持内存映射和流式传输。
+*   **MinerU**: OpenDataLab 开源的一站式高质量数据提取工具，专注于将 PDF、网页等复杂非结构化数据转化为适配 LLM 训练的 Markdown 或 JSON 格式。
 *   **SentencePiece**: Google 开源的无监督文本分词器，支持 BPE 和 Unigram 算法，具有语言无关性和无损还原特性。
 *   **Tiktoken**: OpenAI 开源的高性能 BPE 分词器，专为 GPT 系列模型设计，速度极快且支持字节级编码。
 *   **Kaggle**: 一个数据科学竞赛平台，提供免费的 GPU/TPU 算力环境（Notebooks），广泛用于模型训练、实验和分享。
@@ -52,6 +55,7 @@ graph TD
 ### 参考链接
 - [PyTorch 介绍](./Pytorch/介绍.md)
 - [Datasets 库简介](./datasets/简介.md)
+- [MinerU 官方仓库](https://github.com/opendatalab/MinerU)
 - [SentencePiece 简介](./SentencePiece/简介.md)
 - [Tiktoken 简介](./tiktoken/简介.md)
 

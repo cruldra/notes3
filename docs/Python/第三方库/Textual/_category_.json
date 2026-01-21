@@ -1,0 +1,8 @@
+{
+  "label": "Textual",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "description": "Textual 是一个用于 Python 的 TUI (文本用户界面) 框架,受现代 Web 开发启发。"
+  }
+}
