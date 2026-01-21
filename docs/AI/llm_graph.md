@@ -140,6 +140,7 @@ graph TD
         CrewAI
         Agno
         OpenAutoGLM[Open-AutoGLM]
+        AgentLightning[Agent Lightning]
     end
     
     subgraph RAGFrameworks [RAG 框架]
@@ -156,6 +157,7 @@ graph TD
 *   **Agno**: 一个轻量级的智能体开发框架，旨在简化多智能体系统的构建和编排（前身为 Phidata）。
 *   **CrewAI**: 一个用于编排角色扮演自主 AI 智能体的框架，通过让智能体像团队一样协作来处理复杂任务。
 *   **Open-AutoGLM**: 智谱AI开源的手机操作智能体框架，基于视觉语言模型（VLM）实现对Android设备的自然语言控制和自动化操作。
+*   **Agent Lightning**: Microsoft 推出的智能体优化框架，支持通过强化学习（RL）和微调技术（SFT）并在几乎零代码修改的情况下优化任意 AI 智能体的性能。
 
 ### 参考链接
 - [LlamaIndex 介绍](./LLamaIndex/介绍.md)
