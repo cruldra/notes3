@@ -176,5 +176,74 @@ def _(mo, net_dropout, net_overfit, plt, test_x, x, y):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## 🧠 流程与 API 详解
+
+    ### 1. 代码执行流程
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.mermaid("""
+    graph TB
+        A["Start: 生成数据"] --> B{"定义模型结构"}
+        B --> C["实例化模型 1: Overfit Net (p=0)"]
+        B --> D["实例化模型 2: Dropout Net (p=0.5)"]
+
+        C --> E["训练循环 (500 epochs)"]
+        D --> E
+
+        subgraph Training ["训练过程"]
+            E1["Forward 前向传播"] --> E2["Compute Loss 计算损失"]
+            E2 --> E3["Zero Grad 清空梯度"]
+            E3 --> E4["Backward 反向传播"]
+            E4 --> E5["Optimizer Step 更新参数"]
+        end
+
+        E --> E1
+        E5 --> F["Eval 模式: net.eval()"]
+
+        F --> G["在测试集上预测"]
+        G --> H["可视化对比结果"]
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ### 2. 📚 更多关键 API 说明
+
+    除了 Dropout，本示例还涉及了完整的 PyTorch 训练流程 API：
+
+    *   **数据准备**:
+        *   `torch.linspace(start, end, steps)`: 生成等差数列，用于创建 x 轴坐标。
+        *   `torch.rand(size)`: 生成 [0, 1) 区间的均匀分布随机数，用于添加噪声。
+        *   `torch.unsqueeze(input, dim)`: 增加维度（例如将 `[20]` 变为 `[20, 1]`），以适配全连接层的输入要求。
+
+    *   **模型构建 (`torch.nn`)**:
+        *   `torch.nn.Linear(in_features, out_features)`: 全连接层（线性层），实现 $y = xA^T + b$。
+        *   `torch.nn.Dropout(p=0.5)`: Dropout 层。**作用**: 训练时随机将部分神经元输出置零，**目的**: 防止过拟合。
+        *   `torch.relu(input)`: 激活函数 $max(0, x)$，为网络引入非线性能力。
+
+    *   **训练核心**:
+        *   `torch.optim.Adam(params, lr)`: Adam 优化器，负责更新网络参数。
+        *   `torch.nn.MSELoss()`: 均方误差损失函数，用于回归问题 ($loss = (y_{pred} - y_{true})^2$)。
+        *   `loss.backward()`: 反向传播，自动计算梯度。
+        *   `optimizer.step()`: 根据计算出的梯度更新模型参数。
+        *   `optimizer.zero_grad()`: 清空上一步的梯度（PyTorch 梯度会累积，所以每次更新前要清零）。
+
+    *   **控制与工具**:
+        *   `model.eval()` / `model.train()`: 切换模式。**注意**: 预测时必须调用 `.eval()`，这会关闭 Dropout（让神经元全连接），否则预测结果不稳定。
+        *   `torch.manual_seed(seed)`: 固定随机种子，保证实验结果可复现。
+        *   `tensor.data.numpy()`: 将 PyTorch 张量转换为 NumPy 数组，以便用 Matplotlib 绘图。
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
