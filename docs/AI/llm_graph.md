@@ -110,22 +110,30 @@ graph LR
     PromptEng --> Model[加载模型]
     Model --> Generation[文本生成]
     Generation --> Optimization[推理优化]
+    Optimization --> Roofline[Roofline 模型]
     
     subgraph Serving [推理服务/引擎]
         vLLM
         SGLang
+        Shimmy
     end
     
     Optimization -.-> Serving
+    Roofline -.-> Optimization
+    Optimization --> Roofline[Roofline 模型]
 ```
 
 ### 概念说明
 
 *   **vLLM**: 高吞吐量、内存高效的大语言模型推理和服务引擎，以其 PagedAttention 技术著称。
 *   **SGLang**: 一种用于大语言模型的高效执行引擎，通过结构化生成语言优化复杂提示工作流的推理性能。
+*   **Shimmy**: 一个基于 Rust 开发的轻量级 OpenAI API 兼容服务器，专为本地运行 GGUF 格式的大语言模型设计，支持零配置的 GPU 自动加速。
+*   **Roofline 模型 (Roofline Model)**: 一种用于分析计算任务性能瓶颈的直观模型。它通过比较任务的**算术强度**（Arithmetic Intensity，计算量与访存量的比值）与硬件的**峰值性能**及**内存带宽**，判断任务是**计算受限 (Compute-bound)** 还是**内存受限 (Memory-bound)**。在 LLM 推理中，Prefill 阶段通常为计算受限，而 Decoding 阶段通常为内存受限。
+
 
 ### 参考链接
 - [vLLM 完整指南](./vllm/vLLM完整指南.md)
+- [Shimmy 官方仓库](https://github.com/Michael-A-Kuykendall/shimmy)
 
 ## 4. 应用 (Application)
 
