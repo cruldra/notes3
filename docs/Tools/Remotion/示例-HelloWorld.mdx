@@ -1,0 +1,185 @@
+---
+sidebar_position: 4
+---
+
+这是一个简单的 Remotion Player 使用示例,展示如何在 Docusaurus 文档中嵌入可交互的视频播放器。
+
+## 效果展示
+
+import { RemotionPlayer } from '@site/src/components/RemotionPlayer';
+import { HelloWorld } from '@site/src/remotion';
+
+<RemotionPlayer
+  component={HelloWorld}
+  durationInFrames={150}
+  fps={30}
+  compositionWidth={1920}
+  compositionHeight={1080}
+  controls
+  loop
+/>
+
+## 代码实现
+
+### 1. 创建 Remotion 合成组件
+
+```tsx title="src/remotion/HelloWorld.tsx"
+import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
+
+export const HelloWorld: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  const opacity = interpolate(frame, [0, 30], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  const translateY = interpolate(frame, [0, 30], [50, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  const scale = interpolate(frame, [30, 60], [1, 1.1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        backgroundColor: '#1a1a2e',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          opacity,
+          transform: `translateY(${translateY}px) scale(${scale})`,
+        }}
+      >
+        <h1
+          style={{
+            fontSize: 100,
+            fontWeight: 'bold',
+            color: '#ffffff',
+            textAlign: 'center',
+            textShadow: '0 0 20px rgba(255,255,255,0.5)',
+          }}
+        >
+          Hello Remotion!
+        </h1>
+        <p
+          style={{
+            fontSize: 30,
+            color: '#e94560',
+            textAlign: 'center',
+            marginTop: 20,
+          }}
+        >
+          这是一个简单的Remotion示例
+        </p>
+      </div>
+    </AbsoluteFill>
+  );
+};
+```
+
+### 2. 创建播放器包装组件
+
+为了在 Docusaurus 中正常使用 Remotion Player,需要使用 `BrowserOnly` 避免 SSR 错误:
+
+```tsx title="src/components/RemotionPlayer.tsx"
+import React, { useMemo } from 'react';
+import BrowserOnly from '@docusaurus/BrowserOnly';
+
+interface RemotionPlayerProps {
+  component: React.ComponentType<any>;
+  durationInFrames: number;
+  fps: number;
+  compositionWidth: number;
+  compositionHeight: number;
+  controls?: boolean;
+  loop?: boolean;
+}
+
+export const RemotionPlayer: React.FC<RemotionPlayerProps> = ({
+  component,
+  durationInFrames,
+  fps,
+  compositionWidth,
+  compositionHeight,
+  controls = true,
+  loop = true,
+}) => {
+  return (
+    <BrowserOnly fallback={<div>加载播放器中...</div>}>
+      {() => {
+        const { Player } = require('@remotion/player');
+        return (
+          <Player
+            component={component}
+            durationInFrames={durationInFrames}
+            fps={fps}
+            compositionWidth={compositionWidth}
+            compositionHeight={compositionHeight}
+            controls={controls}
+            loop={loop}
+            style={{ width: '100%' }}
+          />
+        );
+      }}
+    </BrowserOnly>
+  );
+};
+```
+
+### 3. 在 MDX 中使用
+
+```mdx
+import { RemotionPlayer } from '@site/src/components/RemotionPlayer';
+import { HelloWorld } from '@site/src/remotion';
+
+<RemotionPlayer
+  component={HelloWorld}
+  durationInFrames={150}
+  fps={30}
+  compositionWidth={1920}
+  compositionHeight={1080}
+  controls
+  loop
+/>
+```
+
+## 技术要点
+
+### 动画原理
+
+- 使用 `useCurrentFrame()` 获取当前帧数
+- 使用 `interpolate()` 实现值的平滑过渡:
+  - 文字淡入效果 (opacity: 0 → 1)
+  - 上浮效果 (translateY: 50px → 0)
+  - 缩放效果 (scale: 1 → 1.1)
+
+### 参数说明
+
+| 参数 | 说明 | 示例值 |
+|------|------|--------|
+| `durationInFrames` | 视频总帧数 | 150 |
+| `fps` | 帧率 | 30 |
+| `compositionWidth` | 视频宽度 | 1920 |
+| `compositionHeight` | 视频高度 | 1080 |
+| `controls` | 显示播放控制器 | true |
+| `loop` | 循环播放 | true |
+
+### Docusaurus 集成注意事项
+
+1. **必须使用 `BrowserOnly`**: Remotion Player 依赖浏览器 API,不能在服务端渲染
+2. **动态导入**: 使用 `require('@remotion/player')` 避免 SSR 时加载
+3. **性能优化**: 使用 `useMemo` 缓存 `inputProps` 和样式对象
+
+## 下一步
+
+- 查看 [Remotion 官方文档](https://www.remotion.dev/docs) 了解更多高级特性
+- 探索 [示例库](https://www.remotion.dev/showcase) 获取灵感
+- 学习如何使用 [`@remotion/renderer`](https://www.remotion.dev/docs/renderer) 渲染视频文件
