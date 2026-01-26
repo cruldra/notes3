@@ -5,8 +5,8 @@
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">LLM 知识图谱 | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/AI/llm_graph"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="LLM 知识图谱 | Cruldra"><meta data-rh="true" name="description" content="本文档旨在梳理大语言模型（LLM）生态系统中的关键概念、技术组件及其相互关系。"><meta data-rh="true" property="og:description" content="本文档旨在梳理大语言模型（LLM）生态系统中的关键概念、技术组件及其相互关系。"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/AI/llm_graph"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/llm_graph" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/AI/llm_graph" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LLM 知识图谱","item":"https://your-docusaurus-site.example.com/notes3/docs/AI/llm_graph"}]}</script><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.8c4657fb.css">
-<script src="/notes3/assets/js/runtime~main.d7acfa00.js" defer="defer"></script>
-<script src="/notes3/assets/js/main.b254c009.js" defer="defer"></script>
+<script src="/notes3/assets/js/runtime~main.930e6805.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.e99a5070.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -62,10 +62,13 @@
 <ul>
 <li class=""><strong>vLLM</strong>: 高吞吐量、内存高效的大语言模型推理和服务引擎，以其 PagedAttention 技术著称。</li>
 <li class=""><strong>SGLang</strong>: 一种用于大语言模型的高效执行引擎，通过结构化生成语言优化复杂提示工作流的推理性能。</li>
+<li class=""><strong>Shimmy</strong>: 一个基于 Rust 开发的轻量级 OpenAI API 兼容服务器，专为本地运行 GGUF 格式的大语言模型设计，支持零配置的 GPU 自动加速。</li>
+<li class=""><strong>Roofline 模型 (Roofline Model)</strong>: 一种用于分析计算任务性能瓶颈的直观模型。它通过比较任务的<strong>算术强度</strong>（Arithmetic Intensity，计算量与访存量的比值）与硬件的<strong>峰值性能</strong>及<strong>内存带宽</strong>，判断任务是<strong>计算受限 (Compute-bound)</strong> 还是<strong>内存受限 (Memory-bound)</strong>。在 LLM 推理中，Prefill 阶段通常为计算受限，而 Decoding 阶段通常为内存受限。</li>
 </ul>
 <h3 class="anchor anchorTargetStickyNavbar_aDle" id="参考链接-2">参考链接<a href="#参考链接-2" class="hash-link" aria-label="Direct link to 参考链接" title="Direct link to 参考链接" translate="no">​</a></h3>
 <ul>
 <li class=""><a class="" href="/notes3/docs/AI/vllm/vLLM完整指南">vLLM 完整指南</a></li>
+<li class=""><a href="https://github.com/Michael-A-Kuykendall/shimmy" target="_blank" rel="noopener noreferrer" class="">Shimmy 官方仓库</a></li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_aDle" id="4-应用-application">4. 应用 (Application)<a href="#4-应用-application" class="hash-link" aria-label="Direct link to 4. 应用 (Application)" title="Direct link to 4. 应用 (Application)" translate="no">​</a></h2>
 <p>应用层关注如何利用 LLM 解决实际问题，包括智能体、RAG（检索增强生成）等模式。</p>
