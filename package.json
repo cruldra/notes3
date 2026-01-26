@@ -12,7 +12,9 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "remotion:studio": "remotion studio",
+    "remotion:render": "remotion render remotion-intro docs/Tools/Remotion/示例/video.mp4"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
@@ -23,8 +25,10 @@
     "@mantine/hooks": "^8.0.0",
     "@mantine/notifications": "^8.0.0",
     "@mdx-js/react": "^3.1.0",
+    "@remotion/captions": "4.0.409",
     "@remotion/cli": "4.0.409",
     "@remotion/player": "4.0.409",
+    "@remotion/transitions": "4.0.409",
     "@saucelabs/theme-github-codeblock": "^0.3.0",
     "@vidstack/react": "^1.12.13",
     "clsx": "^2.1.1",

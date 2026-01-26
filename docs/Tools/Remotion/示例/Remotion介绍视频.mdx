@@ -1,0 +1,456 @@
+---
+sidebar_position: 5
+title: Remotion 介绍视频
+---
+
+# Remotion 介绍视频
+
+这是一个完整的 Remotion 视频项目，展示了如何使用 React 创建专业的介绍视频。
+
+## 效果展示
+
+import { RemotionPlayer } from '@site/src/components/RemotionPlayer';
+import { IntroVideo } from '@site/src/remotion/IntroVideo';
+
+<RemotionPlayer
+  component={IntroVideo}
+  durationInFrames={9150}
+  fps={30}
+  compositionWidth={1920}
+  compositionHeight={1080}
+  controls
+  loop={false}
+/>
+
+## 项目概述
+
+### 视频内容
+
+这个 5 分钟的视频全面介绍了 Remotion 框架，包含以下章节：
+
+1. **引言** (0-30秒) - 欢迎和标题动画
+2. **Remotion 是什么** (30-90秒) - 核心概念和代码演示
+3. **核心特性** (90-150秒) - 4 个主要特性介绍
+4. **实际应用场景** (150-210秒) - 4 个真实用例
+5. **与传统工具对比** (210-270秒) - 对比分析
+6. **结尾** (270-300秒) - 总结和行动号召
+
+### 技术特点
+
+- ✅ **时长**: 约 5 分钟 (9150 帧 @ 30fps)
+- ✅ **分辨率**: 1920x1080 (Full HD)
+- ✅ **字幕**: 完整的中文字幕同步
+- ✅ **动画**: 流畅的场景过渡和元素动画
+- ✅ **代码驱动**: 100% 使用 React 组件创建
+
+---
+
+## 项目结构
+
+### 文件组织
+
+```
+src/remotion/IntroVideo/
+├── index.tsx                   # 主视频组合
+├── scenes/                     # 场景组件
+│   ├── Intro.tsx              # 引言场景
+│   ├── WhatIsRemotion.tsx     # 概念介绍
+│   ├── CoreFeatures.tsx       # 特性展示
+│   ├── UseCases.tsx           # 应用场景
+│   ├── Comparison.tsx         # 对比分析
+│   └── Outro.tsx              # 结尾场景
+├── components/                 # 可复用组件
+│   ├── SubtitleDisplay.tsx    # 字幕显示
+│   ├── Title.tsx              # 标题组件
+│   ├── FeatureCard.tsx        # 特性卡片
+│   └── ComparisonChart.tsx    # 对比图表
+├── data/
+│   └── subtitles.ts           # 字幕数据
+└── utils/
+    └── animations.ts          # 动画工具函数
+```
+
+---
+
+## 核心技术实现
+
+### 1. 场景组合 (TransitionSeries)
+
+使用 `@remotion/transitions` 实现场景间的流畅过渡：
+
+```tsx title="src/remotion/IntroVideo/index.tsx"
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+
+export const IntroVideo: React.FC = () => {
+  return (
+    <TransitionSeries>
+      {/* 引言 */}
+      <TransitionSeries.Sequence durationInFrames={900}>
+        <Intro />
+      </TransitionSeries.Sequence>
+      
+      {/* 淡入过渡 */}
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 30 })}
+      />
+      
+      {/* Remotion 是什么 */}
+      <TransitionSeries.Sequence durationInFrames={1800}>
+        <WhatIsRemotion />
+      </TransitionSeries.Sequence>
+      
+      {/* ... 其他场景 */}
+    </TransitionSeries>
+  );
+};
+```
+
+### 2. 字幕系统
+
+使用精确的时间轴同步字幕：
+
+```tsx title="src/remotion/IntroVideo/components/SubtitleDisplay.tsx"
+import { Caption } from '@remotion/captions';
+import { useCurrentFrame, useVideoConfig } from 'remotion';
+
+export const SubtitleDisplay: React.FC<{ captions: Caption[] }> = ({ 
+  captions 
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const currentMs = (frame / fps) * 1000;
+  
+  const currentCaption = captions.find(
+    cap => currentMs >= cap.startMs && currentMs <= cap.endMs
+  );
+
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: '10%',
+      width: '100%',
+      textAlign: 'center',
+      fontSize: 48,
+      color: 'white',
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      padding: '20px',
+    }}>
+      {currentCaption?.text || ''}
+    </div>
+  );
+};
+```
+
+### 3. 动画工具
+
+封装的通用动画函数：
+
+```tsx title="src/remotion/IntroVideo/utils/animations.ts"
+import { interpolate, spring } from 'remotion';
+
+export const fadeIn = (
+  frame: number, 
+  startFrame: number, 
+  duration: number
+) => {
+  return interpolate(
+    frame,
+    [startFrame, startFrame + duration],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+};
+
+export const slideInFromLeft = (
+  frame: number,
+  startFrame: number,
+  duration: number
+) => {
+  const x = interpolate(
+    frame,
+    [startFrame, startFrame + duration],
+    [-100, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+  return `translateX(${x}%)`;
+};
+
+export const springScale = (frame: number, fps: number) => {
+  return spring({
+    frame,
+    fps,
+    config: { damping: 200 },
+  });
+};
+```
+
+### 4. 可复用组件
+
+#### 特性卡片组件
+
+```tsx title="src/remotion/IntroVideo/components/FeatureCard.tsx"
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
+import { slideInFromLeft, fadeIn } from '../utils/animations';
+
+interface FeatureCardProps {
+  icon: string;
+  title: string;
+  description: string;
+  delay: number;
+  position: { top?: string; left?: string; right?: string; bottom?: string };
+}
+
+export const FeatureCard: React.FC<FeatureCardProps> = ({
+  icon,
+  title,
+  description,
+  delay,
+  position,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  
+  const opacity = fadeIn(frame, delay, 30);
+  const translateX = slideInFromLeft(frame, delay, 30);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        ...position,
+        width: '40%',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: '20px',
+        padding: '30px',
+        opacity,
+        transform: translateX,
+      }}
+    >
+      <div style={{ fontSize: 80, marginBottom: 20 }}>{icon}</div>
+      <h3 style={{ fontSize: 36, margin: '10px 0', color: '#fff' }}>
+        {title}
+      </h3>
+      <p style={{ fontSize: 24, color: '#f0f0f0' }}>{description}</p>
+    </div>
+  );
+};
+```
+
+---
+
+## 使用指南
+
+### 本地预览
+
+启动 Remotion Studio 进行实时预览和调试：
+
+```bash
+pnpm remotion:studio
+```
+
+浏览器会自动打开 `http://localhost:3030`，你可以：
+
+- 🎬 **逐帧预览** - 拖动时间轴查看每一帧
+- ⏯️ **播放/暂停** - 实时预览动画效果
+- 🔍 **缩放控制** - 检查细节
+- 📊 **性能分析** - 查看渲染性能
+
+### 渲染视频
+
+渲染为 MP4 视频文件：
+
+```bash
+pnpm remotion:render
+```
+
+输出文件: `docs/Tools/Remotion/示例/video.mp4`
+
+### 自定义修改
+
+#### 修改字幕内容
+
+编辑 `src/remotion/IntroVideo/data/subtitles.ts`：
+
+```typescript
+export const introSubtitles: Caption[] = [
+  {
+    text: "你的自定义字幕",
+    startMs: 0,
+    endMs: 3000,
+    timestampMs: 1500,
+    confidence: 1.0,
+  },
+  // ... 更多字幕
+];
+```
+
+#### 调整场景时长
+
+修改 `src/remotion/IntroVideo/index.tsx` 中的 `durationInFrames`：
+
+```tsx
+<TransitionSeries.Sequence durationInFrames={1200}> // 改为 40 秒
+  <YourScene />
+</TransitionSeries.Sequence>
+```
+
+#### 更换过渡效果
+
+从 `@remotion/transitions` 导入不同的过渡：
+
+```tsx
+import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
+
+<TransitionSeries.Transition
+  presentation={wipe()}  // 使用擦除效果
+  timing={linearTiming({ durationInFrames: 30 })}
+/>
+```
+
+---
+
+## 设计规范
+
+### 配色方案
+
+| 颜色 | 用途 | Hex |
+|------|------|-----|
+| Remotion 蓝 | 主色 | `#0b84f3` |
+| 强调红 | 重点元素 | `#e94560` |
+| 深色背景 | 主背景 | `#1a1a2e` |
+| 白色文字 | 主要文本 | `#ffffff` |
+| 浅灰文字 | 字幕/副标题 | `#f0f0f0` |
+
+### 动画时长规范
+
+| 动画类型 | 时长 | 帧数 @ 30fps |
+|---------|------|--------------|
+| 淡入/淡出 | 1 秒 | 30 帧 |
+| 滑入 | 1 秒 | 30 帧 |
+| 弹簧动画 | 自然结束 | - |
+| 场景过渡 | 1 秒 | 30 帧 |
+
+### 布局规范
+
+- **标题**: 顶部居中，字号 100px
+- **副标题**: 标题下方，字号 48px
+- **正文**: 字号 36px
+- **字幕**: 底部 10%，字号 48px
+- **卡片**: 圆角 20px，内边距 30px
+
+---
+
+## 技术要点
+
+### 1. 时间轴计算
+
+```typescript
+// 帧数转时间
+const timeInSeconds = frame / fps;
+const timeInMs = (frame / fps) * 1000;
+
+// 时间转帧数
+const frames = seconds * fps;
+```
+
+### 2. 性能优化
+
+```typescript
+// 使用 useMemo 缓存计算
+const expensiveValue = useMemo(() => {
+  return heavyComputation(props);
+}, [props]);
+
+// 避免在每帧重新创建对象
+const style = useMemo(() => ({
+  fontSize: 100,
+  color: '#fff',
+}), []);
+```
+
+### 3. TypeScript 类型
+
+```typescript
+import type { Caption } from '@remotion/captions';
+
+interface SceneProps {
+  subtitles: Caption[];
+}
+
+export const MyScene: React.FC<SceneProps> = ({ subtitles }) => {
+  // ...
+};
+```
+
+---
+
+## 常见问题
+
+### Q: 如何调整视频总时长？
+
+A: 修改 `src/remotion/Root.tsx` 中的 `durationInFrames`：
+
+```tsx
+<Composition
+  id="remotion-intro"
+  durationInFrames={9150}  // 修改这个值
+  fps={30}
+  width={1920}
+  height={1080}
+/>
+```
+
+### Q: 如何添加新场景？
+
+A: 
+1. 在 `scenes/` 创建新组件
+2. 在 `IntroVideo/index.tsx` 中导入并添加到 `TransitionSeries`
+3. 更新字幕数据
+
+### Q: 如何修改字幕样式？
+
+A: 编辑 `components/SubtitleDisplay.tsx` 中的样式：
+
+```tsx
+<div style={{
+  fontSize: 60,           // 修改字号
+  color: '#ffff00',       // 修改颜色
+  backgroundColor: 'rgba(0,0,0,0.9)',  // 修改背景
+}}>
+```
+
+### Q: 渲染速度慢怎么办？
+
+A: 在 `remotion.config.ts` 调整并发数：
+
+```typescript
+Config.setConcurrency(8);  // 增加并发渲染数
+```
+
+---
+
+## 扩展阅读
+
+- [Remotion 官方文档](https://www.remotion.dev/docs)
+- [TransitionSeries 文档](https://www.remotion.dev/docs/transitions/transitionseries)
+- [Captions 文档](https://www.remotion.dev/docs/captions)
+- [性能优化指南](https://www.remotion.dev/docs/performance)
+
+---
+
+## 总结
+
+这个项目展示了 Remotion 的强大能力：
+
+✅ **完全代码驱动** - 所有动画和场景都是 React 组件  
+✅ **可维护性强** - DRY 原则，组件化设计  
+✅ **高度可定制** - 轻松修改内容、样式和动画  
+✅ **版本可控** - 所有代码都可以用 Git 管理  
+✅ **专业品质** - 输出 1080p 高清视频
+
+通过这个示例，你可以学习到如何使用 Remotion 创建专业的介绍视频、教程视频或营销视频。所有技术都可以应用到你自己的项目中！
