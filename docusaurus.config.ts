@@ -10,6 +10,10 @@ const config: Config = {
     title: 'Cruldra',
     tagline: 'Dinosaurs are cool',
     favicon: 'img/favicon.ico',
+    
+    // Tailwind CSS v4 Plugin
+    plugins: ["./src/plugins/tailwind-config.js"],
+    
     // Set the production url of your site here
     url: 'https://your-docusaurus-site.example.com',
     // Set the /<baseUrl>/ pathname under which your site is served

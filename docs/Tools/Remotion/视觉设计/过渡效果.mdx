@@ -1,0 +1,122 @@
+---
+sidebar_position: 4
+---
+
+# 过渡效果
+
+## 交互式演示
+
+下面是一个交互式的过渡效果演示，展示了 Remotion 中常用的五种过渡效果：
+
+import { RemotionPlayer } from '@site/src/components/RemotionPlayer';
+import { TransitionDemo } from '@site/src/remotion';
+
+<RemotionPlayer
+  component={TransitionDemo}
+  durationInFrames={420}
+  fps={30}
+  compositionWidth={1920}
+  compositionHeight={1080}
+  controls
+  loop
+/>
+
+<div style={{marginTop: '20px', padding: '15px', backgroundColor: '#f0f8ff', borderLeft: '4px solid #0b84f3', borderRadius: '4px'}}>
+  <strong>💡 提示：</strong> 点击播放按钮观看演示，你可以看到 Fade（淡入淡出）、Slide（滑动）、Wipe（擦除）、Flip（翻转）和 Clock Wipe（时钟擦除）五种过渡效果的实际表现。
+</div>
+
+---
+
+## 过渡效果概述
+
+要在两种绝对定位内容之间进行过渡,你可以使用 [`<TransitionSeries>`](https://www.remotion.dev/docs/transitions/transitionseries) 组件。
+
+**SlideTransition.tsx**
+
+```tsx
+import { linearTiming, TransitionSeries } from "@remotion/transitions";
+import { slide } from "@remotion/transitions/slide";
+
+const BasicTransition = () => {
+  return (
+    <TransitionSeries>
+      <TransitionSeries.Sequence durationInFrames={40}>
+        <Letter color="#0b84f3">A</Letter>
+      </TransitionSeries.Sequence>
+      <TransitionSeries.Transition
+        presentation={slide()}
+        timing={linearTiming({ durationInFrames: 30 })}
+      />
+      <TransitionSeries.Sequence durationInFrames={60}>
+        <Letter color="pink">B</Letter>
+      </TransitionSeries.Sequence>
+    </TransitionSeries>
+  );
+};
+```
+
+## 进入和退出动画
+
+你不一定非要使用 `<TransitionSeries>` 来实现场景之间的过渡。你也可以通过在 `<TransitionSeries>` 的开头或结尾放置过渡效果来为场景的进入或退出添加动画。
+
+[查看示例](https://www.remotion.dev/docs/transitions/transitionseries#enter-and-exit-animations)
+
+## 时长
+
+在上面的例子中,`A` 显示 40 帧,`B` 显示 60 帧,过渡效果的时长是 30 帧。  
+在此期间,两个场景都会被渲染。这意味着动画的总时长是 `60 + 40 - 30 = 70`。
+
+## 演示效果
+
+演示效果决定了动画的视觉表现。
+
+### 可用的演示效果
+
+- [**概览** - 可用演示效果列表](https://www.remotion.dev/docs/transitions/presentations)
+- [**自定义演示效果** - 实现你自己的效果](https://www.remotion.dev/docs/transitions/presentations/custom)
+- [**`fade()`** - 为场景添加透明度动画](https://www.remotion.dev/docs/transitions/presentations/fade)
+- [**`slide()`** - 滑入并推出前一个场景](https://www.remotion.dev/docs/transitions/presentations/slide)
+- [**`wipe()`** - 滑动覆盖前一个场景](https://www.remotion.dev/docs/transitions/presentations/wipe)
+- [**`flip()`** - 旋转前一个场景](https://www.remotion.dev/docs/transitions/presentations/flip)
+- [**`clockWipe()`** - 以圆周运动展示新场景](https://www.remotion.dev/docs/transitions/presentations/clock-wipe)
+- [**`iris()`** - 通过从中心开始的圆形蒙版展示场景](https://www.remotion.dev/docs/transitions/presentations/iris)
+- [**`cube()`** - 付费 - 用 3D 透视旋转两个场景](https://www.remotion.dev/docs/transitions/presentations/cube)
+- [**`none()`** - 无视觉效果](https://www.remotion.dev/docs/transitions/presentations/none)
+- [**音频过渡** - 为过渡添加音效](https://www.remotion.dev/docs/transitions/audio-transitions)
+
+## 时间控制
+
+时间控制决定了动画的时长和动画曲线。
+
+- [**`springTiming()`** - 使用 `spring()` 进行过渡](https://www.remotion.dev/docs/transitions/timings/springtiming)
+- [**`linearTiming()`** - 使用可选缓动的线性过渡](https://www.remotion.dev/docs/transitions/timings/lineartiming)
+- [**自定义时间控制** - 实现你自己的时间控制](https://www.remotion.dev/docs/transitions/timings/custom)
+
+## 音频过渡
+
+查看如何在过渡中包含[音效](https://www.remotion.dev/docs/transitions/audio-transitions)。
+
+## 获取过渡的时长
+
+你可以通过调用时间控制的 `getDurationInFrames()` 来获取过渡的时长:
+
+**假设帧率为 30fps**
+
+```tsx
+import { springTiming } from "@remotion/transitions";
+
+springTiming({ config: { damping: 200 } }).getDurationInFrames({ fps: 30 }); // 23
+```
+
+## 规则
+
+**1.** 禁止过渡效果的时长超过前一个或后一个序列的时长。
+
+**2.** 不能有两个过渡效果相邻。
+
+**3.** 过渡效果前后至少要有一个序列。
+
+## 另见
+
+- [`@remotion/transitions`](https://www.remotion.dev/docs/transitions)
+- [`<TransitionSeries>`](https://www.remotion.dev/docs/transitions/transitionseries)
