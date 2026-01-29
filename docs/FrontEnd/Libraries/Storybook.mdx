@@ -1,0 +1,76 @@
+[Storybook](https://storybook.js.org/) 是前端 UI 组件开发的行业标准工具. 它为组件提供了一个**隔离的工作坊**, 让开发者可以在不运行整个复杂应用程序的情况下, 独立地设计、开发、测试和记录组件.
+
+## 界面概览
+
+Storybook 的界面设计直观, 主要由以下几个核心区域组成:
+
+1.  **Sidebar (侧边栏)**: 左侧区域, 列出了所有的组件及其对应的 "Stories" (故事). 支持搜索和分组管理 (如 Atoms, Molecules).
+2.  **Canvas (画布)**: 中央主视图, 渲染组件的实时预览. 你可以切换背景颜色、视口大小 (如移动端/平板预览).
+3.  **Addons Panel (插件面板)**: 通常位于底部或右侧, 提供与组件交互的工具:
+    - **Controls**: 动态修改 Props 的 UI 表单.
+    - **Actions**: 查看事件触发日志 (如点击、输入).
+    - **Interactions**: 运行交互式测试脚本.
+4.  **Toolbar (工具栏)**: 顶部区域, 包含缩放、网格线、无障碍检查等全局开关.
+
+## 核心概念
+
+### 1. Stories (故事)
+一个 Story 代表组件的一个特定视觉状态. 
+- **CSF 3.0 (Component Story Format)**: 当前推荐的编写标准, 使用 ES 模块导出对象, 极其简洁且易于复用.
+
+### 2. Args (参数)
+Args 是 Storybook 的动态 Props 系统. 
+- 开发者在 UI 中修改 Controls, Args 会实时传递给组件, 实现 "所见即所得" 的调试体验.
+
+### 3. Decorators (装饰器)
+用于为组件包裹上下文环境 (Context). 
+- 常见的用法包括: 注入主题 (`ThemeProvider`), 添加全局样式 (`padding`), 或挂载状态管理库 (`Redux Provider`).
+
+## 交互式测试 (Interaction Testing)
+
+Storybook 不仅仅是静态展示, 还可以通过 `play` 函数模拟用户行为. 
+
+```tsx
+// LoginForm.stories.tsx
+import { within, userEvent, expect } from '@storybook/test';
+
+export const AutoLogin: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    
+    // 模拟输入
+    await userEvent.type(canvas.getByTestId('email'), 'user@example.com');
+    await userEvent.type(canvas.getByTestId('password'), 'password123');
+    
+    // 模拟点击
+    await userEvent.click(canvas.getByRole('button'));
+    
+    // 验证结果
+    const feedback = await canvas.findByText('登录成功!');
+    await expect(feedback).toBeInTheDocument();
+  },
+};
+```
+
+## 插件系统 (Addon Ecosystem)
+
+Storybook 的强大之处在于其极其丰富的插件生态:
+
+-   **Controls**: 无需代码即可切换 Boolean、Color、Select 等类型的 Props.
+-   **Actions**: 捕获 `on-` 开头的回调函数并记录参数.
+-   **Viewport**: 预设多种设备尺寸, 方便响应式开发.
+-   **Accessibility (a11y)**: 实时分析组件的 HTML 结构是否符合无障碍标准.
+-   **Design Tokens**: 直接在侧边栏显示配色、字体等设计变量.
+
+## 开发工作流
+
+1.  **隔离开发**: 在主应用开发前, 先在 Storybook 中定义组件的各种状态.
+2.  **边缘情况覆盖**: 轻松创建 "错误"、"超长文本"、"空数据" 等主应用中难以触发的状态.
+3.  **视觉回归**: 通过 Chromatic 等工具对比每一个 Story 的像素级变化, 防止代码改动引入 UI Bug.
+4.  **活的文档**: `Autodocs` 插件会根据 Stories 和组件源码自动生成美观、可交互的 API 文档.
+
+## 为什么选择 Storybook?
+
+-   **解耦**: 强迫开发者编写更纯净、依赖更少的组件.
+-   **协作**: 设计师和 QA 可以在不需要代码权限的情况下审查 UI.
+-   **提效**: 在大型项目中, 修改一个深层页面组件的反馈时间从分钟级降低到秒级.
