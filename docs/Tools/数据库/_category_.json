@@ -1,6 +1,6 @@
 {
   "label": "数据库",
-  "position": 1,
+  "position": 4,
   "link": {
     "type": "generated-index",
     "description": "数据库系统是一个用于管理、存储和检索结构化数据的软件系统."
