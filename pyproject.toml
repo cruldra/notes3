@@ -5,5 +5,21 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "datasets>=4.5.0",
     "marimo[recommended]>=0.19.2",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+    "transformers>=5.0.0",
 ]
+
+
+# 1. 定义命名的索引源
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true  # 关键：设置为 true 表示 uv 除非被明确要求，否则不会主动去这里找包
+
+# 2. 将特定包绑定到该源
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }

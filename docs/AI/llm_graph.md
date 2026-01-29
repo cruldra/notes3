@@ -206,6 +206,7 @@ graph LR
     
     subgraph Tools [监控工具]
         WandB[Weights & Biases]
+        SwanLab[SwanLab]
     end
     
     Analysis -.-> Tools
@@ -214,6 +215,9 @@ graph LR
 ### 概念说明
 
 *   **WandB (Weights & Biases)**: 一个用于机器学习实验跟踪、数据集版本控制和模型可视化的开发者工具平台。
+*   **SwanLab**: 一款开源、轻量的 AI 模型训练跟踪与可视化工具，提供训练可视化、自动日志记录、实验对比等功能，被誉为“中国版 Weights & Biases”。
 
 ### 参考链接
 - [WandB 简介](./wandb/简介.md)
+- [SwanLab 官方文档](https://docs.swanlab.cn/)
+

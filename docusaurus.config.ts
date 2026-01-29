@@ -189,7 +189,7 @@ const config: Config = {
                 },*/
             ],
         },
-        footer: {
+        /*footer: {
             style: 'dark',
             links: [
                 {
@@ -224,7 +224,7 @@ const config: Config = {
                 },
             ],
             copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
-        },
+        },*/
         prism: {
             theme: prismThemes.github,
             darkTheme: prismThemes.dracula,

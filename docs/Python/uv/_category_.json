@@ -1,0 +1,8 @@
+{
+  "label": "uv",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "description": "uv: 下一代 Python 包管理工具"
+  }
+}
