@@ -1,0 +1,126 @@
+---
+hide_table_of_contents: true
+siderbar_position: 1
+---
+
+
+import SystemArchitecture from '@site/src/components/SystemArchitecture';
+
+<SystemArchitecture />
+
+---
+
+```mermaid
+graph TD
+
+    %% --- 左翼：销售侧 (Human-in-the-Loop) ---
+    subgraph LeftWing [🦅 左翼：销售实操工作台]
+        direction TB
+        SalesUI[企微侧边栏/H5]
+        Dashboard[实时漏斗仪表盘]
+        HumanIntervene[人工干预/改派]
+        TaskCenter[待办任务中心]
+    end
+    class LeftWing,SalesUI,Dashboard,HumanIntervene,TaskCenter wings;
+
+    %% --- 右翼：运营侧 (Configuration) ---
+    subgraph RightWing [🦅 右翼：运营配置中心]
+        direction TB
+        StrategyConfig[策略画布/规则配置]
+        KnowledgeBase[原子事实管理<br>价格日历/政策]
+        CrowdMgr[分群与LTV配置]
+        AuditLog[审计与风控日志]
+    end
+    class RightWing,StrategyConfig,KnowledgeBase,CrowdMgr,AuditLog wings;
+
+    %% --- 中间核心：三层架构 ---
+    
+    %% 第一层：感知层
+    subgraph Layer1 [1. 感知层: 事件驱动信号总线 Event Bus]
+        direction LR
+        SignalReceiver[多源信号接收适配器]
+        EventCleaner[事件清洗与标准化]
+        msg_queue{{Kafka / Coze Trigger}}
+        
+        LiveStream[直播间埋点] --> SignalReceiver
+        PaySystem[支付网关回调] --> SignalReceiver
+        WeComHook[企微消息回调] --> SignalReceiver
+        SignalReceiver --> EventCleaner --> msg_queue
+    end
+    class Layer1 perception;
+    class SignalReceiver,EventCleaner,msg_queue perception;
+
+    %% 第二层：决策层
+    subgraph Layer2 [2. 决策层: FSM状态机 & 路由引擎]
+        direction TB
+        
+        %% 核心状态机
+        subgraph FSM_Core [动态客户状态机 FSM]
+            CustomerState[客户状态容器<br>Stage / Intent / LTV]
+            StateTransition[状态流转逻辑]
+        end
+        
+        %% 策略路由
+        subgraph Routing_Engine [分层策略路由]
+            ConflictResolver[冲突消解 & 优先级]
+            StageRouter[阶段路由]
+            EventRouter[事件路由]
+            ProfileRouter[画像路由]
+        end
+        
+        %% AI 大脑
+        subgraph AI_Brain [AI Agent & RAG]
+            LLM_Core[LLM 推理核心]
+            PromptEngine[动态 Prompt 组装]
+            FactCheck[原子事实校验<br>价格/政策]
+        end
+
+        %% 数据流转
+        msg_queue --> StateTransition
+        StateTransition -- 状态变更事件 --> ConflictResolver
+        ConflictResolver --> StageRouter & EventRouter & ProfileRouter
+        StageRouter & EventRouter & ProfileRouter --> PromptEngine
+        PromptEngine -- 调用 --> LLM_Core
+        LLM_Core -- 检索/校验 --> FactCheck
+    end
+    class Layer2 decision;
+    class FSM_Core,Routing_Engine,AI_Brain,CustomerState,StateTransition,ConflictResolver,StageRouter,EventRouter,ProfileRouter,LLM_Core,PromptEngine,FactCheck decision;
+
+    %% 第三层：执行层
+    subgraph Layer3 [3. 执行层: 通道抽象网关 Channel Gateway]
+        direction TB
+        UnifiedSender[统一发送指令接口]
+        FreqControl[高频防护 & 熔断]
+        ChannelSwitch[通道自动切换/降级]
+        
+        subgraph Adaptors [协议适配器]
+            WeComAPI[企微 API]
+            SMS_API[短信网关]
+            Voice_API[AI 外呼]
+        end
+    end
+    class Layer3 execution;
+    class UnifiedSender,FreqControl,ChannelSwitch,Adaptors,WeComAPI,SMS_API,Voice_API execution;
+
+    %% --- 存储层 (支撑) ---
+    subgraph DataLayer [持久化数据存储]
+        DB_User[(客户画像库)]
+        DB_Rules[(规则策略库)]
+        DB_Logs[(交互日志)]
+    end
+    class DataLayer,DB_User,DB_Rules,DB_Logs db;
+
+    %% --- 跨层连接 ---
+    RightWing -- 配置更新 --> DB_Rules
+    DB_Rules -.-> Routing_Engine & FactCheck
+    
+    LeftWing -- 查询/干预 --> FSM_Core
+    FSM_Core -- 读写 --> DB_User
+    
+    FactCheck -.-> DB_Rules
+    
+    LLM_Core -- 生成话术/动作 --> UnifiedSender
+    UnifiedSender --> FreqControl --> ChannelSwitch --> Adaptors
+    
+    Adaptors -- 触达结果 --> SignalReceiver
+```
