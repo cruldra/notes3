@@ -1,3 +1,6 @@
+packages:
+  - '.'
+  - '子君AI销售系统需求演示'
 onlyBuiltDependencies:
   - core-js
   - core-js-pure

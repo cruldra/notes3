@@ -3,16 +3,26 @@ import { lazy } from 'react';
 
 export const menuItems = [
     { id: 'disclaimer', label: '说明文档', component: lazy(() => import('./components/Disclaimer')) },
+    { id: 'AB效果对比实验室', label: 'AB效果对比实验室', component: lazy(() => import('./components/synced/ABTestingDemo')) },
     { id: 'LTV 价值评分系统', label: 'LTV 价值评分系统', component: lazy(() => import('./components/synced/LTVScoringDemo')) },
     { id: '主管监控看板', label: '主管监控看板', component: lazy(() => import('./components/synced/TeamDashboard')) },
+    { id: '事件策略路由', label: '事件策略路由', component: lazy(() => import('./components/synced/EventRoutingDemo')) },
+    { id: '动态价格日历', label: '动态价格日历', component: lazy(() => import('./components/synced/PriceCalendarDemo')) },
+    { id: '场景置信度衰减', label: '场景置信度衰减', component: lazy(() => import('./components/synced/ConfidenceDecayDemo')) },
+    { id: '多人协同会话合并', label: '多人协同会话合并', component: lazy(() => import('./components/synced/SessionMergeDemo')) },
     { id: '多渠道加微三连击', label: '多渠道加微三连击', component: lazy(() => import('./components/synced/ThreeStrikeStrategy')) },
+    { id: '实时销售漏斗', label: '实时销售漏斗', component: lazy(() => import('./components/synced/RealTimeFunnelDemo')) },
     { id: '微信侧边栏', label: '微信侧边栏', component: lazy(() => import('./components/synced/TripleHitDemo')) },
     { id: '意图和情绪分析', label: '意图和情绪分析', component: lazy(() => import('./components/synced/IntentAnalysisDemo')) },
     { id: '撞单仲裁与合并', label: '撞单仲裁与合并', component: lazy(() => import('./components/synced/App')) },
     { id: '沉默线索再激活', label: '沉默线索再激活', component: lazy(() => import('./components/synced/SilentReactivationDemo')) },
     { id: '渠道 ROI 实时罗盘', label: '渠道 ROI 实时罗盘', component: lazy(() => import('./components/synced/ChannelROIDashboard')) },
+    { id: '画像主动收集', label: '画像主动收集', component: lazy(() => import('./components/synced/PortraitCompletionDemo')) },
     { id: '画像质量治理驾驶舱', label: '画像质量治理驾驶舱', component: lazy(() => import('./components/synced/CompletenessDashboard')) },
+    { id: '群红包裂变系统', label: '群红包裂变系统', component: lazy(() => import('./components/synced/GroupFissionDemo')) },
     { id: '运维面板', label: '运维面板', component: lazy(() => import('./components/synced/ConfigPanel')) },
+    { id: '退款挽留与风控系统', label: '退款挽留与风控系统', component: lazy(() => import('./components/synced/RefundRetentionDemo')) },
     { id: '销售作战地图', label: '销售作战地图', component: lazy(() => import('./components/synced/SmartClientList')) },
-    { id: '阶段策略路由', label: '阶段策略路由', component: lazy(() => import('./components/synced/StageRoutingDemo')) }
+    { id: '阶段策略路由', label: '阶段策略路由', component: lazy(() => import('./components/synced/StageRoutingDemo')) },
+    { id: '风格偏好推测引擎', label: '风格偏好推测引擎', component: lazy(() => import('./components/synced/StyleInferenceDemo')) }
 ];
