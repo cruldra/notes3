@@ -15,7 +15,8 @@
     "typecheck": "tsc",
     "remotion:studio": "remotion studio",
     "remotion:render": "remotion render remotion-intro docs/Tools/Remotion/示例/video.mp4",
-    "remotion:render:mantine": "remotion render mantine-demo docs/Tools/Remotion/示例/mantine-demo.mp4"
+    "remotion:render:mantine": "remotion render mantine-demo docs/Tools/Remotion/示例/mantine-demo.mp4",
+    "sync:demo": "node scripts/sync-demo.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
