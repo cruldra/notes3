@@ -241,7 +241,7 @@ const TripleHitConfig = () => {
             <label className="block text-xs font-bold text-gray-500 mb-1">好友申请文案 (验证语)</label>
             <textarea 
               className="w-full h-32 bg-gray-50 border border-gray-200 rounded p-3 text-sm resize-none"
-              defaultValue="{昵称}你好，我是子君AI的课程顾问，给您发送一下今天的直播课件和资料，请通过一下~"
+              defaultValue="{昵称}你好，我是华坤AI的课程顾问，给您发送一下今天的直播课件和资料，请通过一下~"
             ></textarea>
             <div className="flex justify-between mt-1">
               <span className="text-[10px] text-gray-400">支持变量: {"{昵称}"}, {"{来源}"}</span>
@@ -271,12 +271,12 @@ const TripleHitConfig = () => {
            <div className="flex gap-4">
               <div className="flex-1 p-3 border-2 border-blue-500 bg-blue-50 rounded cursor-pointer relative">
                 <div className="text-xs font-bold text-blue-700 mb-1">模板 A: 利益诱导类</div>
-                <div className="text-xs text-gray-600">【子君AI】您预留的《AI副业实战手册》已生成，请通过一下微信，以便为您发送下载链接。回T退订</div>
+                <div className="text-xs text-gray-600">【华坤AI】您预留的《AI副业实战手册》已生成，请通过一下微信，以便为您发送下载链接。回T退订</div>
                 <div className="absolute top-2 right-2 text-blue-500"><Check size={16} /></div>
               </div>
               <div className="flex-1 p-3 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
                 <div className="text-xs font-bold text-gray-700 mb-1">模板 B: 服务通知类</div>
-                <div className="text-xs text-gray-600">【子君AI】您的直播课席位已保留。助教老师正在添加您的微信，请留意新的好友申请。回T退订</div>
+                <div className="text-xs text-gray-600">【华坤AI】您的直播课席位已保留。助教老师正在添加您的微信，请留意新的好友申请。回T退订</div>
               </div>
            </div>
         </div>

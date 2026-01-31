@@ -106,7 +106,7 @@ importers:
         specifier: ~5.8.3
         version: 5.8.3
 
-  子君AI销售系统需求演示:
+  华坤AI销售系统需求演示:
     dependencies:
       '@mantine/core':
         specifier: ^8.0.0
@@ -9859,20 +9859,20 @@ snapshots:
 
   '@types/babel__core@7.20.5':
     dependencies:
-      '@babel/parser': 7.27.2
-      '@babel/types': 7.27.1
+      '@babel/parser': 7.28.6
+      '@babel/types': 7.28.6
       '@types/babel__generator': 7.27.0
       '@types/babel__template': 7.4.4
       '@types/babel__traverse': 7.28.0
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.27.1
+      '@babel/types': 7.28.6
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.27.2
-      '@babel/types': 7.27.1
+      '@babel/parser': 7.28.6
+      '@babel/types': 7.28.6
 
   '@types/babel__traverse@7.28.0':
     dependencies:
@@ -11941,7 +11941,7 @@ snapshots:
 
   history@4.10.1:
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       loose-envify: 1.4.0
       resolve-pathname: 3.0.0
       tiny-invariant: 1.3.3
@@ -14578,7 +14578,7 @@ snapshots:
 
   sucrase@3.35.1:
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.8
+      '@jridgewell/gen-mapping': 0.3.13
       commander: 4.1.1
       lines-and-columns: 1.2.4
       mz: 2.7.0

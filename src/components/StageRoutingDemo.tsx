@@ -25,7 +25,7 @@ const STAGE_CONFIG = {
     icon: <User className="w-5 h-5" />,
     scriptName: '🧊 破冰信任剧本',
     aiPrompt: '用户刚加微信，未建立信任。策略：自我介绍，发送问卷，语气热情但不骚扰。',
-    exampleResponse: '你好呀！我是你的专属助教子君。👋 很高兴认识你！为了更好地安排学习计划，能麻烦花 1 分钟填个小问卷吗？'
+    exampleResponse: '你好呀！我是你的专属助教华坤。👋 很高兴认识你！为了更好地安排学习计划，能麻烦花 1 分钟填个小问卷吗？'
   },
   ATTENDED: {
     id: 'ATTENDED',
@@ -61,7 +61,7 @@ const STAGE_CONFIG = {
     icon: <Repeat className="w-5 h-5" />,
     scriptName: '💎 VIP 升单剧本',
     aiPrompt: '老学员，已结课。策略：推荐进阶高阶课，强调老学员专属权益。',
-    exampleResponse: '子君发现你最近的学习势头很猛！针对老学员，我们要开一个“高阶实战营”，只有内部名额，感兴趣看看吗？'
+    exampleResponse: '华坤发现你最近的学习势头很猛！针对老学员，我们要开一个“高阶实战营”，只有内部名额，感兴趣看看吗？'
   }
 };
 

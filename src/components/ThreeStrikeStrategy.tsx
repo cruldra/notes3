@@ -122,7 +122,7 @@ export default function ThreeStrikeStrategy() {
     if (status !== 'RUNNING') return;
     setUserAction('ADDED_FRIEND');
     addLog('✅ 回调信号接收：用户通过了企业微信好友申请', 'success');
-    addNotification('wecom', '企业微信', '您已成功添加 "子君AI助教" 为联系人');
+    addNotification('wecom', '企业微信', '您已成功添加 "华坤AI助教" 为联系人');
   };
 
   const reset = () => {

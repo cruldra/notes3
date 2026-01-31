@@ -115,7 +115,7 @@ const TripleHitDemo = () => {
           <div className="bg-blue-600 p-1.5 rounded text-white">
             <Activity size={20} />
           </div>
-          <h1 className="text-lg font-bold text-gray-800">子君AI销售系统</h1>
+          <h1 className="text-lg font-bold text-gray-800">华坤AI销售系统</h1>
           <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded border">工作台视图</span>
         </div>
         
@@ -187,7 +187,7 @@ const TripleHitDemo = () => {
                   {/* Sales Msg */}
                   <div className="flex justify-end gap-3">
                      <div className="bg-[#95ec69] p-2.5 rounded-lg max-w-[80%] text-sm shadow-sm border border-[#85d85d]">
-                        你好，欢迎加入子君AI训练营！我是你的专属顾问。
+                        你好，欢迎加入华坤AI训练营！我是你的专属顾问。
                      </div>
                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sales" className="w-9 h-9 rounded" alt="Me" />
                   </div>

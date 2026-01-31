@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
-const demoSiteDir = path.resolve(root, '子君AI销售系统需求演示');
-const examplesDir = path.resolve(root, 'docs/Personal/子君AI销售系统/示例');
+const demoSiteDir = path.resolve(root, '华坤AI销售系统需求演示');
+const examplesDir = path.resolve(root, 'docs/Personal/华坤AI销售系统/示例');
 const componentsSrcDir = path.resolve(root, 'src/components');
 const componentsDestDir = path.resolve(demoSiteDir, 'src/components/synced');
 

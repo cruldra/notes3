@@ -17,7 +17,7 @@ const App = () => {
         >
             <AppShell.Header className="flex items-center px-4">
                 <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-                <Title order={3} className="ml-4">子君 AI 销售系统 - 交互演示</Title>
+                <Title order={3} className="ml-4">华坤 AI 销售系统 - 交互演示</Title>
             </AppShell.Header>
 
             <AppShell.Navbar p="md">
