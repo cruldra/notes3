@@ -191,6 +191,12 @@ const config: Config = {
                     position: 'left',
                     label: '硬件',
                 },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'godot',
+                    position: 'left',
+                    label: 'Godot',
+                },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
                   href: 'https://github.com/facebook/docusaurus',
