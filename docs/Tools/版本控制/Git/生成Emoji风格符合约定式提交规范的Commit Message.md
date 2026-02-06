@@ -36,3 +36,15 @@ Use the following mapping for types and emojis:
 ## IDEA
 
 ![image](https://github.com/cruldra/picx-images-hosting/raw/master/image.58hvw0jukn.png)
+
+## VS Code
+
+```json
+
+"github.copilot.editor.commitMessageGeneration.instructions": [
+    {
+        "text": "Role: Git Commit Message Generator.\n\nInstruction: Generate commit messages that follow the **Conventional Commits** specification and include **Gitmojis**.\n\nFormat: `<type>(<scope>): <emoji> <subject>`\n\nEmoji Mapping:\n- feat: ✨ (new features)\n- fix: 🐛 (bug fixes)\n- docs: 📝 (documentation)\n- style: 💄 (formatting, missing semi colons, etc)\n- refactor: ♻️ (refactoring code)\n- perf: ⚡ (performance improvements)\n- test: ✅ (adding or correcting tests)\n- build: 📦 (build system or external dependencies)\n- ci: 👷 (CI configuration files and scripts)\n- chore: 🔧 (maintenance, config changes)\n- revert: ⏪ (reverting a commit)\n\nRules:\n1. Language: Chinese (Simplified).\n2. Use imperative mood (e.g., '新增' not '新增了').\n3. Do not end with a period.\n4. If the change is technical, explain WHY in the body, but keep the subject concise."
+    }
+]
+
+```
