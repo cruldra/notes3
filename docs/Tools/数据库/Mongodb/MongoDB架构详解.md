@@ -673,7 +673,7 @@ bulk.execute()
 - [MongoDB 官方文档](https://docs.mongodb.com/)
 - [Motor 异步驱动文档](https://motor.readthedocs.io/)
 - [WiredTiger 存储引擎](https://source.wiredtiger.com/)
-- [smart-sales 项目源码](../../backend/src/smart_sales/core/database.py)
+- smart-sales 项目源码: `../../backend/src/smart_sales/core/database.py`
 
 ---
 

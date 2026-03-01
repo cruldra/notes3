@@ -700,7 +700,7 @@ volumes:
 - [Qdrant 官方文档](https://qdrant.tech/documentation/)
 - [HNSW 论文](https://arxiv.org/abs/1603.09320)
 - [VoyageAI Embedding 模型](https://docs.voyageai.com/)
-- [smart-sales 项目源码](../../backend/src/smart_sales/decision/rag/)
+- smart-sales 项目源码: `../../backend/src/smart_sales/decision/rag/`
 
 ---
 

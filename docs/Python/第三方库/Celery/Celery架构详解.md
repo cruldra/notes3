@@ -728,5 +728,5 @@ print(result.state)  # PENDING, STARTED, SUCCESS, FAILURE, RETRY
 - [Celery 官方文档](https://docs.celeryq.dev/)
 - [Redis 作为 Celery Broker](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html)
 - [Flower 监控工具](https://flower.readthedocs.io/)
-- [项目 Celery 配置](backend/src/smart_sales/celery_app.py)
-- [项目任务实现](backend/src/smart_sales/tasks/)
+- 项目 Celery 配置: `backend/src/smart_sales/celery_app.py`
+- 项目任务实现: `backend/src/smart_sales/tasks/`

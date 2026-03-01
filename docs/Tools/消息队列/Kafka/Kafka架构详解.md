@@ -836,7 +836,7 @@ def check_consumer_lag(group_id: str, topic: str):
 - [CloudEvents 规范](https://cloudevents.io/)
 - [kafka-python 客户端文档](https://kafka-python.readthedocs.io/)
 - [Kafka UI 项目](https://github.com/provectus/kafka-ui)
-- [项目 Kafka 配置](docker-compose.yml)
-- [项目 CloudEvent 模型](backend/src/smart_sales/core/events.py)
-- [项目 Producer 实现](backend/src/smart_sales/perception/cleaner.py)
-- [项目 Consumer 实现](backend/src/smart_sales/perception/consumer.py)
+- 项目 Kafka 配置: `docker-compose.yml`
+- 项目 CloudEvent 模型: `backend/src/smart_sales/core/events.py`
+- 项目 Producer 实现: `backend/src/smart_sales/perception/cleaner.py`
+- 项目 Consumer 实现: `backend/src/smart_sales/perception/consumer.py`
