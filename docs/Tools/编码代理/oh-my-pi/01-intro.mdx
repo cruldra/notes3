@@ -1,0 +1,108 @@
+---
+sidebar_position: 1
+title: 项目简介
+---
+
+# Oh My Pi (OMP) - AI 终端编码代理
+
+[![npm version](https://img.shields.io/npm/v/@oh-my-pi/pi-coding-agent?style=flat&colorA=222222&colorB=CB3837)](https://www.npmjs.com/package/@oh-my-pi/pi-coding-agent)
+[![License](https://img.shields.io/github/license/can1357/oh-my-pi?style=flat&colorA=222222&colorB=58A6FF)](https://github.com/can1357/oh-my-pi/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&colorA=222222&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Rust](https://img.shields.io/badge/Rust-DEA584?style=flat&colorA=222222&logo=rust&logoColor=white)](https://www.rust-lang.org)
+
+**Oh My Pi** 是一个功能强大的 AI 编码代理，专为终端环境设计。它结合了现代 AI 模型的能力与高效的开发工具链，为开发者提供智能化的编程辅助体验。
+
+## 项目背景
+
+Oh My Pi 是 [badlogic/pi-mono](https://github.com/badlogic/pi-mono) 的分支项目，由 [@mariozechner](https://github.com/mariozechner) 创建。它在原有基础上进行了大量增强和优化，添加了许多创新功能。
+
+## 核心特性概览
+
+### 🔧 智能代码编辑
+- **Hashline 编辑系统**：基于哈希的内容锚定，避免传统字符串替换的模糊匹配问题
+- **LSP 完整集成**：支持 40+ 种语言的 IDE 级代码智能
+- **格式化和诊断**：自动格式化与实时错误检测
+
+### 🤖 AI 辅助功能
+- **多模型支持**：支持 OpenAI、Anthropic、Google、Cursor 等多种提供商
+- **模型角色系统**：为不同任务配置专门的模型（默认、小型、慢速、规划、提交）
+- **子代理系统**：并行执行复杂任务，支持最多 100 个并发后台作业
+
+### 🛠️ 丰富的工具集
+- **Python 执行器**：持久化 IPython 内核，支持富文本输出
+- **浏览器自动化**：Puppeteer + 14 种反检测脚本
+- **SSH 远程执行**：持久连接，自动 OS/Shell 检测
+- **网络搜索**：多提供商搜索与全页抓取
+
+### 🔌 扩展生态系统
+- **MCP 协议支持**：完整的 Model Context Protocol 实现
+- **自定义斜杠命令**：TypeScript 编写的可编程命令
+- **插件系统**：热加载插件，npm/bun 集成
+- **通用配置发现**：支持 8 种 AI 编码工具的配置格式
+
+### 💡 创新功能
+- **时间旅行流规则 (TTSR)**：零上下文消耗的按需规则注入
+- **交互式代码审查**：结构化审查流程，P0-P3 优先级分级
+- **AI Commit 工具**：智能分析变更，生成规范提交
+- **任务追踪系统**：分阶段任务管理，自动进度提醒
+
+## 技术架构
+
+### 运行时环境
+- **Bun**：原生 TypeScript 执行，更快的启动速度
+- **Rust N-API**：约 7500 行 Rust 代码编译为高性能模块
+  - Grep 搜索：基于 ripgrep 内部的并行正则搜索
+  - Shell 执行：嵌入 bash，持久会话
+  - 文本处理：ANSI 感知，UTF-16 优化
+  - 语法高亮：30+ 语言支持
+
+### 支持的系统
+- Linux x64 / arm64
+- macOS x64 / arm64 (Apple Silicon)
+- Windows x64
+
+## 适用场景
+
+### 日常开发
+- 代码重构与优化
+- 自动化测试编写
+- 文档生成与维护
+- Bug 修复与调试
+
+### 复杂项目
+- 大型代码库探索
+- 跨模块重构
+- 架构设计评审
+- 代码审查自动化
+
+### 研究与学习
+- 新技术调研
+- 开源代码分析
+- API 文档查询
+- 学术论文阅读
+
+## 与同类工具对比
+
+| 特性 | Oh My Pi | Claude Code | Cursor | GitHub Copilot |
+|------|----------|-------------|--------|----------------|
+| 终端原生 | ✅ | ✅ | ❌ | ❌ |
+| LSP 集成 | ✅ 完整 | ⚠️ 部分 | ✅ | ✅ |
+| 子代理系统 | ✅ | ✅ | ❌ | ❌ |
+| MCP 支持 | ✅ 完整 | ⚠️ 部分 | ❌ | ⚠️ 部分 |
+| 浏览器自动化 | ✅ | ✅ | ❌ | ❌ |
+| 开源 | ✅ | ❌ | ❌ | ❌ |
+| 自定义模型 | ✅ 任意 | ⚠️ 有限 | ⚠️ 有限 | ❌ |
+
+## 社区与支持
+
+- **Discord**: [加入社区](https://discord.gg/4NMW9cdXZa)
+- **GitHub**: [报告问题](https://github.com/can1357/oh-my-pi/issues)
+- **npm**: [@oh-my-pi/pi-coding-agent](https://www.npmjs.com/package/@oh-my-pi/pi-coding-agent)
+
+## 许可证
+
+MIT License - 详见 [LICENSE](https://github.com/can1357/oh-my-pi/blob/main/LICENSE) 文件
+
+---
+
+准备好开始了吗？前往 [安装指南](./installation) 开始你的 OMP 之旅！

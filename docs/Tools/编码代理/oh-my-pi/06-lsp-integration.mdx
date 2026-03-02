@@ -1,0 +1,316 @@
+---
+sidebar_position: 6
+title: LSP 集成
+---
+
+# LSP 集成（语言服务器协议）
+
+OMP 提供完整的 IDE 级代码智能，支持 40+ 种编程语言，通过 Language Server Protocol (LSP) 实现。
+
+## 核心功能
+
+### 11 种 LSP 操作
+
+| 操作 | 描述 | 使用场景 |
+|------|------|----------|
+| `diagnostics` | 诊断检查 | 代码错误、警告 |
+| `definition` | 跳转到定义 | 查看函数/变量定义 |
+| `type_definition` | 类型定义 | 查看类型别名定义 |
+| `implementation` | 实现跳转 | 查看接口实现 |
+| `references` | 查找引用 | 查找所有使用位置 |
+| `hover` | 悬停信息 | 查看文档和类型 |
+| `symbols` | 文档符号 | 文件大纲、导航 |
+| `rename` | 重命名 | 安全重命名符号 |
+| `code_actions` | 代码操作 | 快速修复、重构 |
+| `status` | 服务器状态 | 检查 LSP 健康 |
+| `reload` | 重新加载 | 重启语言服务器 |
+
+### 自动格式化
+
+保存文件时自动格式化：
+
+```
+> 格式化 src/utils.ts
+
+OMP 使用：
+- TypeScript → prettier / tsfmt
+- Rust → rustfmt
+- Go → gofmt
+- Python → black / autopep8
+```
+
+### 实时诊断
+
+编辑后立即显示错误：
+
+```typescript
+// 输入时
+function greet(name: string) {
+  return "Hello " + name;
+}
+
+greet(123);  // ❌ Error: Argument of type 'number' is not assignable to 'string'
+```
+
+## 支持的语言
+
+### 开箱即用
+
+| 语言 | 语言服务器 | 安装命令 |
+|------|-----------|----------|
+| TypeScript/JavaScript | typescript-language-server | `npm i -g typescript-language-server` |
+| Python | pylsp / pyright | `pip install python-lsp-server` |
+| Rust | rust-analyzer | `rustup component add rust-analyzer` |
+| Go | gopls | `go install golang.org/x/tools/gopls@latest` |
+| Java | jdtls | 自动下载 |
+| Kotlin | kotlin-language-server | 自动下载 |
+| C/C++ | clangd | `apt install clangd` |
+| Ruby | solargraph | `gem install solargraph` |
+| PHP | intelephense | `npm i -g intelephense` |
+| Lua | lua-language-server | 自动下载 |
+| Nix | nil | `nix-shell -p nil` |
+| 更多... | ... | ... |
+
+### 配置语言服务器
+
+在 `~/.omp/lsp.json` 中配置：
+
+```json
+{
+  "servers": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "filetypes": ["typescript", "javascript", "typescriptreact", "javascriptreact"],
+      "rootPatterns": ["package.json", "tsconfig.json"],
+      "settings": {
+        "typescript": {
+          "format": {
+            "enable": true
+          },
+          "suggest": {
+            "completeFunctionCalls": true
+          }
+        }
+      }
+    },
+    "python": {
+      "command": ["pylsp"],
+      "filetypes": ["python"],
+      "rootPatterns": ["setup.py", "pyproject.toml", ".git"],
+      "settings": {
+        "pylsp": {
+          "plugins": {
+            "pycodestyle": {
+              "maxLineLength": 100
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## 工作区诊断
+
+检查整个项目的错误：
+
+```
+> 检查项目的所有错误
+
+# OMP 执行工作区诊断
+🔍 扫描中...
+
+❌ src/auth.ts:15:10 - Property 'token' does not exist
+⚠️ src/utils.ts:42:5 - 'result' is declared but never read
+⚠️ src/api.ts:88:20 - Any type used
+```
+
+## 符号消歧
+
+当一行有多个相同符号时，使用 `occurrence` 参数：
+
+```typescript
+// 第 10 行
+const result = process(result);  // 两个 "result"
+```
+
+```
+> 重命名第 10 行的第一个 result
+
+OMP 使用 occurrence: 0 定位第一个 result
+```
+
+## 本地二进制解析
+
+自动发现项目本地 LSP 服务器：
+
+```
+项目结构：
+my-project/
+├── node_modules/
+│   └── .bin/
+│       └── typescript-language-server  ✅ 自动使用
+├── src/
+└── package.json
+```
+
+搜索路径：
+1. `node_modules/.bin/`
+2. `.venv/bin/`
+3. `target/debug/`
+4. 系统 PATH
+
+## 在 OMP 中使用
+
+### 直接使用 LSP 工具
+
+```
+> 查找 getUser 函数的定义
+
+# OMP 使用 LSP:definition
+结果: src/services/user.ts:45:10
+```
+
+### 代码编辑时自动触发
+
+```
+> 添加错误处理到 fetchData 函数
+
+OMP 执行：
+1. LSP:symbols - 获取文件大纲
+2. 找到 fetchData 函数位置
+3. 分析函数签名 (LSP:hover)
+4. 检查返回类型 (LSP:type_definition)
+5. 应用修改
+6. LSP:diagnostics - 验证修改
+```
+
+### 重构工作流
+
+```
+> 将 UserService 类重命名为 UserManager
+
+OMP 执行：
+1. LSP:references - 查找所有引用 (12 处)
+2. 逐个确认
+3. LSP:rename - 安全重命名
+4. LSP:diagnostics - 确保无错误
+```
+
+## TUI 集成
+
+### 状态显示
+
+底部状态栏显示活跃的语言服务器：
+
+```
+[TypeScript] [Python] [Rust]                           3 servers active
+```
+
+### 诊断面板
+
+`Ctrl+D` 打开诊断面板：
+
+```
+┌─ Diagnostics ──────────────────────────────┐
+│ ❌ src/main.ts:15:10  Type error           │
+│ ⚠️  src/lib.ts:42:5   Unused import        │
+│ ℹ️  src/api.ts:88:2   Deprecated API       │
+└────────────────────────────────────────────┘
+```
+
+## 故障排除
+
+### 问题：LSP 未启动
+
+**诊断：**
+
+```
+> /lsp status
+
+TypeScript: ❌ Not running
+  Reason: typescript-language-server not found
+  Install: npm install -g typescript-language-server
+```
+
+**解决：**
+
+```bash
+npm install -g typescript-language-server
+# 在 OMP 中
+/reload
+```
+
+### 问题：诊断不显示
+
+**检查：**
+
+```json
+// ~/.omp/settings.json
+{
+  "lsp": {
+    "diagnosticsOnEdit": true,
+    "diagnosticsOnSave": true
+  }
+}
+```
+
+### 问题：格式化失败
+
+**排查：**
+
+1. 检查语言服务器支持：
+```
+> /lsp status typescript
+
+Capabilities: [..., "documentFormattingProvider", ...]
+```
+
+2. 手动指定格式化器：
+```json
+{
+  "formatters": {
+    "typescript": ["prettier", "--stdin-filepath", "{file}"]
+  }
+}
+```
+
+## 性能优化
+
+### 延迟初始化
+
+大型项目延迟启动 LSP：
+
+```json
+{
+  "lsp": {
+    "lazyLoad": true,
+    "startupTimeout": 30000
+  }
+}
+```
+
+### 诊断节流
+
+控制诊断频率：
+
+```json
+{
+  "lsp": {
+    "diagnosticsDebounce": 500,  // ms
+    "maxConcurrentChecks": 5
+  }
+}
+```
+
+## 最佳实践
+
+1. **项目级配置**：在 `.omp/lsp.json` 中配置，确保团队一致
+2. **按需启用**：大型项目只启用必要的语言服务器
+3. **定期更新**：保持语言服务器最新以获得最佳支持
+4. **结合工具**：LSP + grep + AST 工具 = 强大的代码分析能力
+
+---
+
+💡 **提示**：使用 `/lsp` 命令查看所有 LSP 相关操作！

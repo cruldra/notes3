@@ -1,0 +1,408 @@
+---
+sidebar_position: 9
+title: 浏览器自动化
+---
+
+# 浏览器自动化工具
+
+OMP 集成了 Puppeteer 浏览器自动化，配备 14 种反检测脚本，支持复杂的网页交互和数据提取。
+
+## 核心特性
+
+### 14 种 Stealth 插件
+
+| 插件 | 功能 |
+|------|------|
+| `chrome-runtime` | 修复 Chrome Runtime 指纹 |
+| `iframe-content-window` | 隐藏 iframe 自动化标记 |
+| `media-codec` | 模拟真实编解码器支持 |
+| `navigator-languages` | 设置真实语言列表 |
+| `navigator-permissions` | 模拟权限 API |
+| `navigator-plugins` | 添加真实插件列表 |
+| `navigator-vendor` | 设置正确的 vendor |
+| `navigator-webdriver` | 移除 webdriver 标记 |
+| `sourceurl` | 隐藏源代码 URL |
+| `user-agent-override` | 自定义 User Agent |
+| `webgl` | 修改 WebGL 指纹 |
+| `window-outerdimensions` | 设置窗口尺寸 |
+| `chrome-csi` | 模拟 Chrome CSI API |
+| `chrome-load-times` | 模拟加载时间 API |
+
+### User Agent 模拟
+
+自动移除 `HeadlessChrome` 标识：
+
+```
+原始: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 
+      (KHTML, like Gecko) HeadlessChrome/120.0.0.0 Safari/537.36
+
+模拟: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 
+      (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+```
+
+## 基本操作
+
+### 导航页面
+
+```
+> 打开 https://example.com
+
+OMP: 启动浏览器，导航到页面...
+✓ 页面加载完成
+   标题: Example Domain
+   URL: https://example.com/
+```
+
+### 点击元素
+
+```
+> 点击 "登录" 按钮
+
+OMP 使用无障碍树定位：
+   ID: 23
+   角色: button
+   名称: "登录"
+
+✓ 点击成功
+```
+
+### 输入文本
+
+```
+> 在邮箱输入框输入 "user@example.com"
+> 在密码输入框输入 "mypassword"
+```
+
+### 截图
+
+```
+> 截图保存为 homepage.png
+
+✓ 截图已保存: /tmp/browser/homepage.png
+   尺寸: 1920x1080
+```
+
+## 选择器类型
+
+### CSS 选择器
+
+```
+> 点击 .login-button
+> 获取 #username 的值
+```
+
+### ARIA 选择器
+
+```
+> 点击 aria/Submit
+> 在 aria/Email 输入 "test@example.com"
+```
+
+### 文本选择器
+
+```
+> 点击 text/立即购买
+> 获取包含 "价格" 的元素
+```
+
+### XPath 选择器
+
+```
+> 点击 xpath://div[@class='product'][1]
+> 获取 xpath://table//tr[2]/td[3]
+```
+
+### Pierce 选择器（Shadow DOM）
+
+```
+> 点击 pierce/my-web-component >> .internal-button
+```
+
+## 无障碍树
+
+### 获取快照
+
+```
+> 获取页面无障碍快照
+
+OMP 显示：
+[1] heading "产品列表" level=2
+[2] button "筛选" expanded=false
+[3] link "商品 A" url=/product/a
+[4] link "商品 B" url=/product/b
+[5] textbox "搜索" value=""
+[6] button "搜索"
+```
+
+### 使用 ID 交互
+
+```
+> 点击 [3]  # 点击 "商品 A"
+> 在 [5] 输入 "手机"  # 在搜索框输入
+> 点击 [6]  # 点击搜索按钮
+```
+
+## 高级操作
+
+### 滚动
+
+```
+> 向下滚动 500 像素
+> 滚动到页面底部
+> 滚动到元素 "#footer"
+```
+
+### 拖拽
+
+```
+> 将元素 "#item1" 拖拽到 "#dropzone"
+> 从 (100, 200) 拖拽到 (400, 200)
+```
+
+### JavaScript 执行
+
+```
+> 执行 JS: document.title
+   结果: "Example Domain"
+
+> 执行 JS: 
+   const items = document.querySelectorAll('.product');
+   return Array.from(items).map(i => i.textContent);
+   
+   结果: ["产品A", "产品B", "产品C"]
+```
+
+### 内容提取
+
+#### 完整提取
+
+```
+> 提取页面内容
+
+返回 Markdown 格式：
+# Example Domain
+
+This domain is for use in illustrative examples...
+
+[Read more...](https://www.iana.org/domains/example)
+```
+
+#### Reader Mode（阅读模式）
+
+```
+> 使用阅读模式提取 https://example.com/article
+
+使用 Mozilla Readability 算法提取正文，去除：
+- 导航栏
+- 广告
+- 侧边栏
+- 页脚
+
+保留：
+- 标题
+- 正文内容
+- 图片
+- 相关链接
+```
+
+## 页面交互示例
+
+### 示例 1：自动登录
+
+```
+> 打开 https://app.example.com/login
+> 获取无障碍快照
+> 在 [2] 输入 "myusername"    # 用户名输入框
+> 在 [3] 输入 "mypassword"    # 密码输入框
+> 点击 [4]                   # 登录按钮
+> 等待页面加载
+> 截图验证登录成功
+✓ 登录成功，已跳转到仪表板
+```
+
+### 示例 2：数据抓取
+
+```
+> 打开 https://example.com/products
+> 向下滚动到页面底部
+> 提取所有产品价格：
+
+执行 JS:
+const prices = document.querySelectorAll('.price');
+return Array.from(prices).map(p => ({
+  product: p.closest('.product').querySelector('h2').textContent,
+  price: p.textContent
+}));
+
+结果:
+[
+  {"product": "产品A", "price": "¥199"},
+  {"product": "产品B", "price": "¥299"},
+  {"product": "产品C", "price": "¥399"}
+]
+```
+
+### 示例 3：表单填写
+
+```
+> 打开 https://example.com/register
+> 填写表单：
+  - 姓名: 张三
+  - 邮箱: zhangsan@example.com
+  - 电话: 13800138000
+  - 选择 "同意条款" 复选框
+> 点击提交
+> 等待并检查成功消息
+✓ 注册成功
+```
+
+## 模式切换
+
+### 无头模式 / 可见模式
+
+```
+> /browser headless false
+
+切换到可见模式，浏览器窗口将显示。
+
+> /browser headless true
+
+切换回无头模式。
+```
+
+### 配置默认模式
+
+```json
+// ~/.omp/settings.json
+{
+  "browser": {
+    "headless": true,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+    "stealth": true
+  }
+}
+```
+
+## 多页面管理
+
+### 打开新标签页
+
+```
+> 在新标签页打开 https://example.com/page2
+
+OMP 创建新页面上下文：
+   Page 1: https://example.com (当前)
+   Page 2: https://example.com/page2
+```
+
+### 切换页面
+
+```
+> 切换到 page 2
+> 关闭 page 1
+```
+
+## Cookie 和存储
+
+### 管理 Cookie
+
+```
+> 获取所有 cookie
+> 设置 cookie: session_id=abc123; domain=.example.com
+> 删除 cookie: session_id
+> 清除所有 cookies
+```
+
+### LocalStorage
+
+```
+> 执行 JS: localStorage.setItem('theme', 'dark')
+> 执行 JS: return localStorage.getItem('user')
+```
+
+## 等待策略
+
+### 显式等待
+
+```
+> 等待 3 秒
+> 等待元素 "#loading" 消失
+> 等待元素 ".result" 出现
+```
+
+### 网络等待
+
+```
+> 等待网络空闲
+> 等待导航完成
+```
+
+## 故障排除
+
+### 问题：被检测为机器人
+
+**加强 stealth：**
+
+```json
+{
+  "browser": {
+    "stealth": true,
+    "extraPlugins": ["user-agent-override", "webgl"],
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    }
+  }
+}
+```
+
+**添加延迟：**
+
+```
+> 随机延迟 1-3 秒
+> 模拟人类鼠标移动
+```
+
+### 问题：元素找不到
+
+**使用无障碍树：**
+
+```
+> 获取无障碍快照
+> 使用显示的 ID 交互
+```
+
+**等待元素：**
+
+```
+> 等待 ".dynamic-content" 出现
+> 超时 10 秒
+```
+
+### 问题：页面加载超时
+
+```json
+{
+  "browser": {
+    "navigationTimeout": 60000,
+    "waitUntil": "networkidle2"
+  }
+}
+```
+
+## 安全注意事项
+
+⚠️ **重要提醒：**
+
+1. **不要在公共网站滥用**：遵守网站的 robots.txt 和服务条款
+2. **保护敏感信息**：不要记录密码或 API 密钥
+3. **遵守法律**：仅用于合法的数据抓取和测试目的
+4. **注意频率**：避免对同一网站频繁请求
+
+---
+
+💡 **提示**：浏览器工具与 Python 工具结合使用，可以构建强大的数据采集和分析工作流！

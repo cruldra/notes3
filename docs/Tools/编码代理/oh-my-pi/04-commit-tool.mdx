@@ -1,0 +1,350 @@
+---
+sidebar_position: 4
+title: AI Commit 工具
+---
+
+# AI Commit 工具
+
+OMP 的 Commit 工具利用 AI 智能分析代码变更，自动生成符合 [Conventional Commits](https://www.conventionalcommits.org/) 规范的提交信息。
+
+## 基本用法
+
+### 快速提交
+
+```bash
+omp commit
+```
+
+此命令会：
+1. 分析暂存区和未暂存的变更
+2. 按逻辑分组（如果变更涉及多个关注点）
+3. 生成提交信息
+4. 询问确认后执行提交
+
+### 带选项提交
+
+```bash
+# 提交并推送到远程
+omp commit --push
+
+# 仅预览，不实际提交
+omp commit --dry-run
+
+# 跳过 changelog 更新
+omp commit --no-changelog
+
+# 使用传统模式（确定性流水线）
+omp commit --legacy
+```
+
+## 核心特性
+
+### 智能变更分析
+
+#### Agentic 模式（默认）
+
+使用工具链深入分析变更：
+
+- `git-overview`：获取仓库整体状态
+- `git-file-diff`：查看文件级别差异
+- `git-hunk`：精细的 hunk 级别分析
+
+```
+> 分析中...
+  ✓ 检测到 3 个独立的变更组
+  ✓ 组 1: feat(auth) - 添加 OAuth 登录支持
+  ✓ 组 2: fix(api) - 修复用户列表分页错误
+  ✓ 组 3: docs(readme) - 更新 API 文档
+```
+
+#### 拆分提交
+
+自动将不相关的变更拆分为多个原子提交：
+
+```bash
+$ omp commit
+检测到独立变更：
+1. src/auth/oauth.ts - 新功能
+2. src/api/users.ts - Bug 修复
+3. README.md - 文档更新
+
+是否拆分为 3 个独立提交？[Y/n]
+```
+
+### Hunk 级别暂存
+
+当变更跨越多个关注点时，可以选择性暂存：
+
+```
+文件: src/components/Button.tsx
+变更 1/3:
++ export interface ButtonProps {
++   variant?: 'primary' | 'secondary';
++ }
+是否暂存此 hunk？[y/n/s/q/?]
+
+y - 是（暂存）
+n - 否（跳过）
+s - 拆分为更小的 hunk
+q - 退出
+? - 帮助
+```
+
+### Changelog 生成
+
+自动检测并更新 `CHANGELOG.md`：
+
+```bash
+$ omp commit
+生成提交信息：
+  feat(auth): 添加 JWT 认证中间件
+
+检测到你修改了 CHANGELOG.md，是否添加条目？[Y/n]
+
+添加的 changelog 条目：
+  ## [Unreleased]
+  ### Added
+  - 实现 JWT 认证中间件 (#123)
+```
+
+### 提交验证
+
+检测并阻止低质量的提交：
+
+```
+⚠️ 提交信息验证失败：
+  - 包含填充词："updated", "fixed"
+  - 不符合 conventional commit 格式
+
+建议修改为：
+  feat(api): 添加用户列表排序参数
+```
+
+## 工作流集成
+
+### Git Hooks
+
+在 `.git/hooks/prepare-commit-msg` 中使用：
+
+```bash
+#!/bin/bash
+# 使用 OMP 生成提交信息
+if [ -z "$2" ]; then  # 非 merge/revert 提交
+  omp commit --dry-run --output .git/commit-msg.txt
+  cat .git/commit-msg.txt > "$1"
+fi
+```
+
+### CI/CD 集成
+
+在 GitHub Actions 中：
+
+```yaml
+name: Auto Commit
+on:
+  push:
+    branches: [auto-fixes]
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup OMP
+        run: npm install -g @oh-my-pi/pi-coding-agent
+      
+      - name: Generate Commit
+        run: omp commit --push
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+## 高级配置
+
+### 自定义提示
+
+在 `~/.omp/commit-prompt.txt` 中添加项目特定的提交规则：
+
+```
+提交规范：
+1. 使用中文提交信息
+2. 类型必须是以下之一：
+   - feat: 新功能
+   - fix: Bug 修复
+   - docs: 文档
+   - style: 格式调整
+   - refactor: 重构
+   - test: 测试
+   - chore: 构建/工具
+3. 描述控制在 50 字以内
+4. 正文每行不超过 72 字符
+```
+
+### 配置文件
+
+在 `.omp/config.json` 中：
+
+```json
+{
+  "commit": {
+    "autoPush": false,
+    "generateChangelog": true,
+    "splitCommits": true,
+    "validateFormat": true,
+    "scopes": ["frontend", "backend", "api", "docs", "ci"],
+    "types": ["feat", "fix", "docs", "style", "refactor", "test", "chore"]
+  }
+}
+```
+
+### 环境变量
+
+```bash
+# 默认启用 --push
+export OMP_COMMIT_AUTO_PUSH=true
+
+# 禁用 changelog 生成
+export OMP_COMMIT_NO_CHANGELOG=true
+
+# 使用特定模型
+export OMP_COMMIT_MODEL=gpt-4o
+```
+
+## 使用示例
+
+### 场景 1：快速修复
+
+```bash
+# 修复了一个 bug
+git add src/fix.js
+
+# OMP 分析并生成提交
+$ omp commit
+
+建议提交信息：
+  fix(parser): 处理空字符串输入时的崩溃
+
+正文：
+  - 添加空值检查
+  - 返回空数组而不是抛出异常
+  - 添加对应的测试用例
+
+确认提交？[Y/n/e/d] 
+# Y - 提交
+# n - 取消
+# e - 编辑提交信息
+# d - 查看 diff
+```
+
+### 场景 2：功能开发
+
+```bash
+# 开发了一个新功能，包含多个文件变更
+git add .
+
+$ omp commit
+
+检测到以下变更组：
+
+组 1 - 新功能：
+  src/auth/oauth.ts
+  src/auth/jwt.ts
+  建议: feat(auth): 实现 OAuth 2.0 认证流程
+
+组 2 - 重构：
+  src/utils/http.ts
+  建议: refactor(http): 提取通用的请求拦截器
+
+组 3 - 文档：
+  docs/auth.md
+  建议: docs(auth): 添加 OAuth 集成指南
+
+选择操作：
+  [a] 全部提交（3 个独立提交）
+  [s] 选择部分提交
+  [c] 合并为一个提交
+  [q] 退出
+```
+
+### 场景 3：代码审查后的修改
+
+```bash
+# 根据审查意见修改后提交
+$ omp commit --context "根据 PR 审查修改：简化错误处理逻辑"
+
+生成的提交信息：
+  refactor(error): 简化 API 错误处理
+
+  根据代码审查反馈：
+  - 移除冗余的 try-catch 块
+  - 使用全局错误处理器
+  - 统一错误响应格式
+
+  Reviewed-by: @reviewer
+```
+
+## 故障排除
+
+### 问题：提交信息质量不佳
+
+**解决方案：**
+
+1. 添加更多上下文：
+```bash
+omp commit --context "修复了生产环境的内存泄漏问题"
+```
+
+2. 分步提交，每次只暂存相关文件：
+```bash
+git add src/auth/
+omp commit  # 提交 auth 相关变更
+
+git add src/api/
+omp commit  # 提交 api 相关变更
+```
+
+### 问题：拆分提交过于激进
+
+**解决方案：**
+
+禁用自动拆分：
+```bash
+omp commit --no-split
+```
+
+或在配置中：
+```json
+{
+  "commit": {
+    "splitCommits": false
+  }
+}
+```
+
+### 问题：与自定义 git 模板冲突
+
+**解决方案：**
+
+```bash
+# 临时禁用模板
+omp commit --no-template
+
+# 或在配置中指定模板路径
+{
+  "commit": {
+    "template": ".gitmessage"
+  }
+}
+```
+
+## 最佳实践
+
+1. **原子提交**：每个提交只做一件事，便于回滚和代码审查
+2. **及时提交**：完成一个逻辑单元后立即提交，不要累积大量变更
+3. **审查生成信息**：AI 可能误解意图，始终审查生成的提交信息
+4. **保持一致性**：在团队中使用统一的配置和规则
+
+---
+
+💡 **提示**：在 OMP 会话中使用 `/commit` 斜杠命令可以快速调用此工具！

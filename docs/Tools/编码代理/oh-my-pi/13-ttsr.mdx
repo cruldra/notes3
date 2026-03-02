@@ -1,0 +1,338 @@
+---
+sidebar_position: 13
+title: 时间旅行流规则 (TTSR)
+---
+
+# 时间旅行流规则 (Time Traveling Streamed Rules)
+
+TTSR 是 OMP 的创新功能，通过模式触发的规则注入，实现零上下文消耗的按需提示增强。
+
+## 核心概念
+
+### 传统规则的问题
+
+```
+传统方式：
+每次请求都加载所有规则 → 消耗大量上下文 → 可能根本用不上
+
+OMP 的 TTSR：
+规则等待触发 → 需要时才注入 → 零前期成本
+```
+
+### TTSR 工作原理
+
+```
+1. 模型输出流
+   ↓
+2. 规则监控器扫描输出
+   ↓
+3. 匹配触发模式？
+   ├─ 否 → 继续正常输出
+   └─ 是 → 中止流，注入规则，重试请求
+4. 规则只触发一次
+```
+
+## 创建 TTSR 规则
+
+### 规则文件格式
+
+创建 `.omp/rules/my-rule.yaml`：
+
+```yaml
+name: avoid-deprecated-api
+description: 避免使用已弃用的 API
+ttsrTrigger: "\.deprecated\(|legacy_api|old_function"
+# 当模型输出包含这些模式时触发
+
+content: |
+  ⚠️ **重要提醒**：检测到你可能在使用已弃用的 API。
+  
+  请使用以下替代方案：
+  - `deprecated_function()` → `new_function()`
+  - `legacy_api` → `modern_api`
+  
+  参考：[迁移指南](https://docs.example.com/migration)
+```
+
+### 触发模式类型
+
+#### 简单字符串匹配
+
+```yaml
+ttsrTrigger: "eval("
+# 检测到 eval( 时触发安全警告
+```
+
+#### 正则表达式
+
+```yaml
+ttsrTrigger: "TODO|FIXME|XXX|HACK"
+# 检测到待办标记时提醒完成
+```
+
+#### 复杂模式
+
+```yaml
+ttsrTrigger: "(var|let)\s+\w+\s*=\s*require\s*\("
+# 检测到 CommonJS require 时建议使用 ES modules
+```
+
+## 使用场景
+
+### 场景 1：安全警告
+
+```yaml
+# .omp/rules/security.yaml
+name: sql-injection-warning
+ttsrTrigger: "execute\s*\(.*\+"
+content: |
+  🚨 **安全风险**：检测到可能的 SQL 注入模式。
+  
+  不要拼接 SQL 字符串：
+  ```javascript
+  ❌ db.execute("SELECT * FROM users WHERE id = " + userId)
+  ```
+  
+  使用参数化查询：
+  ```javascript
+  ✅ db.execute("SELECT * FROM users WHERE id = ?", [userId])
+  ```
+```
+
+### 场景 2：代码规范
+
+```yaml
+# .omp/rules/rust-patterns.yaml
+name: rust-error-handling
+ttsrTrigger: "\.unwrap\(\)|\.expect\("
+content: |
+  📝 **代码规范**：在 Rust 中应优先使用 `?` 传播错误。
+  
+  ```rust
+  ❌ let file = File::open("data.txt").unwrap();
+  
+  ✅ let file = File::open("data.txt")?;
+  ```
+  
+  只有在测试或确定不会失败时才使用 unwrap。
+```
+
+### 场景 3：性能优化
+
+```yaml
+# .omp/rules/performance.yaml
+name: react-rerender
+ttsrTrigger: "useState\(.*\)|useEffect\("
+content: |
+  ⚡ **性能提醒**：使用 React Hooks 时注意依赖数组。
+  
+  - 使用 `useMemo` 缓存计算值
+  - 使用 `useCallback` 缓存函数
+  - 正确使用 `useEffect` 依赖数组
+  - 考虑使用 `React.memo` 避免不必要重渲染
+```
+
+### 场景 4：项目规范
+
+```yaml
+# .omp/rules/project-style.yaml
+name: naming-convention
+ttsrTrigger: "function\s+[A-Z]|const\s+[A-Z][a-z]"
+content: |
+  🎨 **命名规范**：
+  
+  本项目使用以下约定：
+  - 函数：camelCase (`getUserName`)
+  - 组件：PascalCase (`UserCard`)
+  - 常量：SCREAMING_SNAKE_CASE (`API_URL`)
+  - 类型：PascalCase (`UserInterface`)
+```
+
+## 规则管理
+
+### 查看规则
+
+```
+> /rules list
+
+已加载的 TTSR 规则：
+  🔍 avoid-deprecated-api   [未触发]
+  🔍 sql-injection-warning  [未触发]
+  ✅ rust-error-handling    [已触发]
+  🔍 react-rerender         [未触发]
+```
+
+### 启用/禁用
+
+```
+> /rules enable security
+> /rules disable performance
+```
+
+### 测试规则
+
+```
+> /rules test sql-injection-warning
+输入测试文本: db.execute("SELECT * FROM " + table)
+
+✓ 规则已触发！
+注入内容:
+  🚨 **安全风险**：检测到可能的 SQL 注入模式...
+```
+
+## 高级特性
+
+### 一次性触发
+
+每个规则在会话中只触发一次：
+
+```
+第 1 次使用 eval → 触发安全警告
+第 2 次使用 eval → 不再触发（避免干扰）
+```
+
+### 条件触发
+
+```yaml
+name: production-warning
+ttsrTrigger: "process\.env\.NODE_ENV\s*===?\s*['\"]production['\"]"
+condition: "{{environment}} !== 'production'"
+content: |
+  ⚠️ 注意：你正在编写生产环境相关的代码，
+  但当前环境不是 production。请确保在部署前充分测试。
+```
+
+### 多规则触发
+
+```yaml
+# .omp/rules/comprehensive.yaml
+rules:
+  - name: security-checks
+    ttsrTrigger: "eval|Function|setTimeout\s*\([^,]+\s*,?\s*\d*\s*\)"
+    priority: high
+    
+  - name: performance-checks
+    ttsrTrigger: "for\s*\(.*;.*;.*\)|while\s*\(true\)"
+    priority: medium
+    
+  - name: style-checks
+    ttsrTrigger: "console\.log"
+    priority: low
+```
+
+## 性能优势
+
+### 基准对比
+
+| 场景 | 传统规则 | TTSR |
+|------|---------|------|
+| 10 条规则，都不触发 | 消耗 2000 tokens | 消耗 0 tokens |
+| 10 条规则，触发 1 条 | 消耗 2000 tokens | 消耗 200 tokens |
+| 50 条规则，都不触发 | 消耗 10000 tokens | 消耗 0 tokens |
+
+### 实际效果
+
+```
+大型项目：
+- 50+ 条规则
+- 每条平均 100 tokens
+- 传统方式：每次请求 +5000 tokens
+- TTSR 方式：按需触发，平均 +200 tokens
+
+节省：96% 的上下文开销！
+```
+
+## 最佳实践
+
+### 1. 精确触发模式
+
+✅ **好**：`\.unwrap\(\)` - 精确匹配
+❌ **差**：`unwrap` - 可能误触发
+
+### 2. 优先级排序
+
+```yaml
+rules:
+  - name: critical-security
+    priority: critical  # 最先检查
+    
+  - name: code-style
+    priority: low       # 最后检查
+```
+
+### 3. 简洁内容
+
+```yaml
+# ✅ 好 - 简洁有效
+content: |
+  使用 `?` 替代 `unwrap()` 进行错误处理。
+
+# ❌ 差 - 过于冗长
+content: |
+  [长篇大论的解释...]
+  [很多不相关的信息...]
+```
+
+### 4. 项目级配置
+
+将规则放在 `.omp/rules/` 目录，随项目共享：
+
+```
+my-project/
+├── src/
+├── .omp/
+│   └── rules/
+│       ├── security.yaml
+│       ├── performance.yaml
+│       └── style.yaml
+└── package.json
+```
+
+## 故障排除
+
+### 问题：规则不触发
+
+**检查模式：**
+
+```
+> /rules test my-rule
+输入: 测试文本
+
+结果: 未触发
+原因: 模式不匹配 "actual_output"
+```
+
+**调整模式：**
+
+```yaml
+# 之前
+ttsrTrigger: "TODO"
+
+# 之后 - 忽略大小写
+ttsrTrigger: "(?i)todo"
+```
+
+### 问题：规则误触发
+
+**添加负向前瞻：**
+
+```yaml
+# 之前 - 在注释中也触发
+ttsrTrigger: "eval\s*\("
+
+# 之后 - 排除注释
+ttsrTrigger: "(?<!//\s*)eval\s*\("
+```
+
+### 问题：规则触发太频繁
+
+**检查是否已触发：**
+
+```yaml
+# 规则只能触发一次，这是设计特性
+# 如果需要重复提醒，考虑使用普通规则而非 TTSR
+```
+
+---
+
+💡 **提示**：TTSR 是 OMP 的独家功能，让你拥有无限规则而不消耗无限上下文！

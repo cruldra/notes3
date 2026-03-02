@@ -1,0 +1,443 @@
+---
+sidebar_position: 15
+title: 模型角色
+---
+
+# 模型角色系统
+
+OMP 的模型角色系统允许为不同任务配置专门的 AI 模型，实现成本与质量的灵活平衡。
+
+## 核心概念
+
+### 什么是模型角色？
+
+```
+不同任务需要不同的模型能力：
+
+快速查询 → 小型模型（快、便宜）
+代码生成 → 中型模型（平衡）
+架构设计 → 大型模型（强、贵）
+
+角色系统让你自动路由到最适合的模型。
+```
+
+### 内置角色
+
+| 角色 | 用途 | 默认模型类型 |
+|------|------|-------------|
+| `default` | 一般任务 | 平衡型 |
+| `smol` | 快速查询 | 轻量型 |
+| `slow` | 高质量输出 | 强大型 |
+| `plan` | 任务规划 | 推理型 |
+| `commit` | 提交信息生成 | 轻量型 |
+
+## 配置角色
+
+### 方式一：环境变量
+
+```bash
+# 设置各角色使用的模型
+export PI_DEFAULT_MODEL=anthropic:claude-3-5-sonnet-20241022
+export PI_SMOL_MODEL=openai:gpt-4o-mini
+export PI_SLOW_MODEL=anthropic:claude-3-opus-20240229
+export PI_PLAN_MODEL=google:gemini-1.5-pro
+export PI_COMMIT_MODEL=openai:gpt-4o-mini
+```
+
+### 方式二：配置文件
+
+```json
+// ~/.omp/settings.json
+{
+  "models": {
+    "roles": {
+      "default": {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022",
+        "temperature": 0.7
+      },
+      "smol": {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+        "temperature": 0.5
+      },
+      "slow": {
+        "provider": "anthropic",
+        "model": "claude-3-opus-20240229",
+        "temperature": 0.3
+      },
+      "plan": {
+        "provider": "google",
+        "model": "gemini-1.5-pro",
+        "temperature": 0.2
+      },
+      "commit": {
+        "provider": "openai",
+        "model": "gpt-4o-mini"
+      }
+    }
+  }
+}
+```
+
+### 方式三：交互式配置
+
+```
+> /models
+
+模型角色配置：
+
+当前配置：
+  default → anthropic/claude-3-5-sonnet
+  smol    → openai/gpt-4o-mini
+  slow    → anthropic/claude-3-opus
+  plan    → google/gemini-1.5-pro
+  commit  → openai/gpt-4o-mini
+
+[修改角色] [测试模型] [查看用量]
+
+> 修改 slow 角色
+选择提供商:
+  [1] Anthropic
+  [2] OpenAI
+  [3] Google
+  [4] OpenRouter
+
+选择: 1
+
+选择模型:
+  [1] claude-3-opus-20240229
+  [2] claude-3-5-sonnet-20241022
+  
+选择: 1
+
+✓ slow 角色已更新
+```
+
+## 使用角色
+
+### 命令行参数
+
+```bash
+# 使用 smol 模式（快速/便宜）
+omp --smol
+
+# 使用 slow 模式（高质量）
+omp --slow
+
+# 使用 plan 模式（规划任务）
+omp --plan
+```
+
+### 会话中切换
+
+```
+> /models use smol
+切换到 smol 角色 (gpt-4o-mini)
+
+> /models use default
+切换回 default 角色 (claude-3-5-sonnet)
+```
+
+### 子代理中指定
+
+```
+> 创建子代理：
+  类型: explore
+  模型: pi/smol  # 使用 smol 角色
+  任务: 快速扫描项目结构
+
+> 创建子代理：
+  类型: reviewer
+  模型: pi/slow  # 使用 slow 角色
+  任务: 深度代码审查
+```
+
+## 自动角色选择
+
+### 智能路由
+
+OMP 根据任务类型自动选择角色：
+
+```
+用户: "你好"
+→ 路由到 default
+
+用户: "快速总结一下这个文件"
+→ 路由到 smol
+
+用户: "设计一个微服务架构"
+→ 路由到 slow
+
+用户: "/commit"
+→ 路由到 commit
+
+用户: "/plan 实现用户系统"
+→ 路由到 plan
+```
+
+### 自定义路由规则
+
+```json
+// ~/.omp/settings.json
+{
+  "models": {
+    "routing": {
+      "rules": [
+        {
+          "pattern": "^/(commit|fix|typo)",
+          "role": "smol"
+        },
+        {
+          "pattern": "(架构|设计|重构)",
+          "role": "slow"
+        },
+        {
+          "pattern": "^/plan",
+          "role": "plan"
+        }
+      ]
+    }
+  }
+}
+```
+
+## 支持的提供商
+
+### Anthropic
+
+```json
+{
+  "provider": "anthropic",
+  "model": "claude-3-5-sonnet-20241022",
+  "apiKey": "${ANTHROPIC_API_KEY}"
+}
+```
+
+可用模型：
+- `claude-3-opus-20240229` - 最强能力
+- `claude-3-5-sonnet-20241022` - 平衡选择
+- `claude-3-5-haiku-20241022` - 快速经济
+
+### OpenAI
+
+```json
+{
+  "provider": "openai",
+  "model": "gpt-4o",
+  "apiKey": "${OPENAI_API_KEY}"
+}
+```
+
+可用模型：
+- `gpt-4o` - 旗舰模型
+- `gpt-4o-mini` - 经济高效
+- `o1-preview` - 推理专用
+
+### Google
+
+```json
+{
+  "provider": "google",
+  "model": "gemini-1.5-pro",
+  "apiKey": "${GOOGLE_API_KEY}"
+}
+```
+
+可用模型：
+- `gemini-1.5-pro` - 长上下文
+- `gemini-1.5-flash` - 快速响应
+
+### OpenRouter
+
+```json
+{
+  "provider": "openrouter",
+  "model": "anthropic/claude-3.5-sonnet",
+  "apiKey": "${OPENROUTER_API_KEY}"
+}
+```
+
+访问多个提供商的模型。
+
+### Cursor
+
+```json
+{
+  "provider": "cursor",
+  "auth": "oauth"  // 浏览器 OAuth 登录
+}
+```
+
+使用 Cursor Pro 订阅。
+
+## 高级配置
+
+### 采样参数
+
+```json
+{
+  "models": {
+    "roles": {
+      "default": {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022",
+        "temperature": 0.7,
+        "topP": 0.9,
+        "topK": 40,
+        "presencePenalty": 0.0,
+        "repetitionPenalty": 1.0
+      }
+    }
+  }
+}
+```
+
+### 扩展推理 (Extended Thinking)
+
+Anthropic 模型的深度推理模式：
+
+```json
+{
+  "models": {
+    "roles": {
+      "slow": {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022",
+        "extendedThinking": {
+          "enabled": true,
+          "budgetTokens": 16000
+        }
+      }
+    }
+  }
+}
+```
+
+### 多凭证支持
+
+```json
+{
+  "models": {
+    "credentials": [
+      {
+        "provider": "openai",
+        "apiKey": "sk-...-key-1"
+      },
+      {
+        "provider": "openai",
+        "apiKey": "sk-...-key-2"
+      }
+    ],
+    "distribution": "round-robin"  // 轮询分配
+  }
+}
+```
+
+## 成本优化
+
+### 角色成本对比
+
+| 角色 | 模型示例 | 相对成本 | 适用场景 |
+|------|---------|---------|---------|
+| smol | gpt-4o-mini | 1x | 简单查询、格式化 |
+| default | claude-3-5-sonnet | 5x | 日常开发 |
+| slow | claude-3-opus | 20x | 架构设计、复杂重构 |
+| plan | gemini-1.5-pro | 3x | 任务规划 |
+
+### 自动降级
+
+```json
+{
+  "models": {
+    "fallback": {
+      "enabled": true,
+      "onRateLimit": true,
+      "onError": true,
+      "order": ["smol", "default"]
+    }
+  }
+}
+```
+
+## 使用统计
+
+### 查看用量
+
+```
+> /models stats
+
+今日用量：
+  smol    : 50 请求, $0.05
+  default : 30 请求, $0.75
+  slow    : 5 请求,  $1.00
+  ─────────────────────
+  总计    : 85 请求, $1.80
+
+本周趋势：
+  [图表显示每日用量]
+```
+
+### 详细 CLI
+
+```bash
+omp stats
+
+本地可观察性仪表板：
+├── 请求统计
+│   ├── 总数: 1234
+│   ├── 成功: 1200
+│   └── 失败: 34
+├── 成本分析
+│   ├── 今日: $2.50
+│   ├── 本周: $15.30
+│   └── 本月: $58.20
+├── Token 使用
+│   ├── 输入: 1.2M
+│   └── 输出: 0.8M
+└── 缓存率: 25%
+```
+
+## 故障排除
+
+### 问题：模型无响应
+
+**检查：**
+
+```
+> /models test default
+
+测试 default 角色...
+❌ 失败: API key 无效
+
+检查环境变量：
+  ANTHROPIC_API_KEY: 未设置
+```
+
+### 问题：角色切换无效
+
+**检查配置优先级：**
+
+```
+配置加载顺序（后加载覆盖前者）：
+1. 默认配置
+2. ~/.omp/settings.json
+3. .omp/config.json (项目级)
+4. 环境变量
+5. 命令行参数
+```
+
+### 问题：成本过高
+
+**优化建议：**
+
+```
+1. 更多使用 smol 角色
+2. 启用缓存
+3. 设置用量警报
+4. 定期审查 stats
+```
+
+---
+
+💡 **提示**：合理使用角色可以在保持质量的同时显著降低成本！

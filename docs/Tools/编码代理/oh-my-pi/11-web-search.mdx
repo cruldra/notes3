@@ -1,0 +1,378 @@
+---
+sidebar_position: 11
+title: 网络搜索
+---
+
+# 网络搜索工具
+
+OMP 提供多提供商搜索和智能内容提取，支持代码仓库、包管理器、安全数据库等多种专业来源。
+
+## 搜索提供商
+
+### 支持的提供商
+
+| 提供商 | 特点 | 配置 |
+|--------|------|------|
+| `auto` | 自动选择最佳提供商 | 默认 |
+| `exa` | 高质量内容提取 | `EXA_API_KEY` |
+| `brave` | 隐私保护搜索 | `BRAVE_API_KEY` |
+| `jina` | AI 摘要 | 免费 |
+| `kimi` | 中文优化 | `KIMI_API_KEY` |
+| `zai` | 快速搜索 | `ZAI_API_KEY` |
+| `anthropic` | Claude 集成 | 内置 |
+| `perplexity` | 引用来源 | `PERPLEXITY_API_KEY` |
+| `gemini` | Google 搜索 | `GOOGLE_API_KEY` |
+| `codex` | 代码专用 | OpenAI |
+| `synthetic` | 模拟搜索（离线） | 无需配置 |
+
+### 切换提供商
+
+```
+> /search provider brave
+已切换到 Brave Search
+
+> 搜索 "React 18 新特性"
+```
+
+## 基本搜索
+
+### 简单查询
+
+```
+> 搜索 "Python asyncio 最佳实践"
+
+OMP:
+使用 auto 提供商搜索...
+找到 8 个结果：
+
+1. Python Asyncio: The Complete Guide
+   https://realpython.com/async-io-python/
+   
+2. Async IO in Python: A Complete Walkthrough
+   https://superfastpython.com/asyncio...
+
+[摘要内容...]
+```
+
+### 高级搜索
+
+```
+> 搜索：
+  查询: "Rust error handling"
+  提供商: perplexity
+  结果数: 5
+  时间范围: 2024
+
+OMP 使用指定参数搜索...
+```
+
+## 专业搜索
+
+### 代码仓库
+
+```
+> 搜索 GitHub: "fastapi authentication middleware"
+
+结果：
+1. tiangolo/fastapi
+   examples/security/oauth2.py
+   
+2. encode/starlette
+   starlette/middleware/authentication.py
+```
+
+### 包管理器
+
+```
+> 搜索 npm: "date formatting library"
+> 搜索 PyPI: "machine learning data validation"
+> 搜索 crates.io: "http client async"
+
+OMP:
+📦 date-fns (npm)
+   下载量: 20M+/周
+   描述: Modern JavaScript date utility library
+
+📦 pydantic (PyPI)
+   下载量: 50M+/月
+   描述: Data validation using Python type hints
+
+📦 reqwest (crates.io)
+   下载量: 15M+
+   描述: ergonomic HTTP client for Rust
+```
+
+### 安全数据库
+
+```
+> 搜索 CVE: "log4j"
+
+结果：
+🔴 CVE-2021-44228 (Critical)
+   Log4j Remote Code Execution
+   CVSS: 10.0
+   
+🟠 CVE-2021-45046 (High)
+   Denial of Service
+   CVSS: 9.0
+```
+
+```
+> 搜索 OSV: "lodash"
+
+结果：
+🟡 GHSA-29mw-pqg5-j5qm
+   Prototype Pollution in lodash
+   影响版本: < 4.17.19
+   修复版本: 4.17.19
+```
+
+## 内容提取
+
+### 网页抓取
+
+```
+> 抓取 https://example.com/docs/api
+
+OMP:
+提取主要内容...
+移除：
+- 导航栏
+- 广告
+- 页脚
+
+保留：
+# API 文档
+
+## 认证
+所有 API 请求需要在 Header 中包含...
+```
+
+### 阅读模式
+
+```
+> 阅读 https://example.com/blog/article
+
+使用 Readability 算法提取：
+- 标题
+- 作者
+- 发布时间
+- 正文内容
+- 主要图片
+```
+
+### 代码片段提取
+
+```
+> 提取 https://github.com/user/repo/blob/main/example.py 的代码
+
+```python
+def main():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    main()
+```
+```
+
+## 特殊来源
+
+### 学术资源
+
+```
+> 搜索 arXiv: "transformer architecture"
+
+结果：
+📄 Attention Is All You Need
+   arXiv:1706.03762
+   引用: 50000+
+   
+📄 BERT: Pre-training of Deep Bidirectional Transformers
+   arXiv:1810.04805
+   引用: 30000+
+```
+
+### 技术文档
+
+```
+> 搜索 docs: "docker compose networking"
+
+结果：
+📚 Docker Documentation
+   Networking in Compose
+   https://docs.docker.com/compose/networking/
+   
+📚 Compose Specification
+   Network configuration
+   https://github.com/compose-spec/compose-spec/blob/master/spec.md#networks
+```
+
+### 论坛和社区
+
+```
+> 搜索 StackOverflow: "javascript promise race condition"
+> 搜索 Reddit: "best rust web framework 2024"
+> 搜索 HN: "show hn open source"
+```
+
+## 搜索配置
+
+### 默认设置
+
+```json
+// ~/.omp/settings.json
+{
+  "search": {
+    "defaultProvider": "auto",
+    "maxResults": 8,
+    "timeout": 30000,
+    "safeSearch": true,
+    "includeImages": false
+  }
+}
+```
+
+### 提供商配置
+
+```json
+{
+  "search": {
+    "providers": {
+      "exa": {
+        "apiKey": "${EXA_API_KEY}",
+        "highlights": true,
+        "includeDomains": ["github.com", "stackoverflow.com"]
+      },
+      "brave": {
+        "apiKey": "${BRAVE_API_KEY}",
+        "extraSnippets": true
+      },
+      "perplexity": {
+        "apiKey": "${PERPLEXITY_API_KEY}",
+        "model": "sonar-pro"
+      }
+    }
+  }
+}
+```
+
+### 环境变量
+
+```bash
+export EXA_API_KEY="your-exa-key"
+export BRAVE_API_KEY="your-brave-key"
+export PERPLEXITY_API_KEY="your-perplexity-key"
+export KIMI_API_KEY="your-kimi-key"
+```
+
+## 使用示例
+
+### 示例 1：技术调研
+
+```
+> 搜索并比较：
+  1. "gRPC vs REST performance 2024"
+  2. "GraphQL vs REST when to use"
+  
+> 抓取前 3 个结果的详细内容
+> 总结关键差异和适用场景
+```
+
+### 示例 2：问题解决
+
+```
+> 搜索 StackOverflow: "python pandas merge multiple dataframes"
+> 抓取最高票答案
+> 根据我的数据结构调整代码
+```
+
+### 示例 3：安全审计
+
+```
+> 搜索 OSV: "package-lock.json 中的依赖"
+> 搜索 CVE: "最近 30 天的 Critical 漏洞"
+> 检查项目依赖的安全状态
+```
+
+### 示例 4：学习资源
+
+```
+> 搜索 "best resources to learn rust"
+  时间: 2024
+  类型: 教程
+  
+> 抓取推荐的书籍和课程页面
+> 整理学习计划
+```
+
+## 故障排除
+
+### 问题：搜索结果质量差
+
+**切换提供商：**
+
+```
+> /search provider perplexity
+> 重新搜索
+```
+
+**优化查询：**
+
+```
+❌ "python help"
+✅ "Python asyncio context manager best practices 2024"
+```
+
+### 问题：API 限制
+
+**检查配额：**
+
+```
+> /search status
+
+提供商状态：
+- exa: 98/1000 剩余
+- brave: 无限
+- jina: 免费
+```
+
+**使用免费提供商：**
+
+```json
+{
+  "search": {
+    "defaultProvider": "jina"  // 免费
+  }
+}
+```
+
+### 问题：内容提取失败
+
+**使用备用方法：**
+
+```
+> 使用 browser 工具打开页面
+> 提取页面内容
+```
+
+## 最佳实践
+
+1. **明确查询**：具体的问题得到更好的答案
+2. **多提供商对比**：不同提供商有不同优势
+3. **验证来源**：重要信息交叉验证
+4. **缓存结果**：常用搜索启用缓存
+
+```json
+{
+  "search": {
+    "cache": {
+      "enabled": true,
+      "ttl": 3600  // 1小时
+    }
+  }
+}
+```
+
+---
+
+💡 **提示**：搜索工具与 Python 工具结合，可以自动化复杂的信息收集和分析工作流！

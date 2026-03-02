@@ -1,0 +1,386 @@
+---
+sidebar_position: 7
+title: 子代理系统 (Task Tool)
+---
+
+# 子代理系统 (Task Tool)
+
+OMP 的子代理系统允许你并行执行多个任务，每个任务由专门的 AI 代理处理，支持实时流式输出和完整的任务生命周期管理。
+
+## 核心概念
+
+### 什么是子代理？
+
+子代理是 OMP 创建的独立 AI 会话，用于并行处理特定任务：
+
+```
+主会话                    子代理 A
+├─ 发送任务请求    ───────→ 执行任务
+├─ 继续其他工作   ┌──────── 流式输出
+│                 │
+└─ 收集结果      ←──────── 任务完成
+
+                子代理 B
+             ─────────→ 并行执行任务
+```
+
+### 内置代理类型
+
+| 代理类型 | 用途 | 模型建议 |
+|----------|------|----------|
+| `explore` | 代码库探索 | pi/smol（快速） |
+| `plan` | 任务规划 | pi/plan（规划模型） |
+| `designer` | UI/UX 设计 | 默认模型 |
+| `reviewer` | 代码审查 | pi/slow（高质量） |
+| `task` | 通用任务 | 默认模型 |
+| `quick_task` | 快速任务 | pi/smol（低成本） |
+
+## 基本用法
+
+### 创建子代理任务
+
+```
+> 使用子代理分析项目架构
+
+OMP 创建子代理：
+- 代理 ID: task_abc123
+- 类型: explore
+- 任务: 分析项目架构
+- 状态: running
+
+[实时输出]
+探索 src/ 目录...
+发现 5 个主要模块...
+分析依赖关系...
+
+✓ 任务完成
+```
+
+### 并行执行任务
+
+```
+> 并行执行：
+  1. 分析前端代码结构
+  2. 检查后端 API 设计
+  3. 审查测试覆盖率
+
+OMP 创建 3 个子代理同时工作：
+├─ [A] frontend-explorer  运行中...
+├─ [B] backend-explorer   运行中...
+└─ [C] test-reviewer      运行中...
+```
+
+## 高级功能
+
+### 后台模式
+
+创建后台任务，主会话继续工作：
+
+```
+> 在后台重构 utils 目录
+
+OMP: 
+✓ 后台任务已创建 (task_bg_001)
+✓ 使用隔离环境
+
+你可以继续其他工作，稍后检查结果。
+
+> 检查后台任务状态
+任务 task_bg_001: 运行中 (67%)
+已完成：文件分析、依赖检查
+进行中：代码重构
+
+> 等待 task_bg_001
+[等待任务完成...]
+✓ 任务完成，结果已加载
+```
+
+### 隔离环境
+
+子代理可以在隔离环境中运行：
+
+```json
+{
+  "isolated": true,
+  "backend": "git-worktree",  // 或 "fuse-overlay"
+  "mergeStrategy": "patch"    // 或 "branch"
+}
+```
+
+隔离模式：
+- **Git Worktree**：基于 git worktree 的隔离
+- **FUSE Overlay**：使用 FUSE 文件系统的轻量级隔离
+
+### 并发控制
+
+配置最大并发数：
+
+```json
+// ~/.omp/settings.json
+{
+  "tasks": {
+    "maxConcurrency": 10,
+    "maxBackgroundJobs": 100,
+    "defaultTimeout": 300000  // 5分钟
+  }
+}
+```
+
+### 模型覆盖
+
+为特定代理指定模型：
+
+```
+> 创建子代理：
+  类型: explore
+  模型: pi/smol
+  任务: 快速扫描代码库
+
+> 创建子代理：
+  类型: reviewer
+  模型: pi/slow
+  任务: 深度代码审查
+```
+
+## Agent Control Center
+
+### 管理子代理
+
+使用 `/agents` 命令打开管理面板：
+
+```
+┌─ Agent Control Center ───────────────────────┐
+│                                              │
+│ 活跃代理:                                    │
+│ ○ explore-001    运行中    2m 34s           │
+│ ○ plan-002       运行中    1m 12s           │
+│                                              │
+│ 最近完成:                                    │
+│ ✓ task-003       已完成    5m ago           │
+│ ✓ review-004     已完成    12m ago          │
+│                                              │
+│ [创建新代理] [查看日志] [清理已完成]        │
+└──────────────────────────────────────────────┘
+```
+
+### 自定义代理
+
+创建自定义代理定义：
+
+```typescript
+// ~/.omp/agent/agents/my-agent.ts
+export default {
+  name: "security-auditor",
+  description: "专门检查安全问题的代理",
+  systemPrompt: `
+    你是一个安全审计专家。审查代码时重点关注：
+    1. SQL 注入风险
+    2. XSS 漏洞
+    3. 不安全的反序列化
+    4. 敏感信息泄露
+    
+    发现问题时，提供：
+    - 严重级别（Critical/High/Medium/Low）
+    - 问题描述
+    - 修复建议
+    - 参考链接
+  `,
+  model: "pi/slow",
+  tools: ["read", "grep", "ast_grep"]
+};
+```
+
+在 OMP 中使用：
+
+```
+> /agents create security-auditor
+> 使用 security-auditor 审查 src/auth.ts
+```
+
+## 资源访问
+
+### 完整输出访问
+
+当预览被截断时，访问完整输出：
+
+```
+> 显示任务 task_001 的完整输出
+
+OMP: 加载 agent://task_001/full_output
+[完整输出内容...]
+```
+
+### 流式产物
+
+任务创建的文件实时可见：
+
+```
+子代理 task_002 正在工作...
+[created] docs/analysis.md
+[updated] src/refactored.ts
+[created] tests/new.test.js
+```
+
+## 使用场景
+
+### 场景 1：大型代码库探索
+
+```
+> 并行探索：
+  1. 使用 explore 代理分析 src/frontend 目录
+  2. 使用 explore 代理分析 src/backend 目录
+  3. 使用 explore 代理分析 tests/ 目录
+
+OMP 同时启动 3 个探索代理...
+
+结果汇总：
+├─ Frontend: React + TypeScript, 42 组件
+├─ Backend: Express + MongoDB, 15 路由
+└─ Tests: Jest, 78% 覆盖率
+```
+
+### 场景 2：代码审查分工
+
+```
+> 启动并行审查：
+  - reviewer 代理检查架构问题
+  - reviewer 代理检查性能问题
+  - reviewer 代理检查代码风格
+
+所有代理同时工作，结果自动汇总。
+```
+
+### 场景 3：多方案实验
+
+```
+> 为性能优化创建分支会话：
+
+方案 A（分支 session-a）：
+  - 使用缓存策略
+  
+方案 B（分支 session-b）：
+  - 使用懒加载
+
+并行运行基准测试，比较结果。
+```
+
+## 最佳实践
+
+### 1. 任务粒度
+
+✅ **好**：每个子代理负责一个独立模块
+❌ **差**：一个子代理处理整个项目
+
+### 2. 模型选择
+
+- 探索任务 → `pi/smol`（快速、低成本）
+- 关键审查 → `pi/slow`（高质量）
+- 规划任务 → `pi/plan`（专业规划）
+
+### 3. 结果整合
+
+```
+> 汇总以下代理的结果：
+  - task_explore_frontend
+  - task_explore_backend
+  
+OMP 读取所有结果并生成综合报告。
+```
+
+### 4. 错误处理
+
+```
+> 并行任务，如果失败则重试：
+
+{
+  "retries": 3,
+  "retryDelay": 5000,
+  "onFailure": "continue"  // 或 "abort"
+}
+```
+
+## 故障排除
+
+### 问题：子代理卡住
+
+**诊断：**
+
+```
+> /agents status
+
+task_001: 运行中 (已运行 10m)
+Last output: 5m ago
+[可能卡住]
+
+> /agents kill task_001
+> /agents restart task_001
+```
+
+### 问题：内存不足
+
+**解决：**
+
+```json
+{
+  "tasks": {
+    "maxConcurrency": 3,  // 降低并发
+    "memoryLimit": "2GB"  // 设置内存限制
+  }
+}
+```
+
+### 问题：隔离环境失败
+
+**切换后端：**
+
+```json
+{
+  "isolation": {
+    "backend": "fuse-overlay",  // 尝试 FUSE
+    "fallback": "none"          // 失败时禁用隔离
+  }
+}
+```
+
+## API 参考
+
+### 任务配置选项
+
+```typescript
+interface TaskConfig {
+  // 基本配置
+  type: "explore" | "plan" | "designer" | "reviewer" | "task" | "quick_task";
+  prompt: string;
+  
+  // 执行配置
+  model?: string;           // 覆盖默认模型
+  isolated?: boolean;       // 启用隔离
+  background?: boolean;     // 后台运行
+  
+  // 资源限制
+  timeout?: number;         // 超时时间（毫秒）
+  maxTokens?: number;       // 最大 token 数
+  
+  // 重试配置
+  retries?: number;         // 重试次数
+  retryDelay?: number;      // 重试延迟
+  
+  // 工具白名单
+  tools?: string[];         // 允许的工具列表
+}
+```
+
+### 等待工具
+
+阻塞直到任务完成：
+
+```
+> 等待所有后台任务完成
+
+或指定任务：
+> 等待 task_001, task_002
+```
+
+---
+
+💡 **提示**：在 `/agents` 面板中可以直观管理所有子代理！

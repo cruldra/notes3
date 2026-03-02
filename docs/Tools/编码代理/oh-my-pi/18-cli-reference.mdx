@@ -1,0 +1,430 @@
+---
+sidebar_position: 18
+title: CLI 参考
+---
+
+# CLI 参考
+
+完整的命令行接口文档，包含所有 OMP 命令和选项。
+
+## 全局选项
+
+```
+omp [options] [command]
+
+选项:
+  -v, --version              显示版本号
+  -h, --help                 显示帮助信息
+  
+  --smol                     使用 smol 角色（快速/便宜）
+  --slow                     使用 slow 角色（高质量）
+  --plan                     使用 plan 角色（规划任务）
+  
+  --theme <name>             设置主题
+  --headless                 无头模式
+  --config <path>            指定配置文件
+  
+  -d, --directory <path>     设置工作目录
+  -c, --continue             继续上次会话
+  -r, --resume <session>     恢复指定会话
+```
+
+## 主命令
+
+### omp (启动)
+
+启动 OMP 交互式会话。
+
+```bash
+# 基本启动
+omp
+
+# 指定目录启动
+omp -d ./my-project
+
+# 使用特定角色启动
+omp --slow
+
+# 恢复会话
+omp -r my-session
+
+# 继续上次会话
+omp -c
+```
+
+### omp commit
+
+AI 辅助的 Git 提交。
+
+```bash
+omp commit [options]
+
+选项:
+  --push                     提交后推送到远程
+  --dry-run                  仅预览，不实际提交
+  --no-changelog            跳过 changelog 生成
+  --no-split                禁用自动拆分提交
+  --legacy                  使用传统模式
+  --context <text>         添加上下文信息
+```
+
+示例：
+
+```bash
+# 基本提交
+omp commit
+
+# 提交并推送
+omp commit --push
+
+# 预览变更
+omp commit --dry-run
+
+# 带上下文提交
+omp commit --context "修复了生产环境的内存泄漏"
+```
+
+### omp config
+
+管理 OMP 配置。
+
+```bash
+omp config <action> [args]
+
+操作:
+  list                       列出所有配置
+  get <key>                 获取配置值
+  set <key> <value>         设置配置值
+  reset [key]               重置配置（或特定键）
+  path                      显示配置文件路径
+  validate                  验证配置
+  dump                      导出完整配置
+```
+
+示例：
+
+```bash
+# 列出配置
+omp config list
+
+# 获取主题配置
+omp config get display.theme
+
+# 设置主题
+omp config set display.theme dracula
+
+# 验证配置
+omp config validate
+```
+
+### omp doctor
+
+运行诊断检查。
+
+```bash
+omp doctor [options]
+
+选项:
+  --fix                      尝试自动修复问题
+  --verbose                  显示详细信息
+```
+
+检查项目：
+- Node.js/Bun 版本
+- 原生模块加载
+- API 密钥配置
+- LSP 服务器状态
+- 可选依赖
+
+### omp plugin
+
+管理插件。
+
+```bash
+omp plugin <action> [args]
+
+操作:
+  list                       列出已安装插件
+  install <name|url|path>   安装插件
+  uninstall <name>          卸载插件
+  enable <name>             启用插件
+  disable <name>            禁用插件
+  update [name]             更新插件（或全部）
+  configure <name>          配置插件
+  doctor                    诊断插件问题
+```
+
+示例：
+
+```bash
+# 列出插件
+omp plugin list
+
+# 从 npm 安装
+omp plugin install @oh-my-pi/plugin-example
+
+# 从 GitHub 安装
+omp plugin install https://github.com/user/omp-plugin
+
+# 更新所有插件
+omp plugin update
+```
+
+### omp setup
+
+安装可选依赖。
+
+```bash
+omp setup <component>
+
+组件:
+  python                     Python 支持（IPython 内核）
+  browser                    浏览器自动化（Puppeteer）
+  lsp-<lang>                 特定语言的 LSP 服务器
+```
+
+示例：
+
+```bash
+# 安装 Python 支持
+omp setup python
+
+# 安装浏览器支持
+omp setup browser
+
+# 安装 TypeScript LSP
+omp setup lsp-typescript
+```
+
+### omp stats
+
+查看使用统计。
+
+```bash
+omp stats [options]
+
+选项:
+  --today                    仅今日统计
+  --week                     本周统计
+  --month                    本月统计
+  --export <format>         导出格式 (json, csv)
+```
+
+输出：
+
+```
+┌─ 使用统计 ──────────────────────────────────┐
+│                                             │
+│ 今日                                       │
+│   请求数: 45                               │
+│   Token: 125K 输入 / 45K 输出              │
+│   成本: $2.34                              │
+│   缓存率: 28%                              │
+│                                             │
+│ 本周                                       │
+│   请求数: 312                              │
+│   总成本: $18.92                           │
+│                                             │
+│ 模型分布                                   │
+│   claude-3-5-sonnet: 60%                   │
+│   gpt-4o-mini: 30%                         │
+│   claude-3-opus: 10%                       │
+└─────────────────────────────────────────────┘
+```
+
+### omp ssh
+
+管理 SSH 主机。
+
+```bash
+omp ssh <action> [args]
+
+操作:
+  list                       列出配置的主机
+  add                        交互式添加主机
+  remove <name>             删除主机
+  connect <name>             连接到主机
+  disconnect <name>          断开连接
+  mount <host:path> <local>  挂载远程目录
+  unmount <local>            卸载目录
+```
+
+### omp mcp
+
+管理 MCP 服务器。
+
+```bash
+omp mcp <action> [args]
+
+操作:
+  list                       列出 MCP 服务器
+  add <name>                 添加服务器
+  remove <name>              删除服务器
+  enable <name>              启用服务器
+  disable <name>             禁用服务器
+  test <name>                测试连接
+  logs <name>                查看日志
+```
+
+## 会话命令
+
+### 会话管理
+
+```
+在 OMP 会话中使用:
+
+/save [name]                保存会话
+/load <name>                加载会话
+/list                       列出会话
+/delete <name>              删除会话
+/export <format>           导出会话 (json, markdown)
+/branch <name>              创建会话分支
+```
+
+### 模型切换
+
+```
+/models                     打开模型配置
+/models list                列出角色
+/models use <role>          切换到角色
+/models stats               查看使用统计
+```
+
+### 工具命令
+
+```
+/python                     进入 Python 模式
+/browser                    浏览器控制面板
+  /browser headless <bool>  设置无头模式
+  /browser screenshot        截图
+/ssh                        SSH 控制面板
+/agents                     子代理管理
+/todo                       任务列表面板
+```
+
+### 信息命令
+
+```
+/help                       显示帮助
+/theme                      切换主题
+/config                     配置面板
+/status                     系统状态
+/whoami                     显示当前配置
+```
+
+## 环境变量
+
+### API 密钥
+
+```bash
+OPENAI_API_KEY              OpenAI API 密钥
+OPENAI_ORG_ID               OpenAI 组织 ID
+ANTHROPIC_API_KEY           Anthropic API 密钥
+GOOGLE_API_KEY              Google API 密钥
+OPENROUTER_API_KEY          OpenRouter API 密钥
+```
+
+### 模型配置
+
+```bash
+PI_DEFAULT_MODEL            默认角色模型
+PI_SMOL_MODEL               Smol 角色模型
+PI_SLOW_MODEL               Slow 角色模型
+PI_PLAN_MODEL               Plan 角色模型
+PI_COMMIT_MODEL             Commit 角色模型
+```
+
+### 功能开关
+
+```bash
+OMP_THEME                   默认主题
+OMP_HEADLESS                默认无头模式
+OMP_LOG_LEVEL               日志级别 (debug, info, warn, error)
+OMP_CONFIG_PATH             配置文件路径
+```
+
+## 退出代码
+
+| 代码 | 含义 |
+|------|------|
+| 0 | 成功 |
+| 1 | 一般错误 |
+| 2 | 配置错误 |
+| 3 | API 错误 |
+| 4 | 网络错误 |
+| 5 | 权限错误 |
+| 130 | 用户中断 (Ctrl+C) |
+
+## 快捷方式
+
+### Shell 别名
+
+```bash
+# ~/.bashrc 或 ~/.zshrc
+
+# 快速启动
+alias op='omp'
+
+# 特定模式
+alias op-slow='omp --slow'
+alias op-smol='omp --smol'
+
+# 提交快捷
+alias op-c='omp commit'
+alias op-cp='omp commit --push'
+
+# 常用目录
+alias op-proj='omp -d ~/projects/current'
+```
+
+### 自动补全
+
+```bash
+# Bash
+omp completions bash > /usr/local/etc/bash_completion.d/omp
+
+# Zsh
+omp completions zsh > "${fpath[1]}/_omp"
+
+# Fish
+omp completions fish > ~/.config/fish/completions/omp.fish
+```
+
+## 故障排除
+
+### 调试模式
+
+```bash
+# 启用调试日志
+OMP_LOG_LEVEL=debug omp
+
+# 或
+omp --verbose
+```
+
+### 重置状态
+
+```bash
+# 清除会话缓存
+rm -rf ~/.omp/sessions/
+
+# 重置配置
+omp config reset --all
+
+# 完全重置
+rm -rf ~/.omp/
+```
+
+### 性能分析
+
+```bash
+# 启用性能分析
+omp --profile
+
+# 查看火焰图
+open ~/.omp/profiles/latest.svg
+```
+
+---
+
+💡 **提示**：使用 `omp <command> --help` 查看具体命令的详细帮助！

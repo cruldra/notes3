@@ -1,0 +1,563 @@
+---
+sidebar_position: 17
+title: 配置详解
+---
+
+# 配置详解
+
+OMP 提供丰富的配置选项，让你根据项目需求和个人偏好定制体验。
+
+## 配置文件位置
+
+### 用户级配置
+
+```
+~/.omp/
+├── settings.json          # 主配置文件
+├── config.json            # 别名
+├── lsp.json              # LSP 配置
+├── mcp.json              # MCP 服务器配置
+├── ssh.json              # SSH 主机配置
+├── agent/
+│   ├── commands/         # 自定义命令
+│   ├── agents/           # 自定义代理
+│   ├── modules/          # Python 模块
+│   └── skills/           # 自定义技能
+└── logs/                 # 日志文件
+```
+
+### 项目级配置
+
+```
+project/
+├── .omp/
+│   ├── config.json       # 项目配置
+│   ├── lsp.json          # 项目 LSP 配置
+│   ├── mcp.json          # 项目 MCP 配置
+│   ├── ssh.json          # 项目 SSH 配置
+│   ├── rules/            # TTSR 规则
+│   ├── commands/         # 项目命令
+│   └── agents/           # 项目代理
+└── src/
+```
+
+## 主配置文件
+
+### 完整配置示例
+
+```json
+{
+  // ========== AI 模型配置 ==========
+  "models": {
+    "roles": {
+      "default": {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022",
+        "temperature": 0.7,
+        "maxTokens": 4096
+      },
+      "smol": {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+        "temperature": 0.5
+      },
+      "slow": {
+        "provider": "anthropic",
+        "model": "claude-3-opus-20240229",
+        "temperature": 0.3
+      },
+      "plan": {
+        "provider": "google",
+        "model": "gemini-1.5-pro"
+      }
+    },
+    "fallback": {
+      "enabled": true,
+      "onRateLimit": true,
+      "order": ["smol", "default"]
+    },
+    "credentials": [
+      {
+        "provider": "openai",
+        "apiKey": "${OPENAI_API_KEY}"
+      }
+    ]
+  },
+
+  // ========== 工具配置 ==========
+  "tools": {
+    "enabled": [
+      "read", "write", "edit", "bash", "grep",
+      "python", "browser", "ssh", "lsp"
+    ],
+    "disabled": ["dangerous_command"]
+  },
+
+  "python": {
+    "sharedGateway": true,
+    "gatewayPort": 5678,
+    "timeout": 300000
+  },
+
+  "browser": {
+    "headless": true,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "stealth": true,
+    "navigationTimeout": 30000
+  },
+
+  "ssh": {
+    "connectionTimeout": 10000,
+    "keepAliveInterval": 60000
+  },
+
+  // ========== LSP 配置 ==========
+  "lsp": {
+    "enabled": true,
+    "autoStart": true,
+    "diagnosticsOnEdit": true,
+    "diagnosticsOnSave": true,
+    "formatOnWrite": true,
+    "lazyLoad": true,
+    "diagnosticsDebounce": 500
+  },
+
+  // ========== 任务配置 ==========
+  "tasks": {
+    "maxConcurrency": 10,
+    "maxBackgroundJobs": 100,
+    "defaultTimeout": 300000,
+    "isolation": {
+      "backend": "git-worktree",
+      "fallback": "none"
+    }
+  },
+
+  // ========== Todo 配置 ==========
+  "todo": {
+    "reminders": true,
+    "reminderThreshold": 3,
+    "autoSave": true,
+    "showPanel": true,
+    "panelPosition": "top"
+  },
+
+  // ========== 搜索配置 ==========
+  "search": {
+    "defaultProvider": "auto",
+    "maxResults": 8,
+    "timeout": 30000,
+    "cache": {
+      "enabled": true,
+      "ttl": 3600
+    }
+  },
+
+  // ========== 提交配置 ==========
+  "commit": {
+    "autoPush": false,
+    "generateChangelog": true,
+    "splitCommits": true,
+    "validateFormat": true,
+    "scopes": ["frontend", "backend", "api", "docs"],
+    "types": ["feat", "fix", "docs", "style", "refactor", "test", "chore"]
+  },
+
+  // ========== 审查配置 ==========
+  "review": {
+    "defaultMode": "uncommitted",
+    "autoPublish": false,
+    "minSeverity": "P2",
+    "includeTests": true,
+    "maxFileSize": 50000,
+    "excludePatterns": ["*.min.js", "dist/", "node_modules/"]
+  },
+
+  // ========== 显示配置 ==========
+  "display": {
+    "theme": "catppuccin",
+    "tabWidth": 2,
+    "showLineNumbers": true,
+    "showTodoPanel": true,
+    "showLspStatus": true,
+    "autoDarkMode": true
+  },
+
+  // ========== 发现配置 ==========
+  "discovery": {
+    "enabled": true,
+    "providers": {
+      "claude": true,
+      "cursor": true,
+      "windsurf": true,
+      "gemini": true,
+      "codex": false,
+      "copilot": true,
+      "vscode": true
+    }
+  },
+
+  // ========== 日志配置 ==========
+  "logging": {
+    "level": "info",
+    "file": "~/.omp/logs/omp.log",
+    "maxFiles": 7,
+    "console": false
+  }
+}
+```
+
+## 环境变量
+
+### API 密钥
+
+```bash
+# OpenAI
+export OPENAI_API_KEY="sk-..."
+export OPENAI_ORG_ID="org-..."
+
+# Anthropic
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Google
+export GOOGLE_API_KEY="..."
+
+# 其他
+export OPENROUTER_API_KEY="..."
+export EXA_API_KEY="..."
+export BRAVE_API_KEY="..."
+```
+
+### 模型角色
+
+```bash
+export PI_DEFAULT_MODEL="anthropic:claude-3-5-sonnet"
+export PI_SMOL_MODEL="openai:gpt-4o-mini"
+export PI_SLOW_MODEL="anthropic:claude-3-opus"
+export PI_PLAN_MODEL="google:gemini-1.5-pro"
+export PI_COMMIT_MODEL="openai:gpt-4o-mini"
+```
+
+### 功能开关
+
+```bash
+export OMP_THEME="tokyo-night"
+export OMP_HEADLESS="false"
+export OMP_LOG_LEVEL="debug"
+```
+
+## 主题配置
+
+### 内置主题
+
+OMP 提供 65+ 种主题：
+
+```
+> /theme
+
+选择主题：
+  [1] catppuccin     柔和的粉彩主题
+  [2] dracula        流行的深色主题
+  [3] nord           北极蓝主题
+  [4] gruvbox        复古主题
+  [5] tokyo-night    东京夜景主题
+  [6] poimandres     深海主题
+  [7] material       材料设计主题
+  ...
+```
+
+### 自定义主题
+
+```json
+{
+  "display": {
+    "theme": "custom",
+    "customTheme": {
+      "name": "my-theme",
+      "colors": {
+        "background": "#1e1e2e",
+        "foreground": "#cdd6f4",
+        "primary": "#89b4fa",
+        "secondary": "#f5c2e7",
+        "success": "#a6e3a1",
+        "warning": "#f9e2af",
+        "error": "#f38ba8",
+        "info": "#89dceb"
+      },
+      "syntax": {
+        "keyword": "#f38ba8",
+        "string": "#a6e3a1",
+        "comment": "#6c7086",
+        "function": "#89b4fa",
+        "variable": "#cdd6f4"
+      }
+    }
+  }
+}
+```
+
+## 项目上下文文件
+
+### AGENTS.md
+
+项目级 AI 指导文件：
+
+```markdown
+# 项目规范
+
+## 技术栈
+- React 18 + TypeScript
+- Tailwind CSS
+- Vite
+
+## 代码规范
+1. 使用函数组件 + Hooks
+2. Props 类型必须显式定义
+3. 组件文件使用 PascalCase
+4. 工具函数使用 camelCase
+
+## 文件组织
+```
+src/
+├── components/     # UI 组件
+├── hooks/         # 自定义 hooks
+├── utils/         # 工具函数
+├── types/         # 类型定义
+└── services/      # API 服务
+```
+
+## 注意事项
+- 不要直接修改 node_modules
+- 所有 API 调用通过 services/
+- 错误处理使用统一的 ErrorBoundary
+```
+
+### .ompignore
+
+排除不需要 AI 读取的文件：
+
+```
+# 依赖
+node_modules/
+.venv/
+target/
+
+# 构建输出
+dist/
+build/
+*.min.js
+
+# 大文件
+*.mp4
+*.zip
+*.tar.gz
+
+# 敏感信息
+.env
+secrets.json
+```
+
+## 配置命令
+
+### 查看配置
+
+```bash
+# 列出所有配置
+omp config list
+
+# 获取特定配置
+omp config get models.roles.default.model
+# 输出: claude-3-5-sonnet-20241022
+
+# 查看配置路径
+omp config path
+# 输出: ~/.omp/settings.json
+```
+
+### 修改配置
+
+```bash
+# 设置配置值
+omp config set display.theme "dracula"
+
+# 重置为默认值
+omp config reset display.theme
+
+# 重置所有配置
+omp config reset --all
+```
+
+### 配置验证
+
+```bash
+omp config validate
+
+检查配置文件...
+✓ JSON 格式正确
+✓ 所有必需字段存在
+⚠️ 警告: models.smol 未配置
+✓ 没有错误
+```
+
+## 配置优先级
+
+配置按以下顺序加载，后加载的覆盖前者：
+
+```
+1. 内置默认配置
+2. ~/.omp/settings.json (用户级)
+3. .omp/config.json (项目级)
+4. 环境变量
+5. 命令行参数
+```
+
+示例：
+
+```bash
+# 配置文件中设置
+display.theme = "catppuccin"
+
+# 环境变量覆盖
+export OMP_THEME="dracula"
+
+# 命令行参数最终覆盖
+omp --theme "tokyo-night"
+```
+
+## 故障排除配置
+
+### 问题：配置不生效
+
+**检查：**
+
+```bash
+# 确认配置文件路径
+omp config path
+
+# 验证 JSON 格式
+omp config validate
+
+# 查看实际生效的配置
+omp config dump
+```
+
+### 问题：环境变量不生效
+
+**检查：**
+
+```bash
+# 确认变量已设置
+echo $OPENAI_API_KEY
+
+# 检查拼写
+# 正确: OPENAI_API_KEY
+# 错误: OPENAI_API-KEY, openai_api_key
+
+# 重新加载 shell
+source ~/.bashrc
+```
+
+### 问题：项目级配置被忽略
+
+**检查：**
+
+```bash
+# 确认文件存在
+ls -la .omp/config.json
+
+# 检查权限
+chmod 644 .omp/config.json
+
+# 验证 JSON 格式
+jsonlint .omp/config.json
+```
+
+## 配置模板
+
+### 前端项目模板
+
+```json
+{
+  "models": {
+    "roles": {
+      "default": {
+        "provider": "anthropic",
+        "model": "claude-3-5-sonnet-20241022"
+      }
+    }
+  },
+  "lsp": {
+    "enabled": true,
+    "formatOnWrite": true
+  },
+  "commit": {
+    "scopes": ["ui", "api", "hooks", "utils", "styles"]
+  },
+  "review": {
+    "excludePatterns": ["node_modules/", "dist/", "*.min.*"]
+  }
+}
+```
+
+### Python 项目模板
+
+```json
+{
+  "models": {
+    "roles": {
+      "default": {
+        "provider": "openai",
+        "model": "gpt-4o"
+      }
+    }
+  },
+  "python": {
+    "sharedGateway": true
+  },
+  "lsp": {
+    "servers": {
+      "python": {
+        "command": ["pylsp"],
+        "settings": {
+          "pylsp": {
+            "plugins": {
+              "pycodestyle": {"maxLineLength": 88}
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 团队共享模板
+
+```json
+{
+  "extends": "company-base-config",
+  "models": {
+    "credentials": [
+      {
+        "provider": "openai",
+        "apiKey": "${COMPANY_OPENAI_KEY}"
+      }
+    ]
+  },
+  "commit": {
+    "scopes": ["frontend", "backend", "shared", "docs", "ci"]
+  },
+  "rules": [
+    "遵循团队代码规范",
+    "所有功能必须有测试",
+    "PR 需要至少 1 个审查"
+  ]
+}
+```
+
+---
+
+💡 **提示**：合理配置可以显著提升 OMP 的使用体验，建议从简单配置开始逐步优化！

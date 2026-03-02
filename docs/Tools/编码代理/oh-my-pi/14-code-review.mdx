@@ -1,0 +1,363 @@
+---
+sidebar_position: 14
+title: 交互式代码审查
+---
+
+# 交互式代码审查
+
+OMP 提供结构化的代码审查流程，支持多种审查模式、优先级分级的发现和综合评审结论。
+
+## 启动代码审查
+
+### 使用 /review 命令
+
+```
+> /review
+
+选择审查模式：
+  [1] 分支比较 - 比较两个分支的差异
+  [2] 未提交变更 - 审查工作区的修改
+  [3] 提交审查 - 审查特定提交
+  [4] PR 审查 - 审查 Pull Request
+
+选择: 2
+```
+
+## 审查模式
+
+### 模式 1：分支比较
+
+```
+> /review
+选择: 分支比较
+
+比较：
+  基础分支: main
+  特性分支: feature/auth-improvements
+
+OMP 分析：
+- 获取分支差异
+- 识别变更文件 (15 个文件)
+- 按逻辑分组
+- 分配审查代理
+```
+
+### 模式 2：未提交变更
+
+```
+> /review
+选择: 未提交变更
+
+发现：
+  已修改: 5 个文件
+  新增: 2 个文件
+  删除: 1 个文件
+
+开始审查...
+```
+
+### 模式 3：提交审查
+
+```
+> /review
+选择: 提交审查
+
+输入提交范围：
+  从: HEAD~3
+  到: HEAD
+
+审查 3 个提交...
+```
+
+### 模式 4：PR 审查
+
+```
+> /review
+选择: PR 审查
+
+PR 链接或编号: 123
+
+获取 PR #123 信息...
+- 标题: Add user authentication
+- 变更: +450 -120 行
+- 文件: 12 个
+```
+
+## 结构化发现
+
+### 发现报告
+
+审查代理使用 `report_finding` 工具提交发现：
+
+```json
+{
+  "finding": {
+    "title": "缺少输入验证",
+    "description": "login 函数没有验证 email 格式",
+    "priority": "P1",
+    "location": "src/auth.ts:45",
+    "suggestion": "添加 email 正则验证",
+    "code_example": "const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;"
+  }
+}
+```
+
+### 优先级分级
+
+| 级别 | 名称 | 含义 | 示例 |
+|------|------|------|------|
+| P0 | Critical | 严重问题，必须修复 | 安全漏洞、数据丢失风险 |
+| P1 | High | 重要问题，强烈建议修复 | 逻辑错误、性能问题 |
+| P2 | Medium | 中等问题，建议修复 | 代码异味、可维护性问题 |
+| P3 | Low | 小问题，可选修复 | 风格问题、文档改进 |
+
+### 审查结果示例
+
+```
+┌─ 代码审查报告 ───────────────────────────────┐
+│                                              │
+│ 📊 概览                                      │
+│   审查文件: 12 个                            │
+│   发现问题: 8 个                             │
+│   ├─ P0 Critical: 1                          │
+│   ├─ P1 High: 2                              │
+│   ├─ P2 Medium: 4                            │
+│   └─ P3 Low: 1                               │
+│                                              │
+│ 🚨 P0 - Critical                             │
+│   SQL 注入漏洞 (src/db.ts:78)                │
+│   未参数化的查询可能导致数据泄露             │
+│   [查看详情] [应用修复]                      │
+│                                              │
+│ ⚠️  P1 - High                                │
+│   1. 缺少错误处理 (src/api.ts:34)            │
+│   2. 硬编码密钥 (src/config.ts:12)           │
+│                                              │
+│ 💡 P2 - Medium                               │
+│   1. 重复代码块                              │
+│   2. 魔法数字                                │
+│   3. 未使用的导入                            │
+│   4. 缺少单元测试                            │
+│                                              │
+│ 📝 P3 - Low                                  │
+│   文档拼写错误                               │
+│                                              │
+│ 📋 评审结论                                  │
+│   🔴 Request Changes - 存在阻塞性问题        │
+│                                              │
+│ [导出报告] [应用所有修复] [创建任务]        │
+└──────────────────────────────────────────────┘
+```
+
+## 评审结论
+
+### 结论类型
+
+| 结论 | 图标 | 含义 |
+|------|------|------|
+| Approve | ✅ | 批准，可以合并 |
+| Request Changes | 🔴 | 需要修改 |
+| Comment | 💬 | 仅评论，小问题 |
+
+### 结论计算
+
+```
+自动计算规则：
+- 存在 P0 → Request Changes
+- 存在 P1 → Request Changes
+- 只有 P2/P3 → Comment
+- 无问题 → Approve
+```
+
+## 交互式修复
+
+### 应用单个修复
+
+```
+🚨 P0 - SQL 注入漏洞
+
+问题代码：
+  const query = `SELECT * FROM users WHERE id = ${userId}`;
+
+建议修复：
+  const query = 'SELECT * FROM users WHERE id = ?';
+  db.execute(query, [userId]);
+
+[应用修复] [查看上下文] [跳过] [修改建议]
+```
+
+### 批量应用
+
+```
+发现 4 个可自动修复的问题：
+  ✅ 删除未使用的导入
+  ✅ 修复拼写错误
+  ✅ 添加缺失的分号
+  ⚠️  优化正则表达式（需谨慎）
+
+应用选中的修复？[Y/n]
+```
+
+## 并行审查
+
+### 多代理审查
+
+大型 PR 分配多个审查代理：
+
+```
+PR #123: +2000 行变更
+
+分配审查代理：
+  ├─ Reviewer A: 审查 src/frontend/ (8 文件)
+  ├─ Reviewer B: 审查 src/backend/ (5 文件)
+  └─ Reviewer C: 审查 tests/ (3 文件)
+
+并行执行...
+```
+
+### 专业审查
+
+```
+启动专业审查：
+  ├─ security-reviewer: 安全检查
+  ├─ performance-reviewer: 性能审查
+  └─ style-reviewer: 代码风格
+```
+
+## 与 GitHub 集成
+
+### 发布审查评论
+
+```
+> /review publish
+
+发布到 GitHub PR #123:
+  ✅ 提交总体评审结论
+  ✅ 在相关行添加评论
+  ✅ 创建审查检查
+
+审查状态已更新。
+```
+
+### 同步状态
+
+```
+> /review sync
+
+同步 PR #123 的最新变更：
+  - 3 个新提交
+  - 2 个问题已解决
+  - 1 个新问题引入
+
+更新审查报告...
+```
+
+## 配置
+
+### 审查设置
+
+```json
+// ~/.omp/settings.json
+{
+  "review": {
+    "defaultMode": "uncommitted",
+    "autoPublish": false,
+    "minSeverity": "P2",
+    "includeTests": true,
+    "maxFileSize": 50000,  // 忽略大文件
+    "excludePatterns": ["*.min.js", "dist/"]
+  }
+}
+```
+
+### 自定义审查规则
+
+```yaml
+# .omp/review-rules.yaml
+rules:
+  - id: no-console-in-prod
+    pattern: "console\.(log|warn|error)"
+    severity: P2
+    message: "生产代码中应避免使用 console"
+    exclude:
+      - "**/*.test.*"
+      - "src/debug/**"
+      
+  - id: require-error-handling
+    pattern: "async function|\.then\("
+    check: "hasTryCatch"
+    severity: P1
+    message: "异步函数应该有错误处理"
+```
+
+## 最佳实践
+
+### 1. 审查粒度
+
+- 每次审查 < 20 个文件
+- 变更行数 < 500 行
+- 专注一个功能或修复
+
+### 2. 优先级处理
+
+```
+立即处理：P0、P1
+下次迭代：P2
+可选处理：P3
+```
+
+### 3. 建设性反馈
+
+好的审查评论：
+- 说明问题
+- 解释影响
+- 提供解决方案
+- 包含代码示例
+
+### 4. 团队协作
+
+- 统一审查标准
+- 记录常见问题的审查规则
+- 定期回顾审查质量
+
+## 故障排除
+
+### 问题：审查时间过长
+
+**优化：**
+
+```json
+{
+  "review": {
+    "maxFiles": 15,
+    "excludePatterns": ["*.lock", "node_modules/"]
+  }
+}
+```
+
+### 问题：误报过多
+
+**调整规则：**
+
+```yaml
+rules:
+  - id: some-rule
+    pattern: "..."
+    severity: P3  # 降低优先级
+    exclude:      # 添加排除
+      - "test/**"
+      - "**/*.config.*"
+```
+
+### 问题：遗漏重要问题
+
+**增加专业审查：**
+
+```
+> /review --specialist security
+> /review --specialist performance
+```
+
+---
+
+💡 **提示**：定期审查自己的代码是提高代码质量的最佳方式！

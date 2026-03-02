@@ -1,0 +1,457 @@
+---
+sidebar_position: 12
+title: MCP 与插件系统
+---
+
+# MCP 与插件系统
+
+OMP 完整支持 Model Context Protocol (MCP)，允许集成外部工具和服务，同时提供强大的插件系统扩展功能。
+
+## Model Context Protocol (MCP)
+
+### 什么是 MCP？
+
+MCP 是一个开放协议，允许 AI 助手安全地访问外部工具和数据源：
+
+```
+OMP <──MCP──> MCP Server <──API──> 外部服务
+            ├─ Database
+            ├─ Cloud Provider
+            ├─ SaaS API
+            └─ Custom Tools
+```
+
+### 配置 MCP 服务器
+
+创建 `mcp.json` 或 `.mcp.json`：
+
+```json
+{
+  "servers": {
+    "github": {
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "postgres": {
+      "command": ["uvx", "mcp-server-sqlite", "--db-path", "/path/to/db.sqlite"]
+    },
+    "filesystem": {
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem"],
+      "args": ["/home/user/allowed/path"]
+    }
+  }
+}
+```
+
+### 传输方式
+
+#### Stdio 传输
+
+```json
+{
+  "servers": {
+    "local-tool": {
+      "command": ["python", "./my_mcp_server.py"]
+    }
+  }
+}
+```
+
+#### HTTP 传输
+
+```json
+{
+  "servers": {
+    "remote-api": {
+      "url": "https://api.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${API_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+### OAuth 支持
+
+```json
+{
+  "servers": {
+    "google-calendar": {
+      "command": ["npx", "@modelcontextprotocol/server-gcalendar"],
+      "oauth": {
+        "clientId": "${GOOGLE_CLIENT_ID}",
+        "callbackPort": 3000
+      }
+    }
+  }
+}
+```
+
+授权流程：
+
+```
+> /mcp auth google-calendar
+
+OMP:
+打开浏览器进行 OAuth 授权...
+等待回调...
+✓ 授权成功，token 已保存
+```
+
+### 浏览器服务器过滤
+
+自动过滤与内置浏览器工具冲突的服务器：
+
+```json
+{
+  "servers": {
+    "playwright": {
+      "command": ["npx", "@modelcontextprotocol/server-playwright"],
+      "disabled": true  // 与内置 browser 工具冲突
+    }
+  }
+}
+```
+
+### 管理 MCP 服务器
+
+```
+> /mcp list
+
+已配置的 MCP 服务器：
+  ✅ github      运行中
+  ✅ postgres    运行中
+  ⚠️  filesystem  配置错误
+  ❌ slack       已禁用
+
+> /mcp enable slack
+> /mcp disable filesystem
+> /mcp restart github
+```
+
+## 插件系统
+
+### 安装插件
+
+```bash
+# 从 npm 安装
+omp plugin install @oh-my-pi/plugin-example
+
+# 从 GitHub 安装
+omp plugin install https://github.com/user/omp-plugin
+
+# 从本地安装
+omp plugin install ./my-plugin
+```
+
+### 插件管理
+
+```bash
+# 列出插件
+omp plugin list
+
+# 启用/禁用
+omp plugin enable example
+omp plugin disable example
+
+# 配置插件
+omp plugin configure example
+
+# 更新
+omp plugin update example
+
+# 卸载
+omp plugin uninstall example
+
+# 诊断
+omp plugin doctor
+```
+
+### 创建插件
+
+插件目录结构：
+
+```
+my-plugin/
+├── package.json
+├── index.ts
+├── commands/
+│   └── my-command.ts
+├── hooks/
+│   └── on-init.ts
+└── tools/
+    └── my-tool.ts
+```
+
+#### package.json
+
+```json
+{
+  "name": "@my-org/omp-plugin",
+  "version": "1.0.0",
+  "omp": {
+    "minVersion": "0.20.0",
+    "entry": "./index.ts"
+  }
+}
+```
+
+#### 主入口 (index.ts)
+
+```typescript
+import { definePlugin } from '@oh-my-pi/core';
+
+export default definePlugin({
+  name: 'my-plugin',
+  version: '1.0.0',
+  
+  // 插件激活时
+  onActivate(context) {
+    console.log('Plugin activated!');
+  },
+  
+  // 插件停用时
+  onDeactivate() {
+    console.log('Plugin deactivated!');
+  },
+  
+  // 注册命令
+  commands: [
+    {
+      name: 'hello',
+      description: 'Say hello',
+      execute() {
+        return 'Hello from my plugin!';
+      }
+    }
+  ],
+  
+  // 注册工具
+  tools: [
+    {
+      name: 'my_tool',
+      description: 'My custom tool',
+      parameters: {
+        type: 'object',
+        properties: {
+          input: { type: 'string' }
+        }
+      },
+      async execute({ input }) {
+        return `Processed: ${input}`;
+      }
+    }
+  ],
+  
+  // 注册钩子
+  hooks: {
+    'before:command': (command) => {
+      console.log(`Executing: ${command.name}`);
+    }
+  }
+});
+```
+
+## 通用配置发现
+
+### 支持的 AI 工具
+
+OMP 可以从 8 种 AI 编码工具加载配置：
+
+| 工具 | 配置文件 | 支持的功能 |
+|------|----------|-----------|
+| Claude Code | `.claude/` | MCP、技能、斜杠命令 |
+| Cursor | `.cursor/` | MDC 规则 |
+| Windsurf | `.windsurf/` | 规则 |
+| Gemini | `.gemini/` | system.md |
+| Codex | `.codex/` | AGENTS.md |
+| Cline | `.clinerules` | 规则文件 |
+| GitHub Copilot | `.github/copilot/` | applyTo globs |
+| VS Code | `.vscode/` | 设置和扩展 |
+
+### 发现的内容
+
+```
+> /extensions
+
+已发现的配置：
+
+来自 .claude/:
+  ✓ MCP servers (3)
+  ✓ Skills (5)
+  ✓ Slash commands (2)
+
+来自 .cursor/:
+  ✓ Rules (2)
+
+来自 .windsurf/:
+  ✓ Rules (1)
+
+来自 .codex/:
+  ✓ AGENTS.md (1)
+```
+
+### 配置优先级
+
+```
+项目级 (.omp/) > 用户级 (~/.omp/) > 发现的外部配置
+```
+
+### 禁用发现
+
+```json
+// ~/.omp/settings.json
+{
+  "discovery": {
+    "enabled": true,
+    "providers": {
+      "claude": true,
+      "cursor": false,      // 禁用 Cursor
+      "windsurf": true,
+      "gemini": true,
+      "codex": false,       // 禁用 Codex
+      "copilot": true,
+      "vscode": true
+    }
+  }
+}
+```
+
+## 使用示例
+
+### 示例 1：数据库集成
+
+```json
+// mcp.json
+{
+  "servers": {
+    "postgres": {
+      "command": ["uvx", "mcp-server-postgres", "--connection-string", "${DATABASE_URL}"]
+    }
+  }
+}
+```
+
+```
+> 查询用户表中有多少用户
+
+MCP 工具执行：
+SELECT COUNT(*) FROM users;
+
+结果: 1234
+```
+
+### 示例 2：GitHub 集成
+
+```
+> 列出我的最近 issues
+> 创建一个新 issue："Bug: 登录失败"
+> 查看 PR #123 的变更
+```
+
+### 示例 3：自定义工具插件
+
+```typescript
+// 创建一个与公司 API 集成的插件
+export default definePlugin({
+  name: 'company-api',
+  tools: [
+    {
+      name: 'deploy',
+      description: '部署到生产环境',
+      parameters: {
+        type: 'object',
+        properties: {
+          service: { type: 'string' },
+          version: { type: 'string' }
+        }
+      },
+      async execute({ service, version }) {
+        // 调用公司部署 API
+        return await deployService(service, version);
+      }
+    }
+  ]
+});
+```
+
+使用：
+
+```
+> 部署 frontend 服务，版本 v1.2.3
+
+部署中...
+✓ 部署成功
+   服务: frontend
+   版本: v1.2.3
+   URL: https://app.example.com
+```
+
+## 故障排除
+
+### 问题：MCP 服务器启动失败
+
+**检查日志：**
+
+```
+> /mcp logs github
+
+错误: Error: GITHUB_PERSONAL_ACCESS_TOKEN not set
+解决: export GITHUB_TOKEN=your_token
+```
+
+**测试连接：**
+
+```
+> /mcp test github
+
+测试 MCP 服务器连接...
+✓ 连接成功
+✓ 工具列表获取成功 (12 tools)
+```
+
+### 问题：插件加载失败
+
+**诊断：**
+
+```bash
+omp plugin doctor
+
+检查：
+✓ Node.js 版本
+✓ 依赖冲突
+✓ 入口文件存在
+✓ 语法错误
+```
+
+### 问题：配置发现冲突
+
+**查看来源：**
+
+```
+> /extensions list --verbose
+
+规则 "rust-guidelines":
+  来源: .cursor/rules/rust.mdc
+  优先级: 项目级
+  
+规则 "rust-guidelines":
+  来源: .codex/rules/rust.md
+  优先级: 项目级
+  状态: 被覆盖
+```
+
+## 最佳实践
+
+1. **使用环境变量**：不在配置文件中硬编码敏感信息
+2. **版本锁定**：指定 MCP 服务器的具体版本
+3. **权限最小化**：只给服务器必要的权限
+4. **定期更新**：保持 MCP 服务器和插件更新
+5. **文档化**：为自定义插件编写使用文档
+
+---
+
+💡 **提示**：MCP 生态系统正在快速发展，关注 [官方 MCP 仓库](https://github.com/modelcontextprotocol) 获取最新服务器！

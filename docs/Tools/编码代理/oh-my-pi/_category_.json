@@ -1,0 +1,11 @@
+{
+  "label": "Oh My Pi",
+  "position": 4,
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "Oh My Pi 使用教程",
+    "description": "Oh My Pi (OMP) 是一个功能强大的 AI 编码代理，专为终端环境设计。本教程涵盖从基础安装到高级功能的完整使用指南。"
+  }
+}

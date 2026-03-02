@@ -1,0 +1,525 @@
+---
+sidebar_position: 16
+title: 自定义斜杠命令
+---
+
+# 自定义斜杠命令
+
+OMP 支持使用 TypeScript 编写自定义斜杠命令，实现项目特定的自动化工作流。
+
+## 创建斜杠命令
+
+### 目录结构
+
+```
+~/.omp/agent/commands/           # 用户级命令
+.omp/commands/                   # 项目级命令
+
+命令目录结构：
+my-command/
+├── index.ts                    # 主入口
+├── package.json               # 依赖（可选）
+└── utils.ts                   # 辅助函数（可选）
+```
+
+### 基本命令结构
+
+```typescript
+// .omp/commands/deploy/index.ts
+import { HookCommandContext } from '@oh-my-pi/core';
+
+export default function factory() {
+  return {
+    name: 'deploy',
+    description: '部署项目到生产环境',
+    
+    async execute(args: string[], ctx: HookCommandContext) {
+      // 命令逻辑
+      const env = args[0] || 'staging';
+      
+      // 使用上下文 API
+      const result = await ctx.shell(`./scripts/deploy.sh ${env}`);
+      
+      if (result.exitCode === 0) {
+        ctx.notify('✅ 部署成功！');
+      } else {
+        ctx.notify('❌ 部署失败', 'error');
+      }
+      
+      // 返回字符串会作为 prompt 发送给 AI
+      return `部署到 ${env} 完成。请验证服务状态。`;
+    }
+  };
+}
+```
+
+## 上下文 API
+
+### HookCommandContext
+
+```typescript
+interface HookCommandContext {
+  // 会话控制
+  session: {
+    id: string;
+    title: string;
+    save(): Promise<void>;
+    export(format: 'json' | 'markdown'): Promise<string>;
+  };
+  
+  // UI 交互
+  ui: {
+    notify(message: string, type?: 'info' | 'success' | 'warning' | 'error'): void;
+    prompt(message: string): Promise<string>;
+    confirm(message: string): Promise<boolean>;
+    select(options: string[]): Promise<string>;
+    progress(title: string): {
+      update(value: number, total: number): void;
+      done(): void;
+    };
+  };
+  
+  // 文件操作
+  fs: {
+    read(path: string): Promise<string>;
+    write(path: string, content: string): Promise<void>;
+    exists(path: string): Promise<boolean>;
+    glob(pattern: string): Promise<string[]>;
+  };
+  
+  // Shell 执行
+  shell(command: string, options?: ShellOptions): Promise<ShellResult>;
+  
+  // 工具调用
+  tools: {
+    read(file: string): Promise<string>;
+    write(file: string, content: string): Promise<void>;
+    bash(command: string): Promise<string>;
+    grep(pattern: string, path: string): Promise<string[]>;
+    // ... 其他工具
+  };
+  
+  // 配置访问
+  config: {
+    get(key: string): any;
+    set(key: string, value: any): Promise<void>;
+  };
+  
+  // 模型调用
+  llm: {
+    complete(prompt: string, options?: LLMOptions): Promise<string>;
+    stream(prompt: string, options?: LLMOptions): AsyncIterable<string>;
+  };
+}
+```
+
+## 命令示例
+
+### 示例 1：数据库迁移
+
+```typescript
+// .omp/commands/migrate/index.ts
+export default function factory() {
+  return {
+    name: 'migrate',
+    description: '运行数据库迁移',
+    
+    async execute(args: string[], ctx) {
+      const action = args[0] || 'status';
+      
+      switch (action) {
+        case 'status':
+          const status = await ctx.shell('npm run migrate:status');
+          return `迁移状态：\n${status.stdout}`;
+          
+        case 'up':
+          ctx.ui.notify('⬆️ 正在运行迁移...');
+          await ctx.shell('npm run migrate:up');
+          return '迁移完成';
+          
+        case 'down':
+          const confirmed = await ctx.ui.confirm(
+            '⚠️ 确定要回滚最后一次迁移吗？'
+          );
+          if (confirmed) {
+            await ctx.shell('npm run migrate:down');
+            return '回滚完成';
+          }
+          return '已取消';
+          
+        case 'create':
+          const name = await ctx.ui.prompt('迁移名称:');
+          const result = await ctx.shell(`npm run migrate:create ${name}`);
+          return `创建迁移: ${result.stdout}`;
+          
+        default:
+          return `未知操作: ${action}。可用: status, up, down, create`;
+      }
+    }
+  };
+}
+```
+
+使用：
+
+```
+> /migrate status
+> /migrate up
+> /migrate down
+> /migrate create
+```
+
+### 示例 2：代码生成
+
+```typescript
+// .omp/commands/generate/index.ts
+export default function factory() {
+  return {
+    name: 'generate',
+    description: '生成代码脚手架',
+    
+    async execute(args: string[], ctx) {
+      const type = args[0];
+      const name = args[1];
+      
+      if (!type || !name) {
+        return '用法: /generate <type> <name>';
+      }
+      
+      const templates: Record<string, string> = {
+        component: `import React from 'react';
+
+export interface {{name}}Props {
+  // TODO: 添加 props
+}
+
+export const {{name}}: React.FC<{{name}}Props> = (props) => {
+  return (
+    <div>{{name}} Component</div>
+  );
+};`,
+        
+        hook: `import { useState, useEffect } from 'react';
+
+export function use{{name}}() {
+  const [state, setState] = useState(null);
+  
+  useEffect(() => {
+    // TODO: 实现逻辑
+  }, []);
+  
+  return state;
+}`,
+        
+        service: `export class {{name}}Service {
+  // TODO: 实现服务方法
+}`
+      };
+      
+      const template = templates[type];
+      if (!template) {
+        return `未知类型: ${type}。可用: component, hook, service`;
+      }
+      
+      const content = template.replace(/{{name}}/g, name);
+      const path = `src/${type}s/${name}.${type === 'component' ? 'tsx' : 'ts'}`;
+      
+      await ctx.fs.write(path, content);
+      
+      return `已生成 ${type}: ${path}`;
+    }
+  };
+}
+```
+
+使用：
+
+```
+> /generate component UserCard
+> /generate hook Auth
+> /generate service Api
+```
+
+### 示例 3：Git 工作流
+
+```typescript
+// .omp/commands/feature/index.ts
+export default function factory() {
+  return {
+    name: 'feature',
+    description: '功能分支工作流',
+    
+    async execute(args: string[], ctx) {
+      const action = args[0];
+      
+      switch (action) {
+        case 'start': {
+          const name = await ctx.ui.prompt('功能名称:');
+          const branch = `feature/${name}`;
+          
+          await ctx.shell('git checkout main');
+          await ctx.shell('git pull origin main');
+          await ctx.shell(`git checkout -b ${branch}`);
+          
+          return `功能分支 ${branch} 已创建`;
+        }
+        
+        case 'finish': {
+          const branch = (await ctx.shell('git branch --show-current')).stdout.trim();
+          
+          await ctx.shell('git add .');
+          await ctx.shell('git commit -m "' + args.slice(1).join(' ') + '"');
+          await ctx.shell(`git push origin ${branch}`);
+          
+          // 创建 PR（需要 gh CLI）
+          const prUrl = await ctx.shell(
+            `gh pr create --title "${args.slice(1).join(' ')}" --fill`
+          );
+          
+          return `PR 已创建: ${prUrl.stdout}`;
+        }
+        
+        case 'cleanup': {
+          await ctx.shell('git checkout main');
+          await ctx.shell('git pull origin main');
+          await ctx.shell('git branch --merged | grep -v main | xargs git branch -d');
+          
+          return '已清理合并的分支';
+        }
+        
+        default:
+          return '用法: /feature start|finish|cleanup';
+      }
+    }
+  };
+}
+```
+
+## 交互式命令
+
+### 多步骤向导
+
+```typescript
+// .omp/commands/setup/index.ts
+export default function factory() {
+  return {
+    name: 'setup',
+    description: '项目初始化向导',
+    
+    async execute(_args: string[], ctx) {
+      const answers = {
+        projectName: await ctx.ui.prompt('项目名称:'),
+        description: await ctx.ui.prompt('项目描述:'),
+        type: await ctx.ui.select([
+          'Web 应用',
+          'API 服务',
+          '命令行工具',
+          '库/包'
+        ]),
+        language: await ctx.ui.select(['TypeScript', 'JavaScript', 'Python', 'Rust']),
+        features: []
+      };
+      
+      // 选择功能
+      if (await ctx.ui.confirm('添加测试框架?')) {
+        answers.features.push('testing');
+      }
+      if (await ctx.ui.confirm('添加 CI/CD?')) {
+        answers.features.push('ci');
+      }
+      if (await ctx.ui.confirm('添加 Docker 支持?')) {
+        answers.features.push('docker');
+      }
+      
+      // 创建项目文件
+      const progress = ctx.ui.progress('创建项目...');
+      
+      await ctx.fs.write('package.json', JSON.stringify({
+        name: answers.projectName,
+        description: answers.description,
+        version: '0.1.0'
+      }, null, 2));
+      
+      progress.update(1, 4);
+      
+      if (answers.features.includes('testing')) {
+        await ctx.fs.write('jest.config.js', 'module.exports = {}');
+      }
+      
+      progress.update(2, 4);
+      
+      if (answers.features.includes('ci')) {
+        await ctx.shell('mkdir -p .github/workflows');
+        await ctx.fs.write('.github/workflows/ci.yml', '# CI config');
+      }
+      
+      progress.update(3, 4);
+      
+      if (answers.features.includes('docker')) {
+        await ctx.fs.write('Dockerfile', 'FROM node:18');
+      }
+      
+      progress.done();
+      
+      return `✅ 项目 ${answers.projectName} 初始化完成！`;
+    }
+  };
+}
+```
+
+### 使用 AI 辅助
+
+```typescript
+// .omp/commands/ask/index.ts
+export default function factory() {
+  return {
+    name: 'ask',
+    description: '询问 AI 并执行建议',
+    
+    async execute(args: string[], ctx) {
+      const question = args.join(' ');
+      
+      // 获取项目上下文
+      const files = await ctx.fs.glob('src/**/*.ts');
+      const context = await Promise.all(
+        files.slice(0, 5).map(f => ctx.fs.read(f))
+      );
+      
+      // 调用 AI
+      const response = await ctx.llm.complete(`
+        基于以下项目上下文回答问题：
+        ${context.join('\n---\n')}
+        
+        问题: ${question}
+      `);
+      
+      // 显示建议
+      ctx.ui.notify('AI 建议:', 'info');
+      console.log(response);
+      
+      // 询问是否执行
+      if (await ctx.ui.confirm('是否执行建议的操作?')) {
+        // 解析建议中的命令并执行
+        return '已执行建议';
+      }
+      
+      return '已取消';
+    }
+  };
+}
+```
+
+## 命令管理
+
+### 查看命令
+
+```
+> /commands list
+
+已加载的自定义命令：
+  用户级 (~/.omp/agent/commands/):
+    ✅ deploy    部署项目到生产环境
+    ✅ migrate   运行数据库迁移
+    
+  项目级 (.omp/commands/):
+    ✅ generate  生成代码脚手架
+    ✅ feature   功能分支工作流
+    
+  Claude Code 兼容:
+    ✅ setup     项目初始化向导
+```
+
+### 重新加载
+
+```
+> /commands reload
+
+重新加载所有命令...
+✅ 已加载 5 个命令
+```
+
+### 调试
+
+```
+> /commands debug my-command
+
+命令信息：
+  名称: my-command
+  路径: .omp/commands/my-command/index.ts
+  加载状态: ✅ 正常
+  上次修改: 2024-01-15 10:30:00
+  
+测试执行...
+✅ 执行成功
+```
+
+## 与 Claude Code 兼容
+
+OMP 自动加载 Claude Code 目录的命令：
+
+```
+~/.claude/commands/     # Claude Code 用户命令
+.claude/commands/       # Claude Code 项目命令
+```
+
+这样可以在两个工具间共享命令。
+
+## 最佳实践
+
+### 1. 错误处理
+
+```typescript
+async execute(args, ctx) {
+  try {
+    const result = await ctx.shell('risky-command');
+    return result.stdout;
+  } catch (error) {
+    ctx.ui.notify(`错误: ${error.message}`, 'error');
+    return null;  // 返回 null 不发送 prompt
+  }
+}
+```
+
+### 2. 输入验证
+
+```typescript
+async execute(args, ctx) {
+  if (args.length === 0) {
+    return '用法: /command <arg>';
+  }
+  
+  const validTypes = ['a', 'b', 'c'];
+  if (!validTypes.includes(args[0])) {
+    return `无效类型。可用: ${validTypes.join(', ')}`;
+  }
+  
+  // ...
+}
+```
+
+### 3. 提供帮助
+
+```typescript
+async execute(args, ctx) {
+  if (args[0] === '--help' || args[0] === '-h') {
+    return `
+用法: /my-command <action> [options]
+
+Actions:
+  start    开始操作
+  stop     停止操作
+  status   查看状态
+
+Options:
+  --force  强制执行
+  --dry-run 仅预览
+    `.trim();
+  }
+  
+  // ...
+}
+```
+
+---
+
+💡 **提示**：自定义斜杠命令是自动化重复工作的利器，将常用操作封装成命令大幅提升效率！
