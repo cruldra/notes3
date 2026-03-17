@@ -1,0 +1,78 @@
+# Ubuntu 24.04 更换软件镜像源
+
+## 概述
+
+Ubuntu 24.04 (Noble Numbat) 采用了新的 `DEB822` 格式配置文件，软件源配置文件不再位于 `/etc/apt/sources.list`，而是在 `/etc/apt/sources.list.d/ubuntu.sources`。
+
+## 一键更换阿里云镜像源
+
+### 1. 备份原始文件
+
+```bash
+sudo cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
+```
+
+### 2. 替换镜像源地址
+
+```bash
+sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
+sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
+```
+
+### 3. 更新索引
+
+```bash
+sudo apt update
+```
+
+## 配置格式说明
+
+Ubuntu 24.04 使用 DEB822 格式，配置文件内容示例如下：
+
+```text
+Types: deb
+URIs: http://mirrors.aliyun.com/ubuntu/
+Suites: noble noble-updates noble-backports
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+```
+
+## 安装基础工具
+
+换源完成后，可以安装常用的编译工具：
+
+```bash
+sudo apt install build-essential python3 -y
+```
+
+## NPM 镜像源配置
+
+如需安装 npm 包（如 gitnexus），建议同时配置 npm 镜像源：
+
+```bash
+npm config set registry https://registry.npmmirror.com
+```
+
+## 故障排查
+
+如果 `apt update` 提示连接超时，请检查：
+
+1. 网络连通性：
+   ```bash
+   ping www.baidu.com
+   ```
+
+2. 公司内网环境可能需要额外配置代理
+
+3. DNS 解析问题
+
+## 其他可用镜像源
+
+| 镜像源 | URIs |
+|--------|------|
+| 阿里云 | `http://mirrors.aliyun.com/ubuntu/` |
+| 清华大学 | `https://mirrors.tuna.tsinghua.edu.cn/ubuntu/` |
+| 中科大 | `https://mirrors.ustc.edu.cn/ubuntu/` |
+| 腾讯云 | `http://mirrors.cloud.tencent.com/ubuntu/` |
+
+需要切换其他镜像源时，只需替换 `sed` 命令中的目标地址即可。
