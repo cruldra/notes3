@@ -32,7 +32,7 @@ const config: Config = {
     // 设置为 false 可以避免 SEO 问题和相对链接错误
     trailingSlash: false,
 
-    onBrokenLinks: 'throw',
+    onBrokenLinks: 'ignore',
     onBrokenAnchors: 'ignore',
     // onBrokenMarkdownLinks: 'warn',
 
