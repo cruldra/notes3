@@ -19,9 +19,9 @@
     "sync:demo": "node scripts/sync-demo.mjs"
   },
   "dependencies": {
-    "@docusaurus/core": "3.9.2",
-    "@docusaurus/preset-classic": "3.9.2",
-    "@docusaurus/theme-mermaid": "^3.9.2",
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
+    "@docusaurus/theme-mermaid": "^3.10.0",
     "@easyops-cn/docusaurus-search-local": "^0.52.3",
     "@mantine/core": "^8.0.0",
     "@mantine/form": "^8.0.0",
@@ -45,9 +45,9 @@
     "remotion": "4.0.409"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.9.2",
-    "@docusaurus/tsconfig": "3.9.2",
-    "@docusaurus/types": "3.9.2",
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
     "@tailwindcss/postcss": "^4.1.18",
     "cross-env": "^7.0.3",
     "postcss": "^8.5.6",
