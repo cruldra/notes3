@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740">
+  <defs>
+    <style>
+      .title { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; }
+      .subtitle { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+      .node-title { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; }
+      .node-sub { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-style: italic; }
+      .node-desc { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+      .layer-tag { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; letter-spacing: 1px; }
+      .edge-label { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+    </style>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="740" fill="#ffffff"/>
+  <text x="600" y="38" text-anchor="middle" class="title" font-size="20" fill="#0f172a">LangGraph Core · 内部架构 (libs/langgraph)</text>
+  <text x="600" y="62" text-anchor="middle" class="subtitle" font-size="12" fill="#475569">用户 API → Pregel 引擎 → 状态通道与支撑 · 右侧为跨库外部依赖</text>
+  <text x="30" y="150" class="layer-tag" font-size="11" fill="#94a3b8" transform="rotate(-90,30,150)">① 用户 API</text>
+  <rect x="60" y="100" width="260" height="100" rx="10" ry="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="190.0" y="122" text-anchor="middle" class="node-title" font-size="14" fill="#5b21b6">graph/</text>
+  <text x="190.0" y="138" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">声明式图 API</text>
+  <text x="190.0" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">StateGraph · MessageGraph</text>
+  <text x="190.0" y="170" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">add_messages · START / END</text>
+  <text x="190.0" y="184" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">条件边 · 子图 · 编译</text>
+  <rect x="350" y="100" width="260" height="100" rx="10" ry="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="480.0" y="122" text-anchor="middle" class="node-title" font-size="14" fill="#5b21b6">func/</text>
+  <text x="480.0" y="138" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">函数式装饰器 API</text>
+  <text x="480.0" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">@task · @entrypoint</text>
+  <text x="480.0" y="170" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">无需画图直接写函数</text>
+  <text x="480.0" y="184" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">内部自动编译为 Pregel</text>
+  <rect x="640" y="100" width="350" height="100" rx="10" ry="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="815.0" y="122" text-anchor="middle" class="node-title" font-size="14" fill="#5b21b6">types / typing / errors / constants / runtime</text>
+  <text x="815.0" y="138" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">公开类型 &amp; 入口</text>
+  <text x="815.0" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Runtime · RunnableConfig · RetryPolicy · CachePolicy</text>
+  <text x="815.0" y="170" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">StreamMode · Send · Interrupt · START / END</text>
+  <text x="815.0" y="184" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">GraphRecursionError · InvalidUpdateError …</text>
+  <text x="30" y="325" class="layer-tag" font-size="11" fill="#94a3b8" transform="rotate(-90,30,325)">② 执行引擎</text>
+  <rect x="60" y="230" width="930" height="190" rx="10" ry="10" fill="#fed7aa" stroke="#ea580c" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="525" y="260" text-anchor="middle" class="node-title" font-size="15" fill="#7c2d12">pregel/ · 执行引擎 (Pregel BSP 调度器 · 框架心脏)</text>
+  <rect x="75" y="278" width="200" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="175.0" y="300" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">main.py</text>
+  <text x="175.0" y="318" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">Pregel / NodeBuilder (入口)</text>
+  <rect x="290" y="278" width="210" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="395.0" y="300" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">_loop.py</text>
+  <text x="395.0" y="318" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">PregelLoop · superstep 主循环</text>
+  <rect x="515" y="278" width="250" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="640.0" y="300" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">_algo.py  +  _runner.py</text>
+  <text x="640.0" y="318" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">调度算法 + 并发执行器</text>
+  <rect x="780" y="278" width="200" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="880.0" y="300" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">_read.py / _write.py</text>
+  <text x="880.0" y="318" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">通道 IO (Channel read/write)</text>
+  <rect x="75" y="350" width="200" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="175.0" y="372" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">_checkpoint.py</text>
+  <text x="175.0" y="390" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">持久化集成 (save / load)</text>
+  <rect x="290" y="350" width="210" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="395.0" y="372" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">_retry.py  +  _call.py</text>
+  <text x="395.0" y="390" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">重试策略 + 任务调用</text>
+  <rect x="515" y="350" width="250" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="640.0" y="372" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">remote.py</text>
+  <text x="640.0" y="390" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">RemoteGraph · 远程图客户端</text>
+  <rect x="780" y="350" width="200" height="58" rx="6" ry="6" fill="#ffffff" stroke="#f97316" stroke-width="1.6"/>
+  <text x="880.0" y="372" text-anchor="middle" class="node-title" font-size="13" fill="#9a3412">types / protocol / debug</text>
+  <text x="880.0" y="390" text-anchor="middle" class="node-desc" font-size="10.5" fill="#475569">内部类型 / 协议 / 诊断</text>
+  <text x="30" y="520" class="layer-tag" font-size="11" fill="#94a3b8" transform="rotate(-90,30,520)">③ 状态 &amp; 支撑</text>
+  <rect x="60" y="450" width="280" height="140" rx="10" ry="10" fill="#d1fae5" stroke="#059669" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="200.0" y="472" text-anchor="middle" class="node-title" font-size="14" fill="#064e3b">channels/</text>
+  <text x="200.0" y="488" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">通道 · Reducer 系统</text>
+  <text x="200.0" y="506" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">LastValue / LastValueAfterFinish</text>
+  <text x="200.0" y="520" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Topic · BinaryOperatorAggregate</text>
+  <text x="200.0" y="534" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">NamedBarrierValue / Ephemeral</text>
+  <text x="200.0" y="548" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">AnyValue · UntrackedValue</text>
+  <text x="200.0" y="562" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">→ 定义 state 合并语义</text>
+  <rect x="370" y="450" width="230" height="140" rx="10" ry="10" fill="#dcfce7" stroke="#10b981" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="485.0" y="472" text-anchor="middle" class="node-title" font-size="14" fill="#065f46">managed/</text>
+  <text x="485.0" y="488" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">Runtime 注入值</text>
+  <text x="485.0" y="506" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">IsLastStep</text>
+  <text x="485.0" y="520" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">RemainingSteps</text>
+  <text x="485.0" y="534" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155"></text>
+  <text x="485.0" y="548" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">→ 由调度器自动计算</text>
+  <text x="485.0" y="562" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">   不由用户写入</text>
+  <rect x="630" y="450" width="360" height="140" rx="10" ry="10" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="810.0" y="472" text-anchor="middle" class="node-title" font-size="14" fill="#374151">_internal/</text>
+  <text x="810.0" y="488" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">严格私有实现</text>
+  <text x="810.0" y="506" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">_runnable · _serde · _config</text>
+  <text x="810.0" y="520" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">_retry · _cache · _pydantic</text>
+  <text x="810.0" y="534" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">_queue · _future · _replay</text>
+  <text x="810.0" y="548" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">_typing · _fields · _scratchpad</text>
+  <text x="810.0" y="562" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">→ 绝不对外导出</text>
+  <text x="1100" y="88" text-anchor="middle" class="layer-tag" font-size="11" fill="#94a3b8">外部依赖</text>
+  <rect x="1020" y="100" width="160" height="100" rx="10" ry="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="1100.0" y="122" text-anchor="middle" class="node-title" font-size="14" fill="#1e40af">langchain-core</text>
+  <text x="1100.0" y="138" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">上游</text>
+  <text x="1100.0" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Runnable</text>
+  <text x="1100.0" y="170" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Messages</text>
+  <text x="1100.0" y="184" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">节点即 Runnable</text>
+  <rect x="1020" y="260" width="160" height="90" rx="10" ry="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="1100.0" y="282" text-anchor="middle" class="node-title" font-size="14" fill="#1e40af">langgraph-checkpoint</text>
+  <text x="1100.0" y="298" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">下游 · 持久化</text>
+  <text x="1100.0" y="316" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Saver / Store</text>
+  <text x="1100.0" y="330" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Cache</text>
+  <text x="1100.0" y="344" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">_checkpoint 使用</text>
+  <rect x="1020" y="370" width="160" height="90" rx="10" ry="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="1100.0" y="392" text-anchor="middle" class="node-title" font-size="14" fill="#1e40af">langgraph-sdk</text>
+  <text x="1100.0" y="408" text-anchor="middle" class="node-sub" font-size="11" fill="#64748b">远程 · 客户端</text>
+  <text x="1100.0" y="426" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">HTTP / SSE</text>
+  <text x="1100.0" y="440" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">schema</text>
+  <text x="1100.0" y="454" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">remote.py 使用</text>
+  <path d="M 190,200 L 190,230" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow-purple)"/>
+  <rect x="178.0" y="206" width="24" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="190" y="216" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">编译</text>
+  <path d="M 480,200 L 480,230" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow-purple)"/>
+  <rect x="468.0" y="206" width="24" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="480" y="216" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">生成</text>
+  <path d="M 815,200 L 815,230" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow-purple)" stroke-dasharray="5,3"/>
+  <rect x="796.0" y="206" width="38" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="815" y="216" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">使用类型</text>
+  <path d="M 200,420 L 200,450" stroke="#ea580c" stroke-width="1.6" fill="none" marker-end="url(#arrow-orange)"/>
+  <rect x="181.0" y="426" width="38" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="200" y="436" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">读写状态</text>
+  <path d="M 485,420 L 485,450" stroke="#ea580c" stroke-width="1.6" fill="none" marker-end="url(#arrow-orange)"/>
+  <rect x="469.5" y="426" width="31" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="485" y="436" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">注入值</text>
+  <path d="M 810,420 L 810,450" stroke="#ea580c" stroke-width="1.6" fill="none" marker-end="url(#arrow-orange)"/>
+  <rect x="791.0" y="426" width="38" height="14" rx="3" ry="3" fill="#ffffff" opacity="0.95"/>
+  <text x="810" y="436" text-anchor="middle" class="edge-label" font-size="10.5" fill="#334155">复用工具</text>
+  <path d="M 990,150 L 1020,150" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
+  <path d="M 990,307 L 1020,307" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
+  <path d="M 990,415 L 1020,415" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
+  <text x="60" y="625" class="title" font-size="13" fill="#0f172a">图例 / Legend</text>
+  <rect x="60" y="640" width="16" height="12" rx="3" ry="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="82" y="650" class="edge-label" font-size="11.5" fill="#1e293b">① 用户 API</text>
+  <rect x="180" y="640" width="16" height="12" rx="3" ry="3" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="202" y="650" class="edge-label" font-size="11.5" fill="#1e293b">② Pregel 引擎</text>
+  <rect x="330" y="640" width="16" height="12" rx="3" ry="3" fill="#d1fae5" stroke="#059669" stroke-width="1.2"/>
+  <text x="352" y="650" class="edge-label" font-size="11.5" fill="#1e293b">③ 通道 / Reducer</text>
+  <rect x="485" y="640" width="16" height="12" rx="3" ry="3" fill="#dcfce7" stroke="#10b981" stroke-width="1.2"/>
+  <text x="507" y="650" class="edge-label" font-size="11.5" fill="#1e293b">Managed 值</text>
+  <rect x="610" y="640" width="16" height="12" rx="3" ry="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="632" y="650" class="edge-label" font-size="11.5" fill="#1e293b">_internal (私有)</text>
+  <rect x="770" y="640" width="16" height="12" rx="3" ry="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="792" y="650" class="edge-label" font-size="11.5" fill="#1e293b">外部依赖</text>
+  <path d="M 60,676 L 105,676" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow-purple)"/>
+  <text x="112" y="680" class="edge-label" font-size="11" fill="#1e293b">编译 / 生成 Pregel</text>
+  <path d="M 290,676 L 335,676" stroke="#ea580c" stroke-width="1.6" fill="none" marker-end="url(#arrow-orange)"/>
+  <text x="342" y="680" class="edge-label" font-size="11" fill="#1e293b">读写 / 注入 / 使用</text>
+  <path d="M 520,676 L 565,676" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="5,3"/>
+  <text x="572" y="680" class="edge-label" font-size="11" fill="#1e293b">外部库集成 (dashed)</text>
+</svg>
