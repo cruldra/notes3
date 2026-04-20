@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 720" width="1040" height="720">
+  <defs>
+    <style>
+      .title { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; }
+      .subtitle { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+      .node-title { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; }
+      .node-desc { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+      .badge { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; font-weight: 700; }
+      .legend { font-family: "PingFang SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1040" height="720" fill="#ffffff"/>
+  <text x="520" y="36" text-anchor="middle" class="title" font-size="20" fill="#0f172a">LangGraph Monorepo · 组件与依赖关系</text>
+  <text x="520" y="60" text-anchor="middle" class="subtitle" font-size="12" fill="#475569">9 个库的分层结构；箭头方向 A → B 表示 A 依赖 B</text>
+  <rect x="400" y="95" width="240" height="70" rx="10" ry="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="520" y="123" text-anchor="middle" class="node-title" font-size="14" fill="#5b21b6">langgraph</text>
+  <text x="520" y="141" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">核心框架：有状态多 actor 运行时</text>
+  <text x="520" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Pregel 调度 / 图定义 / 通道</text>
+  <rect x="730" y="95" width="160" height="70" rx="10" ry="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="810" y="123" text-anchor="middle" class="node-title" font-size="14" fill="#1e40af">cli</text>
+  <text x="810" y="141" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">langgraph-cli</text>
+  <text x="810" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">开发与部署命令行</text>
+  <rect x="910" y="95" width="110" height="70" rx="10" ry="10" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="965" y="123" text-anchor="middle" class="node-title" font-size="14" fill="#4b5563">sdk-js</text>
+  <text x="965" y="141" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">已搬迁至</text>
+  <text x="965" y="156" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">langgraphjs</text>
+  <rect x="984" y="103" width="32" height="14" rx="7" ry="7" fill="#ef4444" opacity="0.85"/>
+  <text x="1000" y="113" text-anchor="middle" class="badge" font-size="9" fill="#ffffff">ARCHIVE</text>
+  <rect x="260" y="235" width="180" height="70" rx="10" ry="10" fill="#fed7aa" stroke="#ea580c" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="350" y="263" text-anchor="middle" class="node-title" font-size="14" fill="#9a3412">prebuilt</text>
+  <text x="350" y="281" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">create_react_agent</text>
+  <text x="350" y="296" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">ToolNode / 中断 API</text>
+  <rect x="720" y="235" width="180" height="70" rx="10" ry="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="810" y="263" text-anchor="middle" class="node-title" font-size="14" fill="#115e59">sdk-py</text>
+  <text x="810" y="281" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Python 客户端</text>
+  <text x="810" y="296" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">HTTP / SSE / 认证 / 加密</text>
+  <rect x="400" y="375" width="240" height="70" rx="10" ry="10" fill="#d1fae5" stroke="#059669" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="520" y="403" text-anchor="middle" class="node-title" font-size="14" fill="#064e3b">checkpoint</text>
+  <text x="520" y="421" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">持久化抽象接口</text>
+  <text x="520" y="436" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">BaseCheckpointSaver / Store / Cache</text>
+  <rect x="120" y="515" width="220" height="70" rx="10" ry="10" fill="#dcfce7" stroke="#10b981" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="230" y="543" text-anchor="middle" class="node-title" font-size="14" fill="#065f46">checkpoint-postgres</text>
+  <text x="230" y="561" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">Postgres 实现</text>
+  <text x="230" y="576" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">psycopg + 连接池 + JSONB</text>
+  <rect x="420" y="515" width="220" height="70" rx="10" ry="10" fill="#dcfce7" stroke="#10b981" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="530" y="543" text-anchor="middle" class="node-title" font-size="14" fill="#065f46">checkpoint-sqlite</text>
+  <text x="530" y="561" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">SQLite 实现</text>
+  <text x="530" y="576" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">aiosqlite + sqlite-vec</text>
+  <rect x="720" y="515" width="260" height="70" rx="10" ry="10" fill="#dcfce7" stroke="#10b981" stroke-width="1.6" filter="url(#shadow)"/>
+  <text x="850" y="543" text-anchor="middle" class="node-title" font-size="14" fill="#065f46">checkpoint-conformance</text>
+  <text x="850" y="561" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">一致性测试套件</text>
+  <text x="850" y="576" text-anchor="middle" class="node-desc" font-size="11.5" fill="#334155">验证第三方后端实现是否合规</text>
+  <path d="M 460,165 L 460,200 L 350,200 L 350,235" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 580,165 L 580,200 L 810,200 L 810,235" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 520,165 L 520,375" stroke="#7c3aed" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 810,165 L 810,235" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400,305 L 400,345 L 460,345 L 460,375" stroke="#ea580c" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 230,515 L 230,475 L 460,475 L 460,445" stroke="#10b981" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 530,515 L 530,445" stroke="#10b981" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 850,515 L 850,475 L 580,475 L 580,445" stroke="#10b981" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <text x="40" y="620" class="title" font-size="13" fill="#0f172a">图例 / Legend</text>
+  <rect x="40" y="635" width="16" height="12" rx="3" ry="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="62" y="645" class="legend" font-size="11.5" fill="#1e293b">核心框架 Core</text>
+  <rect x="200" y="635" width="16" height="12" rx="3" ry="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="222" y="645" class="legend" font-size="11.5" fill="#1e293b">CLI / 工具</text>
+  <rect x="320" y="635" width="16" height="12" rx="3" ry="3" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="342" y="645" class="legend" font-size="11.5" fill="#1e293b">高阶 Agent API</text>
+  <rect x="475" y="635" width="16" height="12" rx="3" ry="3" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.2"/>
+  <text x="497" y="645" class="legend" font-size="11.5" fill="#1e293b">客户端 SDK</text>
+  <rect x="605" y="635" width="16" height="12" rx="3" ry="3" fill="#d1fae5" stroke="#059669" stroke-width="1.2"/>
+  <text x="627" y="645" class="legend" font-size="11.5" fill="#1e293b">持久化抽象</text>
+  <rect x="735" y="635" width="16" height="12" rx="3" ry="3" fill="#dcfce7" stroke="#10b981" stroke-width="1.2"/>
+  <text x="757" y="645" class="legend" font-size="11.5" fill="#1e293b">持久化实现</text>
+  <rect x="855" y="635" width="16" height="12" rx="3" ry="3" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="877" y="645" class="legend" font-size="11.5" fill="#1e293b">已归档 (sdk-js)</text>
+  <path d="M 40,671 L 90,671" stroke="#475569" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
+  <text x="100" y="675" class="legend" font-size="11.5" fill="#1e293b">depends on · 依赖方向 (A → B：A 依赖 B)</text>
+</svg>

@@ -174,7 +174,7 @@ graph TD
 ### 参考链接
 - [LlamaIndex 介绍](./LLamaIndex/介绍.md)
 - [Agno 介绍](./Agno/介绍.mdx)
-- [CrewAI 简介](./CrewAI/简介.mdx)
+- [CrewAI 简介](./crewai/简介.mdx)
 
 ## 5. 评估 (Evaluation)
 
