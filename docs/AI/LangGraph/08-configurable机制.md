@@ -1,6 +1,6 @@
-# LangGraph 的 `configurable` 机制：per-invoke 的运行时注入
-
-## 为什么需要讲这个
+---
+sidebar_position: 8
+---
 
 绝大多数 LangGraph 代码里你都会看到这一行：
 

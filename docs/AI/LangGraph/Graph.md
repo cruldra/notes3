@@ -1,5 +1,6 @@
-# 第一性原理拆解：Graph（图）
-
+---
+sidebar_position: 4
+---
 > 从"Graph = 节点 + 边"这个天真理解出发，戳破它，推导出 Graph 本质上是 **Pregel 的声明式前端 + 编译器**。
 
 ## 为什么挑 Graph

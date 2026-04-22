@@ -1,5 +1,6 @@
-# 第一性原理拆解：Channel（通道）
-
+---
+sidebar_position: 3
+---
 > 从"channel = 带合并函数的变量"出发，推导出 Channel 是 LangGraph 架构里的 **narrow waist**——State / Graph / Pregel / Send / Checkpoint 五个概念共享的唯一底层抽象。
 
 ## 为什么挑 Channel

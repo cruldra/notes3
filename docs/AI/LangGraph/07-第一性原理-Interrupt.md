@@ -1,5 +1,6 @@
-# 第一性原理拆解：Interrupt（中断 / Human-in-the-Loop）
-
+---
+sidebar_position: 7
+---
 > 从"interrupt = pause/resume"这个天真理解出发，戳破它，推导出 Interrupt 实际上是 **"回滚 + 存档 + 重试时短路"**——由 Pregel + Channel + Checkpoint + Scratchpad 组合出来的新玩法，没有引入任何新底层机制。
 
 ## 为什么挑 Interrupt

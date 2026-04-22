@@ -1,5 +1,6 @@
-# 第一性原理拆解：State（状态）
-
+---
+sidebar_position: 2
+---
 > 从"state = 一个共享 dict"这个天真理解出发，戳破它，逐步推导出 LangGraph 真正的 state 抽象。
 
 ## 为什么挑 State

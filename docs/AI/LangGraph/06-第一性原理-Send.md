@@ -1,5 +1,6 @@
-# 第一性原理拆解：Send（动态派发）
-
+---
+sidebar_position: 6
+---
 > 从"Send 是一种带数据的边"出发，戳破它，推导出 Send 是 **Pregel 消息语义的显式化**，是静态图撞上动态 map-reduce 时必然浮现的原语。
 
 ## 为什么挑 Send

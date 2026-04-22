@@ -1,5 +1,6 @@
-# 第一性原理拆解：Pregel（执行引擎）
-
+---
+sidebar_position: 5
+---
 > 从"Pregel = 一个循环"出发，戳破它，推导出 Pregel 是 **在 agent 引擎约束下几乎被唯一确定的形状**——而不是一个神谕或商标。
 
 ## 为什么挑 Pregel
