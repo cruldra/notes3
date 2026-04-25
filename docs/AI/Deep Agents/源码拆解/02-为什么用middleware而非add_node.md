@@ -172,7 +172,7 @@ agent_node → 条件边(LLM 说要调 SubAgentA?) → SubAgentA_subgraph → ag
 ## 关联笔记
 
 - [create_deep_agent 源码拆解](./01-create_deep_agent源码拆解.md) — 具体实现细节
-- [第一性原理-Graph](../../LangGraph/04-第一性原理-Graph.md) — StateGraph 本身的设计
+- [第一性原理-Graph](../../LangGraph/Graph.md) — StateGraph 本身的设计
 - [第一性原理-Send](../../LangGraph/06-第一性原理-Send.md) — langgraph 动态分发的另一种机制
 
 ---

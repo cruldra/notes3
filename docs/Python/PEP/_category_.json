@@ -1,0 +1,8 @@
+{
+  "label": "PEP",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Python Enhancement Proposals — Python 语言演进的设计文档"
+  }
+}
