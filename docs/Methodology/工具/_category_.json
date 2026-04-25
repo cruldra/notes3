@@ -1,0 +1,8 @@
+{
+  "label": "工具",
+  "position": 20,
+  "link": {
+    "type": "generated-index",
+    "description": "方法论里的具体工具与模板（SCQA / SWOT / 5W2H 等），抓起来直接套用，不需要先内化方法论"
+  }
+}

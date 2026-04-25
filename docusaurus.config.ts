@@ -203,6 +203,12 @@ const config: Config = {
                     position: 'left',
                     label: '方法论',
                 },
+                {
+                    type: 'docSidebar',
+                    sidebarId: 'principles',
+                    position: 'left',
+                    label: '原则',
+                },
                 // {to: '/blog', label: 'Blog', position: 'left'},
                 /*{
                   href: 'https://github.com/facebook/docusaurus',
