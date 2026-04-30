@@ -1,0 +1,8 @@
+{
+  "label": "Daytona",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Daytona 是为 AI 生成代码而设计的远程沙箱基础设施 —— 让 LLM Agent 能在隔离环境里安全地写代码 / 跑命令 / 暴露预览 URL, 而不污染宿主机."
+  }
+}
