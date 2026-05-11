@@ -1,6 +1,10 @@
 packages:
   - '.'
   - '华坤AI销售系统需求演示'
+allowBuilds:
+  core-js: true
+  core-js-pure: true
+  esbuild: true
 onlyBuiltDependencies:
   - core-js
   - core-js-pure

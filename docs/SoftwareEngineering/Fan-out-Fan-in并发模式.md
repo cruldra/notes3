@@ -132,6 +132,6 @@ graph = builder.compile()
 
 ## 七、拓展阅读
 
-- [Reducer 模式](./SoftwareEngineering/reducer.md) — 函数式编程中典型的 Fan-in 实现
+- [Reducer 模式](./reducer.md) — 函数式编程中典型的 Fan-in 实现
 - [Pregel 模型](https://en.wikipedia.org/wiki/Pregel_(computing)) — Google 提出的分布式图处理模型，核心是 Bulk Synchronous Parallel 中的 fan-out/broadcast
 - [MapReduce](https://en.wikipedia.org/wiki/MapReduce) — Hadoop 的核心理论基础，Map = Fan-out，Reduce = Fan-in
