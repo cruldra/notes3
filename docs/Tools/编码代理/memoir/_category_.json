@@ -1,0 +1,11 @@
+{
+  "label": "Memoir",
+  "position": 10,
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "Memoir 使用教程",
+    "description": "Memoir 是一个基于 Git 的、按分类法（taxonomy）组织的记忆系统，可与 Claude Code 等编码代理集成，实现持久化的上下文注入与事实自动捕获。"
+  }
+}
