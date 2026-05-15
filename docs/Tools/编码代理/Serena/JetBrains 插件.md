@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-[JetBrains 插件](https://plugins.jetbrains.com/plugin/28946-serena/) 让 Serena MCP 服务器能够利用 JetBrains IDE 强大的代码分析和编辑能力。本页介绍如何安装插件以及如何正确配置 Serena。你仍然需要自行设置 Serena MCP 服务器，因此除了遵循以下说明外，请确保按照[安装说明](020_running.md)操作，并按照[客户端设置](030_clients.md)中的描述将 MCP 服务器连接到基于 LLM 的客户端。
+[JetBrains 插件](https://plugins.jetbrains.com/plugin/28946-serena/) 让 Serena MCP 服务器能够利用 JetBrains IDE 强大的代码分析和编辑能力。本页介绍如何安装插件以及如何正确配置 Serena。你仍然需要自行设置 Serena MCP 服务器，因此除了遵循以下说明外，请确保按照安装说明操作，并按照客户端设置中的描述将 MCP 服务器连接到基于 LLM 的客户端。
 
 [Serena JetBrains 插件 — JetBrains Marketplace](https://plugins.jetbrains.com/plugin/28946-serena/)
 
