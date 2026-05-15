@@ -5,8 +5,8 @@
 <meta name="generator" content="Docusaurus v3.10.1">
 <title data-rh="true">语言支持 | Cruldra</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://your-docusaurus-site.example.com/notes3/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://your-docusaurus-site.example.com/notes3/docs/Tools/编码代理/Serena/语言支持"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="语言支持 | Cruldra"><meta data-rh="true" name="description" content="Serena 基于对代码的符号化理解，为多种编程语言提供了一套通用的代码查询和编辑功能。凭借这些能力，Serena 能像一位熟练使用 IDE 的资深开发者一样发现和编辑代码。即使在非常庞大和复杂的项目中，Serena 也能高效地找到正确的上下文并做出正确的操作。"><meta data-rh="true" property="og:description" content="Serena 基于对代码的符号化理解，为多种编程语言提供了一套通用的代码查询和编辑功能。凭借这些能力，Serena 能像一位熟练使用 IDE 的资深开发者一样发现和编辑代码。即使在非常庞大和复杂的项目中，Serena 也能高效地找到正确的上下文并做出正确的操作。"><link data-rh="true" rel="icon" href="/notes3/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://your-docusaurus-site.example.com/notes3/docs/Tools/编码代理/Serena/语言支持"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Tools/编码代理/Serena/语言支持" hreflang="en"><link data-rh="true" rel="alternate" href="https://your-docusaurus-site.example.com/notes3/docs/Tools/编码代理/Serena/语言支持" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"编码代理","item":"https://your-docusaurus-site.example.com/notes3/docs/category/编码代理"},{"@type":"ListItem","position":2,"name":"语言支持","item":"https://your-docusaurus-site.example.com/notes3/docs/Tools/编码代理/Serena/语言支持"}]}</script><link rel="alternate" type="application/rss+xml" href="/notes3/blog/rss.xml" title="Cruldra RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/notes3/blog/atom.xml" title="Cruldra Atom Feed"><link rel="stylesheet" href="/notes3/assets/css/styles.8299d33b.css">
-<script src="/notes3/assets/js/runtime~main.1641401a.js" defer="defer"></script>
-<script src="/notes3/assets/js/main.a4c7de1c.js" defer="defer"></script>
+<script src="/notes3/assets/js/runtime~main.4ab7d534.js" defer="defer"></script>
+<script src="/notes3/assets/js/main.3a4ab5e7.js" defer="defer"></script>
 </head>
 <body>
 <svg style="display: none;"><defs>
@@ -57,7 +57,7 @@
 <li class=""><strong>Markdown</strong>（必须显式启用语言 <code>markdown</code>，主要适用于文档密集型项目）</li>
 <li class=""><strong>mSL</strong>（mIRC 脚本语言）（自动安装；无需外部依赖——使用 Serena 自带的基于 pygls 的自定义 LSP 服务器；支持 <code>.mrc</code> 文件中的别名、事件、菜单、对话框和 CTCP 处理器的文档符号、工作区符号、引用和跳转定义）</li>
 <li class=""><strong>Nix</strong>（需要安装 nixd）</li>
-<li class=""><strong>OCaml</strong>（需要手动安装 opam 和 ocaml-lsp-server；详见 <a class="" href="/notes3/docs/Tools/编码代理/03-special-guides/ocaml_setup_guide_for_serena.md">OCaml 设置指南</a>）</li>
+<li class=""><strong>OCaml</strong>（需要手动安装 opam 和 ocaml-lsp-server；详见 OCaml 设置指南）</li>
 <li class=""><strong>Pascal</strong>（使用 Pascal/Lazarus，自动下载；设置 <code>PP</code> 和 <code>FPCDIR</code> 环境变量以进行源码导航）</li>
 <li class=""><strong>Perl</strong>（需要安装 Perl::LanguageServer）</li>
 <li class=""><strong>PHP</strong>（默认使用 Intelephense 语言服务器（语言 <code>php</code>），设置 <code>INTELEPHENSE_LICENSE_KEY</code> 环境变量以使用高级功能；同时支持 <a href="https://github.com/phpactor/phpactor" target="_blank" rel="noopener noreferrer" class="">Phpactor</a>（语言 <code>php_phpactor</code>），需要 PHP 8.1+）</li>
@@ -65,7 +65,7 @@
 <li class=""><strong>R</strong>（需要安装 <code>languageserver</code> R 包）</li>
 <li class=""><strong>Ruby</strong>（默认使用 <a href="https://github.com/Shopify/ruby-lsp" target="_blank" rel="noopener noreferrer" class="">ruby-lsp</a>（语言 <code>ruby</code>）；使用语言 <code>ruby_solargraph</code> 可改用 Solargraph。）</li>
 <li class=""><strong>Rust</strong>（需要 <a href="https://rustup.rs/" target="_blank" rel="noopener noreferrer" class="">rustup</a>——使用工具链中的 rust-analyzer）</li>
-<li class=""><strong>Scala</strong>（需要一些<a class="" href="/notes3/docs/Tools/编码代理/03-special-guides/scala_setup_guide_for_serena">手动设置</a>；使用 Metals LSP）</li>
+<li class=""><strong>Scala</strong>（需要一些手动设置；使用 Metals LSP）</li>
 <li class=""><strong>SCSS / Sass / CSS</strong>（实验性；需要 Node.js + npm；使用 <a href="https://github.com/wkillerud/some-sass" target="_blank" rel="noopener noreferrer" class="">some-sass-language-server</a> 处理 <code>.scss</code>、<code>.sass</code> 和 <code>.css</code>）</li>
 <li class=""><strong>Solidity</strong>（实验性；需要 Node.js 和 npm；自动安装 <code>@nomicfoundation/solidity-language-server</code>；最好在项目根目录放置 <code>foundry.toml</code> 或 <code>hardhat.config.js</code>）</li>
 <li class=""><strong>Svelte</strong>（需要 Node.js v18+ 和 npm；通过 <code>svelte-language-server</code> 支持 <code>.svelte</code> 单文件组件以及 TypeScript/JavaScript 文件；自动生成配套的 <code>typescript-language-server</code> + <code>typescript-svelte-plugin</code>，用于跨 <code>.ts</code>/<code>.js</code> 和 <code>.svelte</code> 文件的跨文件重命名、跳转定义和引用；Svelte 项目使用语言 <code>svelte</code>，无需再启用 <code>typescript</code>）</li>
