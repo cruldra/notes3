@@ -1,0 +1,8 @@
+{
+  "label": "运行时",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Inference.sh 运行时：持久化执行、可观测性、人机协同、工具编排——智能体基础设施的核心能力。"
+  }
+}

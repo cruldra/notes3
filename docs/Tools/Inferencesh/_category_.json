@@ -1,0 +1,8 @@
+{
+  "label": "Inference.sh",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "Inference.sh 是一个 AI 工作空间，让智能体真正执行任务——规划步骤、选择工具、生成 UI 组件，你只需描述目标。"
+  }
+}

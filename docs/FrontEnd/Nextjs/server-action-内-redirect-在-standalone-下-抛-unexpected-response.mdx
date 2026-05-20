@@ -1,0 +1,159 @@
+# Server Action 内 redirect() 在 standalone 下抛 "An unexpected response was received from the server"
+
+**Next.js 16 + `output: "standalone"` 已知回归** —— Server Action 里调用 `redirect()`, 浏览器会拿到一个奇怪的报错:
+
+```
+Uncaught (in promise) Error: An unexpected response was received from the server.
+```
+
+而且**只在生产构建复现, `next dev` 怎么都不出**. 一段时间里这会让人误以为是缓存、是部署不一致, 但根因是 framework 在两种模式下用了**两套不同的 server-action redirect 协议**.
+
+## 现象
+
+典型的 logout 实现:
+
+```ts title="src/lib/auth/actions.ts"
+"use server";
+import { redirect } from "next/navigation";
+
+export async function logoutAction() {
+  await clearAuthCookies();
+  redirect("/");                       // ← 凶手在此
+}
+```
+
+```ts title="src/components/sidebar.tsx"
+"use client";
+const onLogout = () => {
+  clearAuthClientState(queryClient);
+  void logoutAction();                 // 调用方 fire-and-forget
+};
+```
+
+```ts title="src/proxy.ts"   // 注: Next.js 16 起 middleware.ts → proxy.ts
+const PROTECTED = ["/user-profile", "/chat", "/billing"];
+export function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  if (!PROTECTED.some(p => pathname === p || pathname.startsWith(`${p}/`))) {
+    return NextResponse.next();
+  }
+  const token = req.cookies.get("auth_token")?.value;
+  if (!token) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/";
+    url.searchParams.set("from", pathname);
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
+}
+```
+
+```tsx title="src/app/page.tsx"  // 根 / 重定向到 /home
+import { redirect } from "next/navigation";
+export default function RootPage() { redirect("/home"); }
+```
+
+在生产构建下从 `/chat` 点 logout → 控制台炸 `An unexpected response was received from the server`, 页面**也不跳转、也不弹登录框**, 卡在原地. 本地 `pnpm dev` 一切正常.
+
+## 抓 fetch 对比 — 两套协议
+
+在浏览器里 hook 一下 `window.fetch`, 抓 logout 那条 POST:
+
+```js
+window.fetch = async function(input, init) {
+  const headers = new Headers(init?.headers || {});
+  if (headers.get("next-action")) {
+    const r = await origFetch(input, init);
+    console.log({
+      status: r.status, redirected: r.redirected,
+      content_type: r.headers.get("content-type"),
+      x_action_redirect: r.headers.get("x-action-redirect"),
+      final_url: r.url,
+    });
+    return r;
+  }
+  return origFetch(input, init);
+};
+```
+
+| 字段                  | **`pnpm dev`** (本地)                | **`output: standalone`** (生产)                |
+| --------------------- | ------------------------------------ | ---------------------------------------------- |
+| `status`              | **303**                              | 200 (是 fetch 一路 follow 完之后的最终状态)    |
+| `content-type`        | **`text/x-component`**               | `text/html; charset=utf-8`                     |
+| `x-action-redirect`   | **`/;push`** ← framework 私有头      | (没有这个头)                                   |
+| `location` 头         | **没有** (fetch 因此不会 follow)     | **有** (fetch 自动 follow 整条 redirect 链)    |
+| `response.redirected` | `false`                              | `true`                                         |
+| `body`                | RSC payload (`2:I[...]`)             | 整个 home 页的 HTML (`<!DOCTYPE html>...`)     |
+
+## 机制
+
+### dev 走的是"软 303 + 内联 RSC redirect"
+
+dev 的响应是个**故意不带 `Location`** 的 303, body 里直接夹好下一页的 RSC payload, 再用 `x-action-redirect: /;push` 头告诉 client 端 "导航到 /, push 历史栈". `fetch` 没有 Location 没东西可跟, client 的 RSC reducer 读到 `x-action-redirect`, 调 `router.push("/")` 走客户端导航, 整条链**一次请求闭环**.
+
+### standalone 走的是"硬 303 + 原生 HTTP redirect"
+
+standalone 模式下, 同一个 `redirect("/")` 返回的是**带 `Location: /` 的真重定向**. 然后:
+
+1. `fetch` 默认 follow → GET `/`
+2. RootPage 又 `redirect("/home")` → 又一跳 307 → fetch 继续 follow → GET `/home`
+3. 这次的 GET **是一个干净 GET, 没有 `RSC: 1` 头** (fetch 在 redirect 之间不会自动加 framework 私有头)
+4. `/home` 命中 `vary: rsc` 的"没 RSC 头"分支, 返回 `text/html` 的整页 HTML
+5. fetch 把这堆 HTML 当作最终响应返给 client 的 RSC reducer
+6. reducer 看 `content-type !== "text/x-component"` → throw `An unexpected response was received from the server`
+
+### 为什么 fire-and-forget 让用户卡死
+
+`void logoutAction()` 没有 `await` 也没有 `.catch`, 所以:
+
+- rejection 直接挂在 `(in promise)`, 没人处理
+- `clearAuthCookies()` 抛之前没跑完 → **服务端 cookie 没清**
+- `redirect("/")` 没被框架正常拦截 → 客户端没跳转
+- 但调用方紧挨着的 `clearAuthClientState(queryClient)` **已经提前跑了** → 客户端 react-query 缓存是清空的
+
+结果就是: 控制台报错 + UI 不动 + cookie 没清 + 缓存清了, 完美的"看上去 logout 失败但内部状态错乱". 用户体验上没有任何兜底.
+
+## 修法 — 把 redirect 挪到客户端
+
+action 只清 cookie, 跳转交给调用方:
+
+```diff title="src/lib/auth/actions.ts"
+  export async function logoutAction(): Promise<void> {
+    await clearAuthCookies();
+-   redirect("/");
++   // 不在 Server Action 里 redirect: Next.js 16 standalone 下 action 内
++   // redirect 链会让 fetch 跟到 text/html 响应, client RSC reducer 抛
++   // "An unexpected response was received from the server"
++   // (vercel/next.js#87245). 由调用方做 window.location 跳转.
+  }
+```
+
+```diff title="src/components/sidebar.tsx"
+  const onLogout = () => {
+    setUserMenuOpen(false);
+    clearAuthClientState(queryClient);
+-   void logoutAction();
++   logoutAction().finally(() => {
++     window.location.href = "/home";
++   });
+  };
+```
+
+**为什么用 `.finally` 不用 `.then`**: 即使 `logoutAction()` 这条 promise 因为别的原因 reject (典型: 跨部署的 Server Action ID 失效 — 老 tab 拿着旧 hash 但服务端 manifest 已变), `.finally` 也保证客户端跳转一定发生, 用户不会卡死. action 失败的副作用是"服务端 cookie 没清", 但客户端硬跳到 `/home` 后, 下次进 `/chat` 时 proxy.ts 会查 cookie, 真正失效或被踢的用户走的是后端 401 的正常分支, 不会有死循环.
+
+**为什么硬跳 (`window.location.href`) 而不是 `router.push`**: 硬跳保证拿到一份不带任何 user-bound 内存 / Service Worker 状态的全新 `/home`, 跟"用户重新打开浏览器"等价. 软跳的话, 万一登录态相关的 zustand store / context 还残留, 又得花心思一个一个清.
+
+## 边界
+
+- 该 bug 只在 `next.config.ts` 设了 `output: "standalone"` 时复现. 不设、或部署到 Vercel 自家平台, 走的是 dev 那套 inline RSC protocol, 没事.
+- 同样的 server action redirect 模式如果**没有经过 proxy.ts middleware**, 在 standalone 下也会触发, proxy 不是必要条件. 只是 middleware + redirect 是最常见的产生链路 (登录态保护 + 退出登录 + redirect 几乎必然组合).
+- `redirect("/home")` (直接跳到非 middleware-protected 路径) 也会触发, 区别只是 fetch follow 一次还是两次. 关键是**只要 fetch follow 到任何"按 `vary: rsc` 返回 HTML"的页面**, 就炸.
+
+## 参考
+
+- [vercel/next.js#87245](https://github.com/vercel/next.js/issues/87245) — `Client-side navigation fails when server component uses redirect() with Middleware/Proxy in production build`. 状态 **OPEN**, 报告中明确写 "Issue does NOT occur in development mode", 1:1 命中本场景.
+- [vercel/next.js#87651](https://github.com/vercel/next.js/discussions/87651) — `Next JS: An unexpected response was received from the server.` 同一报错文本的讨论.
+- [vercel/next.js#74026](https://github.com/vercel/next.js/issues/74026) — `Server-actions redirect not HTTP RFC compliant`. 讲 server action redirect 协议本身.
+- [vercel/next.js#64993](https://github.com/vercel/next.js/discussions/64993) — `Redirect in middleware when request is a server action fails`. middleware + server action 组合的早期讨论.
+- [vercel/next.js#63189](https://github.com/vercel/next.js/discussions/63189) — `Server action redirect randomly fails`. standalone + middleware.
+- [vercel/next.js#63114](https://github.com/vercel/next.js/issues/63114) — `Error when redirecting in a server action`. server action 内 redirect 总线问题.

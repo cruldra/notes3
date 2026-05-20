@@ -1,0 +1,8 @@
+{
+  "label": "Next.js",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "基于 React 的全栈框架, 支持 SSR/SSG/RSC, 由 Vercel 维护"
+  }
+}

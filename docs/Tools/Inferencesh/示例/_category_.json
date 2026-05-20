@@ -1,0 +1,8 @@
+{
+  "label": "示例",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Inference.sh 实操示例：图像生成、音频转录、内容管道、数据处理等场景的代码与配置。"
+  }
+}

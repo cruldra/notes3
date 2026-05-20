@@ -1,0 +1,8 @@
+{
+  "label": "快速入门",
+  "position": 0,
+  "link": {
+    "type": "generated-index",
+    "description": "Inference.sh 快速入门：了解工作区、创建智能体、运行第一个应用。"
+  }
+}

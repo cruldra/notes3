@@ -1,0 +1,400 @@
+# Next.js 里几种 redirect 姿势与底层协议
+
+Next.js 里"跳转一下"这件事, 表面上有**至少 7 个**不同 API 都能做, 底下还分**两套 wire format**. 经常有人写着写着混用, 然后撞到 bug 才意识到它们不是一回事. 这篇笔记把所有 redirect 工具按"在哪一层、用什么协议"摆清楚, 给个选择指南.
+
+## 总览 — 一张图
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Build time                                                       │
+│   next.config.ts → redirects()  // 静态 redirect 规则           │
+└─────────────────────────────────────────────────────────────────┘
+                       │ 命中规则 → 308 / 307 with Location
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Edge / Network 边界                                              │
+│   proxy.ts (旧叫 middleware.ts)                                  │
+│     → NextResponse.redirect(url)  // 经典 HTTP redirect         │
+└─────────────────────────────────────────────────────────────────┘
+                       │ 请求进入 app 内
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Server side (RSC / Server Action / Route Handler)               │
+│   import { redirect, permanentRedirect } from "next/navigation" │
+│     redirect("/foo")          // 抛 NEXT_REDIRECT, 框架接管     │
+│     permanentRedirect("/foo") // 同上但语义是永久跳转 (308)     │
+│                                                                  │
+│   Route Handler 里也能写:                                        │
+│     return NextResponse.redirect(url)                            │
+└─────────────────────────────────────────────────────────────────┘
+                       │ 响应回到客户端
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Client side                                                      │
+│   <Link href="/foo">             // 预取 + 软跳                 │
+│   router.push("/foo")            // 编程式软跳                  │
+│   router.replace("/foo")         // 软跳但替换历史              │
+│   window.location.href = "/foo"  // 平台原生硬跳                │
+│   window.location.replace("/foo")// 硬跳但替换历史              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+每一层都有自己的工具, 每个工具适合的事情不一样.
+
+## 逐个看
+
+### 1. `next.config.ts` 里的 `redirects()`
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next";
+
+const config: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/old-blog/:slug", destination: "/blog/:slug", permanent: true },
+      { source: "/admin",          destination: "/admin/dashboard", permanent: false },
+    ];
+  },
+};
+export default config;
+```
+
+**做什么**: 在请求到达任何 app 代码前, 框架按规则匹配 → 直接返回 HTTP `301`/`308` (permanent) 或 `302`/`307` (temporary).
+
+**适合什么**: 静态的 URL 变更, 比如 SEO 重构、域名迁移、栏目改名. 跟你的业务逻辑无关.
+
+**不适合什么**: 任何需要看 cookie / 看 session / 看请求内容才能决定的跳转——它的 source/destination 是字符串匹配, 不接 JS.
+
+### 2. `proxy.ts` (旧 `middleware.ts`) 里的 `NextResponse.redirect()`
+
+```ts title="src/proxy.ts"
+import { NextResponse, type NextRequest } from "next/server";
+
+export function proxy(req: NextRequest) {
+  const token = req.cookies.get("auth_token")?.value;
+  if (!token && req.nextUrl.pathname.startsWith("/admin")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("from", req.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+};
+```
+
+**做什么**: 在请求**进入 app router 之前**, 跑一段 Edge Runtime 上的 JS, 决定是放行 / 改写 / 重定向. `NextResponse.redirect(url)` 返回标准 HTTP `307`/`308` + `Location` 头.
+
+**适合什么**: 鉴权门 (没 token 跳登录页)、A/B 测试分组、地理路由、内部域名改写.
+
+**不适合什么**:
+- 重的业务逻辑——middleware 跑在 Edge Runtime, 不能用 Node API, 不能连数据库
+- 跟 RSC payload 联动的跳转——它响应的是 HTTP 头, 不是 RSC
+
+> ⚠️ 注意: Next.js 16 起 `middleware.ts` 文件约定改名为 `proxy.ts`, 导出函数从 `middleware` 改为 `proxy`. 见 [`middleware-改名-proxy`](./middleware-改名-proxy).
+
+### 3. `redirect()` from `next/navigation` — RSC / Server Action 里
+
+```tsx title="app/protected/page.tsx (Server Component)"
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+
+export default async function ProtectedPage() {
+  const session = await auth();
+  if (!session) redirect("/login");        // ← 抛 NEXT_REDIRECT
+  return <div>欢迎, {session.user.name}</div>;
+}
+```
+
+```ts title="app/posts/actions.ts (Server Action)"
+"use server";
+export async function createPost(formData: FormData) {
+  const post = await db.posts.create({ data: { title: formData.get("title") } });
+  redirect(`/posts/${post.id}`);            // ← 创建完跳详情
+}
+```
+
+**做什么**: 在 server 端 throw 一个特殊错误 (`NEXT_REDIRECT`), framework 在调用栈外层拦截这个 throw, 决定怎么返回响应给客户端.
+
+**Server Component 里**: 框架返回 HTTP `307` + Location, 浏览器原生跟随.
+
+**Server Action 里**: 这就是事情变复杂的地方——**dev 和 production (standalone) 行为不一样**, 见下面的"协议层"小节.
+
+**适合什么**: 任何"在服务端 component 或 action 里决定跳转"的场景, 写起来跟"return"一样自然——`if (!auth) redirect(...)` 而不是 `if (!auth) throw new Error("REDIRECT_TO_LOGIN")`.
+
+**不适合什么**:
+- 在 `try/catch` 里包着用 — `redirect` 的实现就是 throw, 会被你的 catch 吃掉, 不生效. 想避免就把 `redirect` 放到 catch 之外, 或者用 `isRedirectError()` 判断后 re-throw.
+- 在 Server Action 内调用并部署在自建 standalone 环境 — 见 #87245 bug 笔记.
+
+### 4. `permanentRedirect()` — 308 的语义化版本
+
+```ts
+import { permanentRedirect } from "next/navigation";
+
+export default function OldPage() {
+  permanentRedirect("/new-page");           // 308, 缓存友好
+}
+```
+
+跟 `redirect()` 唯一区别是返回 `308` 而不是 `307`. `308` 告诉 CDN / 搜索引擎 / 浏览器: **这是永久跳转, 请缓存这条规则, 以后请求老 URL 时直接去新 URL**.
+
+适合内容已迁移、URL 不会变回去的场景. 弄错 (临时跳转用了 308) 会导致 CDN 长时间记错路由.
+
+### 5. Route Handler 里的 `NextResponse.redirect()`
+
+```ts title="app/api/short/[code]/route.ts"
+import { NextResponse } from "next/server";
+
+export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const target = await db.shortUrls.findUnique({ where: { code } });
+  if (!target) return NextResponse.json({ code: "NOT_FOUND" }, { status: 404 });
+  return NextResponse.redirect(target.url, 302);
+}
+```
+
+**做什么**: Route Handler 里直接返回一个 redirect response. 标准 HTTP, 浏览器 / curl 都按常规 follow.
+
+**适合什么**: 短链跳转、OAuth 回调、文件下载链接发放——任何"我是一个 HTTP endpoint, 我要返回 redirect"的场景.
+
+**不适合什么**: 没有"不适合"的硬卡, 就是普通的 HTTP redirect.
+
+### 6. `<Link href="/foo">` — 客户端预取 + 软跳
+
+```tsx
+import Link from "next/link";
+
+export function Nav() {
+  return (
+    <>
+      <Link href="/posts">文章</Link>
+      <Link href="/about" prefetch={false}>关于</Link>
+    </>
+  );
+}
+```
+
+**做什么**:
+- mount 时 (默认) **预取** 目标路由的 RSC payload
+- 点击时**不走 HTTP redirect**, 直接用预取好的 payload 走客户端导航 (history.pushState + React 渲染)
+- 拿到完整 RSC payload 之后, 不变的部分 (layout) **不重渲染**, 变化的部分流式塞进 tree
+
+**适合什么**: 应用内导航的**默认选择**. 加 `prefetch={false}` 关掉预取, 大多数情况不用关.
+
+**不适合什么**: 跨域 / 跳到非 app 路由——`<Link>` 是 client 组件, 跨域会退化到 `<a>`.
+
+### 7. `useRouter().push() / replace()` — 编程式客户端导航
+
+```tsx
+"use client";
+import { useRouter } from "next/navigation";
+
+export function LoginForm() {
+  const router = useRouter();
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      const r = await fetch("/api/auth/login", { method: "POST", ... });
+      if (r.ok) router.push("/dashboard");
+      //          ^^^^ 软跳, 像 <Link>
+    }}>
+    </form>
+  );
+}
+```
+
+**做什么**: 跟 `<Link>` 同样底层, 用 RSC 软跳, 但你在 JS 里编程触发.
+
+**`push` vs `replace`**: `push` 添加历史记录 (后退能回到原页), `replace` 替换当前历史 (后退跳过此页). 登录后跳首页通常用 `replace`——不希望用户后退又回到 /login.
+
+### 8. `window.location.href` — 平台原生硬跳
+
+```tsx
+"use client";
+
+const onLogout = async () => {
+  await fetch("/api/auth/logout", { method: "POST" });
+  window.location.href = "/home";   // 整页 reload, 干净
+};
+```
+
+**做什么**: 浏览器原生 navigation, 跟用户在地址栏敲新 URL 一样. **全页面 reload, JS / CSS / 图片 / 状态全丢全建**.
+
+**适合什么**:
+- 登出 / 切换账号 — 你**想**清空所有内存状态
+- 跨 app 跳转 — 跳到另一个域、或脱离 Next.js 控制的页面
+- 修 framework 协议层 bug — 比如本仓库 [server-action-内-redirect](./server-action-内-redirect-在-standalone-下-抛-unexpected-response) 那个
+
+**不适合什么**: 应用内导航的一般情况——硬跳会丢掉 react-query 缓存、zustand state、滚动位置、Suspense streaming, 用户体验明显差.
+
+`window.location.replace("/foo")` 是替换历史栈的硬跳变体, 跟 `router.replace()` 类比.
+
+## 协议层 — 两套 wire format
+
+上面这些 API 在底下其实只用两套**线协议**:
+
+### 协议 A: 经典 HTTP redirect
+
+```
+HTTP/1.1 307 Temporary Redirect
+Location: /new-path
+```
+
+- 状态码: 301 / 302 / 303 / 307 / 308
+- 必须有 `Location` 头
+- 浏览器 `fetch` 默认 `redirect: 'follow'`, 自动跟随
+- 跟随之后, **客户端拿到的是新 URL 的响应**, 旧响应被吞掉
+
+**谁用**:
+- `next.config.ts` 的 `redirects()`
+- `proxy.ts` 里 `NextResponse.redirect()`
+- Server Component 里 `redirect()` (返回 307)
+- Route Handler 里 `NextResponse.redirect()`
+- Server Action 里 `redirect()` **在 standalone 输出下** (这是 bug, 见下)
+
+### 协议 B: RSC inline redirect (Next.js 私有)
+
+```
+HTTP/1.1 303 See Other
+Content-Type: text/x-component
+x-action-redirect: /home;push
+x-action-revalidated: 1
+Vary: rsc, next-router-state-tree, next-router-prefetch
+                                                   ↑ 注意 Location 头没有
+
+[body: RSC payload, 直接是 /home 那一页渲染好的 RSC]
+```
+
+- 状态码: 303 (但**故意不带 Location**, fetch 因此不会 follow)
+- 用 `x-action-redirect: <url>;<push|replace>` 头告诉 client 端要跳哪里、push 还是 replace
+- body 直接夹好目标页的 RSC payload, client 端的 RSC reducer 拿到后**直接渲染**, 不再发第二次请求
+- 一次 HTTP RTT 完成整个跳转 + 数据获取
+
+**谁用**:
+- Server Action 里 `redirect()` **在 dev / Vercel 部署 / 非 standalone 输出下** 的预期协议
+- `router.push()` / `<Link>` 客户端导航的请求也是这套协议的接收端
+
+**为什么 framework 想要这套**: 软跳体验 + 自动 revalidate + Suspense 流式 + 单 RTT, 这些都是协议 A 给不了的.
+
+### 两套协议在 dev / prod 不一致的 bug
+
+Next.js 16 `output: "standalone"` 模式下, Server Action 内的 `redirect()` **退回到协议 A** (硬 HTTP redirect), 然后 fetch follow 一路跟到目标页, 因为后续 GET 没带 `RSC: 1` 头, 服务端按 `Vary: rsc` 返回 HTML, 客户端 RSC reducer 看 content-type 不对 → throw `An unexpected response was received from the server`.
+
+dev 模式走的是协议 B, 所以**只有生产复现**.
+
+详细分析在 [`server-action-内-redirect-在-standalone-下-抛-unexpected-response`](./server-action-内-redirect-在-standalone-下-抛-unexpected-response).
+
+## "我想跳转, 用哪个" — 决策矩阵
+
+按场景判断:
+
+| 场景 | 用什么 |
+|---|---|
+| URL 重构, 旧路径要永久迁移 | `next.config.ts` 里 `redirects({permanent: true})` |
+| 未登录用户访问受保护页面, 跳登录 | `proxy.ts` 里 `NextResponse.redirect()` |
+| Server Component 渲染时发现 session 失效 | `redirect()` from `next/navigation` |
+| 短链 / OAuth 回调 / 文件下载链接 | Route Handler 里 `NextResponse.redirect()` |
+| 应用内菜单 / 列表 → 详情页 (用户点击) | `<Link href>` |
+| 应用内"提交表单成功后跳详情" (代码触发) | `router.push()` |
+| 登录成功跳首页, 不希望后退能回 login | `router.replace()` |
+| 登出 / 切换账号 / 任何"想清空一切"的场景 | `window.location.href` |
+| Server Action 完成后跳转 (普通业务) | Server Action 里 `redirect()` |
+| Server Action 完成后跳转 (我们这个 standalone 部署的项目) | ⚠️ **不要**在 action 里 redirect, 客户端 `window.location` 或 `router.push` |
+| 永久 redirect 用于 SEO | `permanentRedirect()` 或 `redirects({permanent: true})` |
+| OAuth 回调拿到 code 后跳到应用首页 (有 cookie 要写) | Route Handler 里写 cookie + `NextResponse.redirect()` |
+
+## 常见混淆 / 反模式
+
+### ❌ 把 `redirect()` 包在 `try/catch` 里
+
+```ts
+try {
+  redirect("/foo");
+} catch (e) {
+  // ← 把 NEXT_REDIRECT 这个特殊错误吃掉了, redirect 不生效
+}
+```
+
+`redirect()` 的实现就是 `throw new RedirectError(...)`. 任何 `try/catch` 都会把它当普通错误吞掉. **想包 try/catch, 要么把 redirect 放 catch 之外, 要么用 `isRedirectError(e)` 判断后 re-throw**:
+
+```ts
+import { isRedirectError } from "next/dist/client/components/redirect-status-code";
+
+try {
+  await doStuff();
+  redirect("/foo");
+} catch (e) {
+  if (isRedirectError(e)) throw e;          // ← 让框架接管
+  // 真错误的处理...
+}
+```
+
+### ❌ `router.push` 和 `window.location.href` 当作等价
+
+它们语义完全不同:
+
+| | `router.push` | `window.location.href` |
+|---|---|---|
+| reload 整页 | 否 | **是** |
+| 丢 JS 状态 | 否 | **是** |
+| 走 RSC payload | 是 | 否, 走完整 SSR |
+| 滚动位置 | 默认重置, 可配 | 重置 |
+| 跨域 | 不行 (只能 app 内) | 可以 |
+| 性能 | 几十毫秒 | 几百毫秒 |
+
+混用会导致 UX bug: 比如本该软跳的菜单点击却用了硬跳, 用户每次点都白屏一闪; 或者本该清空一切的登出用了软跳, 残留状态导致下次进来还是"已登录"的旧界面.
+
+### ❌ 在 middleware/proxy 里调 `redirect` from `next/navigation`
+
+```ts title="src/proxy.ts"
+import { redirect } from "next/navigation";   // ← 错!
+
+export function proxy(req: NextRequest) {
+  if (...) redirect("/login");                  // 不工作
+}
+```
+
+`redirect` from `next/navigation` 是给 Server Component / Server Action 用的 (要靠框架在调用栈外层拦 throw). middleware 跑在 Edge runtime, 没有那一层. 用 `NextResponse.redirect(url)`.
+
+### ❌ 在 client component 直接调 `redirect`
+
+```tsx
+"use client";
+import { redirect } from "next/navigation";
+
+export function Foo() {
+  if (someClientCondition) redirect("/bar");    // ← 抛错或不工作
+}
+```
+
+`redirect` 是 server-only. client component 里要么用 `<Link>`, 要么 `useRouter().push()`, 要么 `window.location.href`.
+
+### ❌ `useRouter` 从 `next/router` 导入
+
+```ts
+import { useRouter } from "next/router";        // ← Pages Router 的 API
+```
+
+App Router 用:
+
+```ts
+import { useRouter } from "next/navigation";    // ← App Router
+```
+
+俩 hook 同名但 API 不一样, 报错很迷.
+
+## 一句话总结
+
+> Next.js 的 redirect 工具按"在哪一层 (build / edge / server / client)"和"协议 (HTTP redirect / RSC inline)"两个维度展开. 大多数日常场景只要记住四件事: 应用内点击用 `<Link>`, 编程式应用内跳用 `router.push/replace`, 想清空状态用 `window.location.href`, server 端守卫用 `redirect()` from `next/navigation`. 剩下的 (`redirects` config / middleware redirect / `permanentRedirect` / Route Handler redirect) 都是特殊场景, 用到时再翻这篇笔记.
+
+## 延伸阅读
+
+- 同目录 [`server-action-vs-route-handler`](./server-action-vs-route-handler) — Server Action 和 Route Handler 的对比
+- 同目录 [`server-action-内-redirect-在-standalone-下-抛-unexpected-response`](./server-action-内-redirect-在-standalone-下-抛-unexpected-response) — 协议层 bug 的具体分析
+- 同目录 [`middleware-改名-proxy`](./middleware-改名-proxy) — Next.js 16 middleware 改名背景
+- [Next.js docs: redirecting](https://nextjs.org/docs/app/building-your-application/routing/redirecting) — 官方对 7 种 redirect 方式的总览
+- [Next.js docs: `redirect`](https://nextjs.org/docs/app/api-reference/functions/redirect)
+- [Next.js docs: `NextResponse.redirect`](https://nextjs.org/docs/app/api-reference/functions/next-response#redirect)

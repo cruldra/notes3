@@ -1,0 +1,360 @@
+# Server Action vs Route Handler — 两条暴露后端的路, 选哪条
+
+Next.js App Router 给你**两个独立**的机制把后端逻辑暴露给客户端调用. 它们能完成的事情几乎完全重叠——所以很多人写出来才发现"诶我俩混用了". 这篇笔记把它们摆在一起对比, 给出选择标准.
+
+## 一句话定位
+
+| | Server Action | Route Handler |
+|---|---|---|
+| 本质 | **RPC, 像调本地函数** | **HTTP endpoint, 像 REST API** |
+| 寻址方式 | 编译时生成的哈希 ID | URL 路径 |
+| 调用形态 | `await foo(arg)` | `await fetch("/api/...")` |
+| 文件位置 | 任意 (带 `"use server"`) | `app/.../route.ts` |
+| 思路来源 | 像 Remix actions / tRPC | 像 Express routes / NestJS controllers |
+
+## 长什么样 — 同一个功能两种写法
+
+以"用户改昵称"为例.
+
+### Server Action 版
+
+```ts title="src/lib/user/actions.ts"
+"use server";
+import { z } from "zod";
+import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
+
+const schema = z.object({ display_name: z.string().min(1).max(40) });
+
+export async function updateDisplayName(input: z.infer<typeof schema>) {
+  const parsed = schema.parse(input);
+  const token = (await cookies()).get("auth_token")?.value;
+  if (!token) throw new Error("UNAUTHENTICATED");
+
+  const r = await fetch(`${process.env.BACKEND_INTERNAL_URL}/api/v1/users/me`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(parsed),
+  });
+  if (!r.ok) throw new Error("UPDATE_FAILED");
+
+  revalidatePath("/user-profile");
+  return { display_name: parsed.display_name };
+}
+```
+
+```tsx title="src/components/edit-name.tsx"
+"use client";
+import { updateDisplayName } from "@/lib/user/actions";
+
+export function EditName() {
+  return (
+    <form action={async (fd) => {
+      await updateDisplayName({ display_name: String(fd.get("name")) });
+    }}>
+      <input name="name" />
+      <button type="submit">保存</button>
+    </form>
+  );
+}
+```
+
+### Route Handler 版
+
+```ts title="src/app/api/users/me/route.ts"
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { z } from "zod";
+
+const schema = z.object({ display_name: z.string().min(1).max(40) });
+
+export async function PATCH(req: Request) {
+  const token = (await cookies()).get("auth_token")?.value;
+  if (!token) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
+
+  const body = await req.json();
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ code: "INVALID" }, { status: 400 });
+
+  const r = await fetch(`${process.env.BACKEND_INTERNAL_URL}/api/v1/users/me`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(parsed.data),
+  });
+  if (!r.ok) return NextResponse.json({ code: "UPSTREAM" }, { status: 502 });
+
+  return NextResponse.json({ display_name: parsed.data.display_name });
+}
+```
+
+```tsx title="src/components/edit-name.tsx"
+"use client";
+import { useState } from "react";
+
+export function EditName() {
+  const [name, setName] = useState("");
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      const r = await fetch("/api/users/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ display_name: name }),
+      });
+      if (!r.ok) { /* 自己写 toast */ }
+    }}>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button type="submit">保存</button>
+    </form>
+  );
+}
+```
+
+两份代码做的事一样, 看起来 Server Action 短不少. 这是"看上去"的部分.
+
+## 各自的核心价值
+
+### Server Action 的甜头
+
+#### 1. Progressive Enhancement (PE)
+
+`<form action={fn}>` 是 React 19 + Next.js 的杀手锏: **JS 没加载完 / JS 加载失败 / 用户禁了 JS, 表单照样能提交**. 提交时浏览器原生 POST 到当前页, Next.js 在服务端用 multipart/form-data 接住, 跑 action, 渲染新的 RSC 返回. 全程没有客户端 JS.
+
+```tsx
+<form action={updateDisplayName}>      {/* ← 直接传函数引用 */}
+  <input name="display_name" />
+  <button type="submit">保存</button>
+</form>
+```
+
+Route Handler 做不到这个——要么用户没 JS 表单就废了, 要么你得**额外**为 PE 写一份 `<form method="POST" action="/api/...">` 的版本.
+
+#### 2. 类型一路打通, 无需自己写 fetch wrapper
+
+```ts
+// Server Action: TS 类型从 action 直接流到调用方
+const result = await updateDisplayName({ display_name: "新名" });
+//    ^^^^^^ 推断为 { display_name: string }
+
+// Route Handler: 你要么手写 schema 类型, 要么 generate
+const r = await fetch("/api/users/me", { ... });
+const data = await r.json();
+//    ^^^^ 是 any, 除非你写了 zod 解析或者用 openapi-fetch 之类
+```
+
+如果项目没在用 OpenAPI 生成方案 (openapi-fetch / orval / hey-api), Server Action 在 DX 上确实省事.
+
+#### 3. `useFormStatus` / `useActionState` 与 React 19 hook 联动
+
+```tsx
+"use client";
+import { useActionState } from "react";
+import { updateDisplayName } from "./actions";
+
+export function EditName() {
+  const [state, action, pending] = useActionState(updateDisplayName, null);
+  return (
+    <form action={action}>
+      <input name="display_name" />
+      <button disabled={pending}>{pending ? "保存中..." : "保存"}</button>
+      {state?.error && <p>{state.error}</p>}
+    </form>
+  );
+}
+```
+
+`pending` 自动跟着 server action 的生命周期跑, 没有任何 `useState(false)` + `setPending(true/false)` 的样板.
+
+Route Handler 这边你得自己 `useState` + `try/finally`.
+
+#### 4. `revalidatePath` / `revalidateTag` 自动刷新
+
+```ts
+"use server";
+export async function deletePost(id: string) {
+  await db.posts.delete(id);
+  revalidatePath("/posts");        // ← 列表页 RSC 自动重新拉
+}
+```
+
+调用完 action, Next.js 在同一个响应里把新的 RSC 也一起 stream 回来. 调用方什么都不用做, 页面上的列表就更新了.
+
+Route Handler 这边你要 `router.refresh()` 或者自己改 react-query 缓存.
+
+#### 5. 闭包能 capture 上下文
+
+```tsx
+function PostItem({ post }: { post: Post }) {
+  const deletePost = async () => {
+    "use server";
+    await db.posts.delete(post.id);      // ← 直接闭包 post.id
+    revalidatePath("/posts");
+  };
+  return <form action={deletePost}><button>删除</button></form>;
+}
+```
+
+每个 `<PostItem>` 都有一个绑定了自己 `post.id` 的 action. Route Handler 这种风格做不到, 必须把 id 通过参数/URL/body 传.
+
+### Route Handler 的甜头
+
+#### 1. 跨部署稳定 — 这是最关键的一个
+
+Server Action 的 ID 是**编译时哈希**, 每次 `pnpm build` 都可能变. 部署一次, 老 tab 拿着旧 hash 发请求, 服务端 manifest 已经换了, 直接报错:
+
+```
+Error: Failed to find Server Action "<hash>". This request might be from
+an older or newer deployment.
+```
+
+Route Handler 用的是**URL 路径**, 你写代码控制, 跨构建 100% 稳定. 老 tab 的请求会正常命中新服务器的处理函数.
+
+Vercel 自家平台有 "Skew Protection" 把旧版 deployment 的 runtime 保留至少 12 小时来兜这件事. **任何非 Vercel 的部署 (Docker / K8s / Cloudflare Containers / 自建 PaaS)**, 都没有这个能力, 老 tab 就是定时炸弹.
+
+#### 2. 标准 HTTP 语义
+
+```
+GET    /api/users          → 列表
+GET    /api/users/:id      → 单个
+POST   /api/users          → 创建
+PATCH  /api/users/:id      → 更新
+DELETE /api/users/:id      → 删除
+
+状态码: 200 / 201 / 400 / 401 / 403 / 404 / 409 / 422 / 500
+```
+
+curl 直接能调, 后端工程师不用看代码就懂. 错误处理走标准 status code, 不用自己发明协议.
+
+Server Action 那边: 一律 POST, 一律带 `Next-Action: <hash>` 头, 一律返回 RSC payload 或 throw 给框架. 你 grep `200` `404` `403` 是查不到 action 的状态分布的——你得 grep `throw new Error("FOO_ERR")` 这种字符串.
+
+#### 3. 给非浏览器调用方暴露同一个端点
+
+CLI 工具 / iOS 客户端 / 第三方集成 / Webhook 验证 / 监控探针——这些场景**只能**走 Route Handler 风格. Server Action 的哈希 ID + RSC 编码非浏览器调用方根本没法用.
+
+```bash
+# Route Handler, 任何 HTTP 客户端都能调
+curl -X POST https://app.example.com/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"alice"}'
+```
+
+#### 4. 排查 / 监控 / 日志友好
+
+- 日志里看到 `POST /api/users 201 23ms`, 一眼就知道是干嘛的
+- 接 APM (Sentry / Datadog / OpenTelemetry) 自动按 path 聚合
+- 限流 / WAF / 网关 rule 按路径写很自然
+
+Server Action 的请求在日志里都是同一个路径 (`POST /your-current-page`) 加一个不可读的 hash, 区分起来麻烦.
+
+#### 5. 跟 Edge Runtime / Streaming Response 配合好
+
+```ts title="app/api/chat/route.ts"
+export const runtime = "edge";
+
+export async function POST(req: Request) {
+  const stream = await openai.chat.completions.create({ ..., stream: true });
+  return new Response(stream.toReadableStream());
+}
+```
+
+Route Handler 可以返回任意 `Response` 对象, 流式响应、SSE、二进制下载、自定义 headers, 全都自由. Server Action 是 framework 控制返回值的, 流式响应只能走 RSC streaming 这一条路.
+
+## 各自的核心代价
+
+### Server Action 的代价
+
+- **跨部署不稳定** — 每次部署都让老 tab 失效, 自建部署里是大坑
+- **难调试 / 难压测** — 没法 curl, 没法 wrk, 错误码隐式
+- **响应不是你能完全控制的** — 想加自定义 header 比较绕
+- **错误协议反人类** — `throw new Error("CODE")` 序列化时只剩 message, 想带 status code / 详情得自己塞 return value
+- **跨平台 / 跨客户端不可复用** — 只服务这个 Next.js 应用的浏览器客户端
+- **redirect 协议有 dev/prod 行为差异 bug** — 见同目录 [server-action-内-redirect 那一篇](./server-action-内-redirect-在-standalone-下-抛-unexpected-response)
+
+### Route Handler 的代价
+
+- **样板代码多** — schema 解析、错误响应、auth 检查这些都要自己写
+- **类型不会自动跨边界** — 客户端调用要么生成类型 (OpenAPI / tRPC 这种), 要么手写
+- **不能做 Progressive Enhancement** — JS 没加载就完蛋
+- **不能自动 revalidate RSC** — 要手动 `router.refresh()` 或自己管缓存
+- **不能闭包 capture** — 每个调用要把上下文显式传过去
+
+## 决策矩阵
+
+我推荐这套判断标准, 按"先看哪个 dealbreaker 命中"的顺序:
+
+```
+┌─ 这个接口要给非浏览器客户端调用吗 (CLI / iOS / 集成)?
+│   是 → Route Handler. 没得选.
+│   否 → 继续
+│
+├─ 这个项目部署在 Vercel 吗?
+│   是 → 大概率 Server Action 更省事 (Skew Protection 兜底)
+│   否 → 继续  (这就是我们的处境)
+│
+├─ 这个操作失败后用户后果严重吗 (登出 / 支付 / 删数据)?
+│   严重 → Route Handler. URL 稳定是底线.
+│   不严重 → 继续  (用户重试一下也无所谓)
+│
+├─ 这是个表单提交、需要 Progressive Enhancement?
+│   是 → Server Action. 这是它独有的杀手锏.
+│   否 → 继续
+│
+├─ 你已经在用 OpenAPI / openapi-fetch / orval 之类的客户端生成方案吗?
+│   是 → Route Handler. 你的样板代码代价已经摊掉了.
+│   否 → Server Action 在 DX 上确实省事
+│
+└─ 默认: Route Handler.
+   理由: 多一份代码换一份长期稳定性, 对自建部署的项目这笔账划得来.
+```
+
+## 反模式 / 常见误解
+
+### ❌ "Server Action 比 Route Handler 快"
+
+不. 它们底层都是 HTTP POST. Server Action 一律带 `Next-Action: <hash>` 头, 服务端比对 manifest, 跑函数, 然后返回 RSC 编码的响应——比 Route Handler 多一道**RSC 序列化开销**. 单论"调一个函数返回 JSON"的 latency, Server Action **不会更快, 通常略慢**.
+
+### ❌ "用了 Server Action 就可以不写 API"
+
+Server Action 本质就是 API, 只是用了一套不太透明的 wire format. 你以为没写 API, 实际上你写了, 只是没法 grep, 没法 curl, 没法监控. 心智上"省"出来的复杂度其实**藏到了别处**.
+
+### ❌ "Server Action 更安全, Route Handler 是公开端点"
+
+两者**安全模型完全一样**: 都跑在你的 Next.js 服务进程里, 都能 access `cookies()` / `headers()`, 都需要自己做 auth 检查. Server Action 的哈希 ID 不是安全机制——它**默认情况下任何知道 hash 的人都能 POST 触发**. 不能拿"哈希不公开"当鉴权.
+
+### ❌ "把 Server Action 当 RPC 用, 一律 `void fooAction()`"
+
+这是我们仓库之前踩的坑. `void` 抛弃了 Promise rejection, 出错没人接, 用户卡死. 如果决定用 Server Action 当 RPC, 至少要 `await` + `try/catch` 或 `.catch()`. 但既然你都开始手动处理 promise 状态了, Server Action 的 DX 优势已经被消解一半——这种用法不如直接 Route Handler + fetch.
+
+### ❌ "Server Action 内 redirect 是常规操作"
+
+Next.js 16 standalone 输出下, action 内 `redirect()` 在踩进 framework 自己的 `vary: rsc` 协议坑里, 客户端 `fetch` follow 一路拿到 HTML 然后 throw `An unexpected response was received from the server` (issue #87245, 暂未修复). 详见同目录 bug 笔记.
+
+**安全做法**: redirect 移到客户端用 `window.location.href` 或 `router.push`.
+
+## 在 luffy-agent-platform 项目里的取舍
+
+历史上整个 `frontend/client-nextjs/src/lib/auth/actions.ts` 全用 Server Action 实现登录态相关的接口 (login / logout / sendSms / smsLogin / bindPhone / uploadAvatar / getCurrentUser / getBalance). 这是个**典型把 Server Action 当 RPC 用的反模式**:
+
+- 没有任何 `<form action={fn}>`, 全是 `void fnAction()` 或 `await fnAction()`
+- 没用 `useActionState` / `useFormStatus`
+- 没用 `revalidatePath` 联动 (我们用 react-query 管缓存)
+- 没用闭包 capture (参数都是显式传)
+
+也就是说 **Server Action 的所有"甜头"我们都没吃到**, 但**所有"代价"我们全在承担**:
+
+- 部署后老 tab 报 `Failed to find Server Action`
+- logout 内 redirect 触发 #87245 → unexpected response
+- 想 curl 验证一下 sendSms 都做不到
+
+合理的迁移方向是: **把这一类"当 RPC 用"的 Server Action 全部迁到 Route Handler**, 保留 Server Action 给真正用得到 PE / form action / revalidate 这些特性的场景 (本仓库目前还没有那样的场景).
+
+## 一句话总结
+
+> Server Action 在 Vercel 上 + 真正用 `<form>` + 配合 RSC revalidate 时, 是好东西. 拆开任何一个前提, 它就退化成"一个加了 wire format 包装的 POST". 在自建部署 + 当 RPC 调的项目里, **Route Handler 几乎在每条维度上都更稳定**——多写的那些样板, 就是它给你的可观测性 / 兼容性 / 稳定性的等价代价.
+
+## 延伸阅读
+
+- 同目录 [`server-action-内-redirect-在-standalone-下-抛-unexpected-response`](./server-action-内-redirect-在-standalone-下-抛-unexpected-response) — Server Action redirect 在生产环境的具体 bug
+- [Next.js docs: Server Actions and Mutations](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+- [Next.js docs: Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
+- [Vercel: Skew Protection](https://vercel.com/docs/deployments/skew-protection) — 为什么 Server Action 在 Vercel 上没那么痛

@@ -1,0 +1,134 @@
+# middleware.ts 改名为 proxy.ts
+
+从某个版本开始 (Next.js 16 时代), 启动 dev server 会看到这样一条 deprecation 警告:
+
+```
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+```
+
+这篇笔记记录**为什么改名**, 以及**怎么迁移**.
+
+## 这是什么变化
+
+Next.js 把根目录下的 `middleware.ts` 文件约定改名为 `proxy.ts`, 同时把导出的函数名从 `middleware` 改为 `proxy`. **API 行为 100% 不变**, 是一次纯命名重构.
+
+```diff
+- // src/middleware.ts
+- export function middleware(req: NextRequest) { ... }
++ // src/proxy.ts
++ export function proxy(req: NextRequest) { ... }
+
+  export const config = {                            // ← 不变
+    matcher: ["/((?!_next/static|api).*)"],          // ← 不变
+  }
+```
+
+`NextRequest` / `NextResponse` / `config.matcher` / Edge Runtime 默认行为 — **全部保留**.
+
+## 为什么改名
+
+官方文档 [`middleware-to-proxy`](https://nextjs.org/docs/messages/middleware-to-proxy) 给出了两条理由.
+
+### 理由 1: "middleware" 这个词容易被误解
+
+很多人会把它和 **Express.js middleware** 联想到一起 — Express middleware 是请求处理链上的一环, 鼓励 "在每个请求里塞业务逻辑". 这种心智模型套到 Next.js 上会导致滥用:
+
+- 把鉴权、日志、改写、A/B 测试、地理路由、特性开关 **全部堆进 `middleware.ts`**
+- 结果 Edge runtime 上跑了一堆本该放在 Server Component / Route Handler / `generateMetadata` 里的代码
+- 性能差、调试难、心智复杂
+
+Next.js 团队的立场是: **这个文件应该是最后手段**, 能用页面 / Route Handler / `generateMetadata` 解决的, 就别用它. 改名是劝退信号.
+
+### 理由 2: "proxy" 更准确地描述它的行为
+
+- 它运行在请求**到达 app 之前**, 相当于在 app 前面架了一个网络边界 — 这就是 proxy 的语义.
+- 它**默认跑在 Edge Runtime**, 地理位置上可能比 app 主区域更靠近客户端, 这也更像反向代理而不是应用内中间件.
+
+"middleware" 这个名字既容易让人误用 (联想 Express), 又没说出它真正所在的位置 (Edge, 在 app 之前). "proxy" 同时解决这两个问题.
+
+## 一张图说清
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  middleware.ts (旧约定)                                              │
+│    export function middleware(req: NextRequest) { ... }              │
+│    export const config = { matcher: [...] }                          │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │ 命名给人的心智模型
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  团队观察到的两个问题                                                  │
+│    P1: 名字撞 Express.js middleware                                  │
+│        ↳ 用户误以为是 "请求处理链上的一环"                            │
+│        ↳ 鼓励往里堆鉴权/日志/改写/A-B/特性开关… 一切业务逻辑           │
+│    P2: 名字没暴露 "它跑在哪"                                          │
+│        ↳ 实际默认跑在 Edge Runtime, 在 app region 之外, 地理靠客户端  │
+│        ↳ 这是网络边界, 不是应用内层                                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+  用户认知            实际行为                          Next.js 团队目标
+  ────────            ──────                            ──────────────
+  middleware.ts
+   ├─ "随便塞业务逻辑"        ↛  实际跑在 Edge, 距 app 一跳网络边界
+   │      ↳ 滥用 ─────→ 性能差 / 调试难 / 心智复杂
+   │
+   ├─ "请求链中间件"          ↛  实际是 "app 前面的反向代理层"
+   │      ↳ 错位 ─────→ 文档/最佳实践始终拧不正过来
+   │
+   └─ 解决路径
+       └→ 重命名文件约定 + 函数名: middleware → proxy
+                                  ├─ "proxy" 暗示网络边界
+                                  ├─ "proxy" 暗示这是 app 之前的一层
+                                  ├─ 心理上降低存在感, 劝退滥用
+                                  └─ 引导用户优先用页面/Route Handler/
+                                     generateMetadata 等更合适的 API
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  proxy.ts (新约定)                                                   │
+│    export function proxy(req: NextRequest) { ... }   ← 仅改名         │
+│    export const config = { matcher: [...] }          ← 不变           │
+│    NextRequest / NextResponse                        ← 不变           │
+│                                                                      │
+│    本质: 纯命名重构 + 用意引导                                         │
+│          API 行为 100% 兼容, codemod 自动迁移                          │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## 迁移方法
+
+### 方法一: 官方 codemod (推荐)
+
+```bash
+npx @next/codemod@canary middleware-to-proxy .
+```
+
+会自动把文件名 `middleware.ts` → `proxy.ts`, 函数名 `middleware` → `proxy`.
+
+### 方法二: 手动迁移
+
+如果文件就一个、改动可控, 手工也行:
+
+```bash
+# 1. 改名 (用 git mv 保留历史)
+git mv src/middleware.ts src/proxy.ts
+
+# 2. 函数名改名
+#    export function middleware(req) {...}
+#    → export function proxy(req) {...}
+```
+
+注意: **只改函数名, 不要动 `config` 和 `matcher`**, 也不需要改 `NextRequest` / `NextResponse` 的 import.
+
+## 一个值得提的副作用
+
+如果代码里别处的**注释**提到 "middleware 已对 /xxx 做未登录 redirect" 之类的描述, 严格来说也该顺手改成 "proxy", 但这是术语一致性问题, 不影响运行. 团队里口头很多人还是会习惯叫 "middleware", 实际工程中可酌情决定要不要全量替换.
+
+## 总结一句话
+
+> Next.js 团队发现 "middleware" 这个名字同时**让人误用**(联想 Express 中间件 → 滥塞业务) 和**没说出它真正所在位置**(其实跑在 Edge, 是 app 前面的反向代理), 所以改叫 **proxy** — 名字暗示 "网络边界 + 最后手段", 引导大家**少用、用对**. 底层 API 一字未改.
+
+## 参考
+
+- [Renaming Middleware to Proxy — Next.js 官方迁移说明](https://nextjs.org/docs/messages/middleware-to-proxy)
+- [Proxy Docs](https://nextjs.org/docs/app/api-reference/file-conventions/proxy)

@@ -1,0 +1,264 @@
+[Tiptap](https://tiptap.dev/) 是一个基于 [ProseMirror](https://prosemirror.net/) 的 **headless 富文本编辑器框架**, 主要适配 React 与 Vue. "headless" 意味着它只提供文档模型、命令系统、节点/标记体系与编辑状态管理, **不带任何 UI 与样式**, 工具栏、菜单、节点外观全部由开发者决定.
+
+> 一句话: Tiptap = ProseMirror 的工程化封装 + 框架适配层 + 现代化插件生态. 真正的"灵魂"在底层的 ProseMirror.
+
+## Tiptap 是什么 / 不是什么
+
+- **是**: 文档模型与编辑行为的运行时. 给你 schema、transaction、命令链、节点视图、扩展系统.
+- **不是**: 一个开箱即用的 Notion 编辑器. 它不会自带气泡菜单、不会渲染好看的代码块, 你要自己拼.
+- 与 Notion / Slack 这类"产品级编辑器"的区别: 它们是"带 UI 的编辑器实现", 而 Tiptap 是"做这些产品的底层框架".
+
+## 核心概念
+
+要会用 Tiptap, 必须先理解 ProseMirror 的几个关键抽象, 否则只是抄 demo.
+
+### 1. Schema: 文档是有约束的树
+
+ProseMirror 文档不是字符串, 也不是 HTML DOM, 而是一棵被 **schema** 严格约束的树. schema 规定:
+
+- 哪些节点(Node)可以存在
+- 它们之间的嵌套关系 (例如 `paragraph` 只能含 inline 内容, `bulletList` 只能含 `listItem`)
+- 哪些标记(Mark)可以加在哪些节点的文本上
+- 每个节点有哪些属性(attrs)
+
+这种"先约束再编辑"的思想是 Tiptap 区别于 contentEditable 直觉式编辑的核心. 它保证了文档**永远合法**, 不会出现 `<b><div></div></b>` 这种半合法 HTML.
+
+### 2. Node vs Mark
+
+- **Node**: 文档结构的组成单元. 分为 **block**(段落、标题、列表项、图片块)和 **inline**(行内图片、mention、chip).
+- **Mark**: 覆盖在文本上的"修饰", 比如 `bold` / `italic` / `link` / `code`. 它本身不是节点, 不占据结构位置.
+
+> 经验法则: 如果它"有自己的内容或属性"(图片有 src, mention 有 userId, chip 含上传进度), 用 Node; 如果它只是给一段文本加样式或语义(粗体、链接), 用 Mark.
+
+### 3. inline / atom / selectable
+
+定义自定义节点时, 几个布尔属性会反复出现, 含义必须分清:
+
+```ts
+Node.create({
+  name: 'fileChip',
+  group: 'inline',     // 属于 inline 组, 可以放在段落里
+  inline: true,        // 它是 inline 节点
+  atom: true,          // 内容是"原子": 光标不能进入它内部
+  selectable: true,    // 可以被作为一个整体选中(便于删除)
+  draggable: false,
+})
+```
+
+`atom: true` 是实现"芯片(chip)/标签/卡片"这类**不可编辑内部、整体作为一个字符存在**的节点的关键. 没有它, 用户的光标会钻进你的 React 组件里乱跑.
+
+### 4. State 与 Transaction
+
+ProseMirror 的 `EditorState` 是**不可变**的. 任何编辑行为(键入、删除、应用样式)都不会原地修改 state, 而是创建一个 `Transaction`(状态变更的描述), 再生成新的 state. 这带来几个好处:
+
+- **撤销/重做天然**: 一串 transaction 就是历史, 反向应用即可.
+- **协同编辑友好**: transaction 可以序列化、在不同客户端间合并(OT/CRDT).
+- **可观察**: 监听 transaction 就能做埋点、自动保存、外部同步.
+
+```ts
+// 一个典型的 transaction 链
+editor
+  .chain()
+  .focus()
+  .setBold()
+  .insertContent('hello')
+  .run()  // 一次性提交 transaction
+```
+
+### 5. Plugin: 一切扩展点都在这
+
+ProseMirror 用 plugin 系统暴露生命周期: 监听 transaction、提供输入规则(input rules)、注册装饰(decorations)、自定义快捷键、拦截粘贴等. **Tiptap 的 `Extension` 本质上就是 ProseMirror plugin 的薄包装**, 提供更友好的 API 与生命周期钩子(`addCommands`, `addKeyboardShortcuts`, `addInputRules`, `addProseMirrorPlugins` 等).
+
+### 6. NodeViewRenderer: React/Vue 与 ProseMirror 的桥
+
+这是 Tiptap 工程化最重要的一块. ProseMirror 自己管理一棵真实 DOM 树, 而我们希望某些节点用 React 组件渲染(比如带状态的上传 chip、可点击展开的引用卡片). `NodeViewRenderer` 做的是:
+
+1. 在节点位置挂一个 React 组件作为 NodeView;
+2. 节点的 `attrs` 是**唯一真相**, React 组件从 props 读取;
+3. 组件要写回去, 必须调用 `updateAttributes()` 生成 transaction;
+4. ProseMirror 管理外层 DOM 节点的位置/选区, React 管理组件内部 UI.
+
+> 误区警告: 不要在 React 组件内部用 `useState` 维持节点的"持久状态". 状态写到 attrs, 否则 undo/redo 会让 UI 状态与文档不同步.
+
+```tsx
+import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
+
+const FileChipView = ({ node, updateAttributes }) => {
+  const { fileName, progress } = node.attrs
+  return (
+    <NodeViewWrapper as="span" className="inline-flex items-center gap-1 rounded bg-gray-100 px-2">
+      <span>{fileName}</span>
+      {progress < 100 && <span>{progress}%</span>}
+    </NodeViewWrapper>
+  )
+}
+
+export const FileChip = Node.create({
+  name: 'fileChip',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  selectable: true,
+  addAttributes() {
+    return {
+      fileName: { default: '' },
+      fileId:   { default: null },
+      progress: { default: 0 },
+    }
+  },
+  parseHTML()  { return [{ tag: 'span[data-file-chip]' }] },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', mergeAttributes(HTMLAttributes, { 'data-file-chip': '' })]
+  },
+  addNodeView() { return ReactNodeViewRenderer(FileChipView) },
+})
+```
+
+### 7. Commands: 表达"我要做什么"
+
+Tiptap 的 `editor.chain().X().Y().run()` 模式把"编辑意图"显式表达出来:
+
+- 链式调用编译成一个 transaction;
+- 命令可以 `can()` 预检(用于工具栏按钮的禁用态);
+- 第三方扩展自带的命令通过 `addCommands` 注入到全局命令对象.
+
+```ts
+const canBold = editor.can().chain().focus().toggleBold().run()
+```
+
+## 设计思路
+
+把上面散点的概念串成一句话:
+
+> **Schema-first, headless, extension-based.** 先定义"能表达什么", 再决定"长什么样"; 核心极小, 所有功能都是可插拔的扩展.
+
+### Headless 哲学
+
+Tiptap 本身没有"工具栏组件"、"气泡菜单组件". 它给你的是:
+
+- `useEditor()` Hook → 拿到 `editor` 实例
+- `<EditorContent />` 组件 → 把 editor 的 DOM 挂到 React 树
+- `<BubbleMenu />` / `<FloatingMenu />` → 浮层定位的容器(也只是容器, 内容你自己填)
+
+这使得它和**任何 UI 框架**(Mantine、Radix、shadcn、Antd)无缝结合, 不会强加视觉风格.
+
+### Schema-first
+
+UI 可以随时换皮, 但"文档里能存什么"是产品的核心契约. 先把 schema 设计好(允许哪些节点、嵌套规则、属性), 后续的序列化(JSON)、迁移、协同、迁出/导入都建立在它之上.
+
+### Extension 拼装
+
+Tiptap 的核心包 `@tiptap/core` 只有最小骨架. 真正的功能(粗体、标题、表格、图片、Mention)全是独立 extension 包:
+
+```ts
+import StarterKit from '@tiptap/starter-kit'  // 一键引入常用扩展集
+import Link from '@tiptap/extension-link'
+import Mention from '@tiptap/extension-mention'
+
+const editor = useEditor({
+  extensions: [
+    StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+    Link.configure({ openOnClick: false }),
+    Mention.configure({ /* ... */ }),
+    FileChip,
+  ],
+})
+```
+
+注意 `StarterKit` 是个"扩展集合", 上手快, 但生产项目应该按需 disable 用不到的扩展, 减少 bundle.
+
+### 框架适配层
+
+`@tiptap/react`、`@tiptap/vue-3` 主要做两件事:
+
+1. 把 Editor 实例的生命周期接到框架(useEffect / setup);
+2. 提供 `ReactNodeViewRenderer` / `VueNodeViewRenderer` 把 NodeView 接到组件渲染.
+
+底层依然是 ProseMirror 那套. 这也意味着, 学一次 Tiptap, 跨框架迁移成本极低.
+
+## 典型工作流
+
+### 1. 初始化编辑器
+
+```tsx
+'use client'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+
+export function MyEditor() {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '<p>初始内容</p>',
+    onUpdate: ({ editor }) => {
+      // editor.getJSON() / editor.getHTML() 拿到当前文档
+    },
+  })
+
+  return <EditorContent editor={editor} />
+}
+```
+
+### 2. 自定义节点(完整流程)
+
+1. `Node.create({ name, group, inline, atom, ... })` 声明 schema;
+2. `addAttributes()` 定义 attrs;
+3. `parseHTML()` / `renderHTML()` 控制 HTML 的反序列化与序列化(决定持久化格式);
+4. `addNodeView()` 接入 React 组件;
+5. (可选)`addInputRules()` / `addPasteRules()` 让用户输入或粘贴特定文本时自动转成这个节点;
+6. (可选)`addCommands()` 暴露 `editor.commands.insertFileChip(...)` 这类便捷命令;
+7. (可选)`addKeyboardShortcuts()` 绑定快捷键.
+
+### 3. 序列化与持久化
+
+文档可以用三种格式互换:
+
+- `editor.getJSON()` → ProseMirror JSON, **推荐持久化用**, 与 schema 强对应、便于迁移;
+- `editor.getHTML()` → HTML 字符串, 适合直出渲染(只读视图);
+- `editor.getText()` → 纯文本(搜索 / 摘要).
+
+### 4. Input Rules / Paste Rules
+
+- **Input Rules**: 用户键入时触发, 例如键入 `# ` 自动变标题、`** **` 变粗体.
+- **Paste Rules**: 粘贴时触发, 例如粘贴一段 URL 自动变 Link mark, 粘贴某段格式自动变 chip.
+
+这两套机制让编辑器具备"智能补全"的手感, 是产品体验的关键差异化点.
+
+## 与同类编辑器的对比
+
+| 编辑器 | 底层模型 | 优势 | 劣势 |
+| --- | --- | --- | --- |
+| **Tiptap** | ProseMirror | Schema 严谨, IME / 协同 / 复杂内联节点天花板高, 生态成熟 | 概念多, 入门曲线略陡 |
+| **Quill** | 自研 Blot + Delta | API 简单, 上手快 | DOM-first, React 集成需 portal, 难做带状态内联节点; Delta 格式与 React 心智不合; v2 还在追赶 |
+| **Draft.js** | 自研, React-only | 早期成熟, state 即真相 | **Meta 已停止维护**, 不要在新项目用 |
+| **Slate.js** | 自研, React-first | 结构灵活, 完全 JSON | API 频繁变动, 社区插件少, 协同/IME 自己踩坑 |
+| **Lexical** | 自研 (Meta 出品) | 体积小, 现代, 渲染快 | 生态比 Tiptap 年轻, ProseMirror 那些"陈年好东西"(表格扩展、协作扩展)还在补 |
+
+### 什么时候选 Tiptap
+
+- 需要嵌入富 React 组件的**内联节点**(mention、chip、上传进度、卡片预览);
+- 需要严格的 schema 约束(企业内部产品、多端互通);
+- 需要 IME(中文/日文/韩文) **不出 bug**(ProseMirror 在这上面投入巨大);
+- 计划上 **collaborative editing**(`@tiptap/extension-collaboration` + Yjs).
+
+### 什么时候**不**选
+
+- 只是个 textarea 替代品, 一两个粗体按钮就够 → 用 textarea + markdown 即可;
+- 要求 bundle 极小、性能极致 → 看看 Lexical;
+- 团队完全不了解 ProseMirror, 又只有一周工期 → Quill 入门更快.
+
+## 小贴士与坑点
+
+1. **StarterKit 自带很多扩展**, 例如 Heading、CodeBlock、History. 生产项目按需 disable: `StarterKit.configure({ codeBlock: false })`.
+2. **NodeView 状态写到 attrs**. 不要在组件里用 `useState` 维持节点的持久数据, 否则 undo/redo 后 UI 与文档对不上.
+3. **SSR**: Tiptap 是客户端运行的, 在 Next.js App Router 里要 `'use client'`; 想做 SSR 只读预览, 用 `generateHTML(json, extensions)` 在服务端把 JSON 渲染成 HTML.
+4. **React 19 / Tiptap v2 vs v3**: Tiptap v3 对 React 19、Vue 3.4+ 适配更好, 内部模块拆分更细; 老项目用 v2 没问题, 新项目优先 v3.
+5. **粘贴行为很难调**. 默认会保留外部网页的样式与标签, 想做"纯净粘贴", 要写 `transformPastedHTML` / `transformPastedText`, 或用 `@tiptap/extension-paste-rules` 自定义规则.
+6. **`focus()` 时机**. 命令链通常以 `.focus()` 开头, 否则可能写到错位置. 但**不要在 NodeView 里手动 `editor.commands.focus()`**, 会和 ProseMirror 自己的选区管理打架.
+7. **协同**: 用 `@tiptap/extension-collaboration` + Yjs, 别自己搞 OT. 这是 Tiptap 最有价值的生态之一.
+
+## 参考
+
+- [Tiptap 官方文档](https://tiptap.dev/docs)
+- [ProseMirror Guide](https://prosemirror.net/docs/guide/)(强烈推荐, 理解 schema/transaction/plugin 的最佳入口)
+- [Tiptap GitHub](https://github.com/ueberdosis/tiptap)
